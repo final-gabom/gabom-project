@@ -2,48 +2,40 @@ name: Create branch from issue
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]
 
 jobs:
   create-branch:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
+      issues: write   # 이슈에 댓글 달기 위해 필요
 
     steps:
-      - name: Determine branch prefix
+      - name: Determine branch prefix from label
         id: extract
         run: |
+          LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
           PREFIX="issue"
-
-          if [[ "${{ github.event_name }}" == "labeled" ]]; then
-            LABEL="${{ github.event.label.name }}"
-          else
-            LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
-            for l in $LABELS; do
-              LABEL="$l"
-              break
-            done
-          fi
-
-          case "$LABEL" in
-            feature) PREFIX="feat" ;;
-            bug) PREFIX="fix" ;;
-            refactor) PREFIX="refactor" ;;
-            chore) PREFIX="chore" ;;
-            docs) PREFIX="docs" ;;
-            etc) PREFIX="etc" ;;
-          esac
-
+          for label in $LABELS; do
+            case "$label" in
+              feature) PREFIX="feat" ;;
+              bug) PREFIX="fix" ;;
+              refactor) PREFIX="refactor" ;;
+              chore) PREFIX="chore" ;;
+              docs) PREFIX="docs" ;;
+            esac
+          done
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
 
-      - name: Create branch name
+      - name: Sanitize title and create branch name
         id: branch
         run: |
           ISSUE_NUMBER=${{ github.event.issue.number }}
           PREFIX=${{ steps.extract.outputs.prefix }}
+          
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
+          
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
