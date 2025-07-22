@@ -2,35 +2,43 @@ name: Create branch from issue
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]  # 이슈 생성과 라벨 부착 모두 대응
 
 jobs:
   create-branch:
+    if: github.event.action == 'opened' || github.event.action == 'labeled'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
 
     steps:
-      - name: Determine branch prefix from label
+      - name: Check labels and determine prefix
         id: extract
         run: |
-          echo "이슈 라벨 정보:"
-          echo "${{ toJson(github.event.issue.labels) }}"
+          echo "라벨 목록: ${{ toJson(github.event.issue.labels) }}"
+          LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
           
-          LABELS=$(echo "${{ toJson(github.event.issue.labels) }}" | jq -r '.[].name')
           PREFIX="issue"
+
           for label in $LABELS; do
-            label=$(echo "$label" | tr '[:upper:]' '[:lower:]')  # 대소문자 방지
-            case "$label" in
-              feature) PREFIX="feat" && break ;;
-              bug) PREFIX="fix" && break ;;
-              refactor) PREFIX="refactor" && break ;;
-              chore) PREFIX="chore" && break ;;
-              docs) PREFIX="docs" && break ;;
+            NORMALIZED=$(echo "$label" | tr '[:upper:]' '[:lower:]')
+            case "$NORMALIZED" in
+              feature) PREFIX="feat"; break ;;
+              bug) PREFIX="fix"; break ;;
+              refactor) PREFIX="refactor"; break ;;
+              chore) PREFIX="chore"; break ;;
+              docs) PREFIX="docs"; break ;;
             esac
           done
+
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+
+      - name: Stop if prefix is issue (no matching label)
+        if: steps.extract.outputs.prefix == 'issue'
+        run: |
+          echo "❌ 브랜치 생성에 해당하는 라벨이 없습니다. 건너뜁니다."
+          exit 0
 
       - name: Create branch name
         id: branch
@@ -40,7 +48,7 @@ jobs:
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Create and push branch
