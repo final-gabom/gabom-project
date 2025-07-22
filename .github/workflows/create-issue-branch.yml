@@ -2,7 +2,7 @@ name: Create branch from issue
 
 on:
   issues:
-    types: [opened, labeled]  # 이슈 생성과 라벨 부착 모두 대응
+    types: [opened, labeled]
 
 jobs:
   create-branch:
@@ -13,12 +13,13 @@ jobs:
       issues: write
 
     steps:
-      - name: Check labels and determine prefix
+      - name: Determine branch prefix from label
         id: extract
         run: |
-          echo "라벨 목록: ${{ toJson(github.event.issue.labels) }}"
-          LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
-          
+          echo "✅ 이슈 라벨 정보:"
+          echo "${{ toJson(github.event.issue.labels) }}"
+
+          LABELS=$(echo "${{ toJson(github.event.issue.labels) }}" | jq -r '.[].name')
           PREFIX="issue"
 
           for label in $LABELS; do
@@ -34,10 +35,10 @@ jobs:
 
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
 
-      - name: Stop if prefix is issue (no matching label)
+      - name: Stop if prefix is issue
         if: steps.extract.outputs.prefix == 'issue'
         run: |
-          echo "❌ 브랜치 생성에 해당하는 라벨이 없습니다. 건너뜁니다."
+          echo "❌ 라벨이 유효하지 않아 브랜치를 생성하지 않습니다."
           exit 0
 
       - name: Create branch name
@@ -48,7 +49,7 @@ jobs:
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Create and push branch
