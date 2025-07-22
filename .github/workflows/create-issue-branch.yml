@@ -18,12 +18,13 @@ jobs:
           LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
           PREFIX="issue"
           for label in $LABELS; do
+            label=$(echo "$label" | tr '[:upper:]' '[:lower:]')  # 대소문자 구분 없애기
             case "$label" in
-              feature) PREFIX="feat" ;;
-              bug) PREFIX="fix" ;;
-              refactor) PREFIX="refactor" ;;
-              chore) PREFIX="chore" ;;
-              docs) PREFIX="docs" ;;
+              feature) PREFIX="feat" && break ;;
+              bug) PREFIX="fix" && break ;;
+              refactor) PREFIX="refactor" && break ;;
+              chore) PREFIX="chore" && break ;;
+              docs) PREFIX="docs" && break ;;
             esac
           done
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
@@ -33,9 +34,9 @@ jobs:
         run: |
           ISSUE_NUMBER=${{ github.event.issue.number }}
           PREFIX=${{ steps.extract.outputs.prefix }}
-          
+
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
-          
+
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
