@@ -2,7 +2,7 @@ name: Create branch from issue
 
 on:
   issues:
-    types: [opened]
+    types: [labeled]
 
 jobs:
   create-branch:
