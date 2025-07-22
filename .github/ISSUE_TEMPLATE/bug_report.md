@@ -2,7 +2,7 @@
 name: Bug report
 about: 버그에 관한 내용을 작성합니다.
 title: 버그
-labels: bug
+labels: ''
 assignees: ''
 
 ---
