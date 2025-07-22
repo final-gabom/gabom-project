@@ -2,7 +2,7 @@ name: Create branch from issue
 
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
 
 jobs:
   create-branch:
@@ -12,13 +12,22 @@ jobs:
       issues: write
 
     steps:
-      - name: Determine branch prefix from label
+      - name: Determine branch prefix
         id: extract
         run: |
-          LABEL_NAME="${{ github.event.label.name }}"
           PREFIX="issue"
 
-          case "$LABEL_NAME" in
+          if [[ "${{ github.event_name }}" == "labeled" ]]; then
+            LABEL="${{ github.event.label.name }}"
+          else
+            LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
+            for l in $LABELS; do
+              LABEL="$l"
+              break
+            done
+          fi
+
+          case "$LABEL" in
             feature) PREFIX="feat" ;;
             bug) PREFIX="fix" ;;
             refactor) PREFIX="refactor" ;;
@@ -29,14 +38,12 @@ jobs:
 
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
 
-      - name: Sanitize title and create branch name
+      - name: Create branch name
         id: branch
         run: |
           ISSUE_NUMBER=${{ github.event.issue.number }}
           PREFIX=${{ steps.extract.outputs.prefix }}
-          
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
-          
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
