@@ -9,23 +9,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write   # 이슈에 댓글 달기 위해 필요
+      issues: write
 
     steps:
       - name: Determine branch prefix from label
         id: extract
         run: |
-          LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
+          LABEL_NAME="${{ github.event.label.name }}"
           PREFIX="issue"
-          for label in $LABELS; do
-            case "$label" in
-              feature) PREFIX="feat" ;;
-              bug) PREFIX="fix" ;;
-              refactor) PREFIX="refactor" ;;
-              chore) PREFIX="chore" ;;
-              docs) PREFIX="docs" ;;
-            esac
-          done
+
+          case "$LABEL_NAME" in
+            feature) PREFIX="feat" ;;
+            bug) PREFIX="fix" ;;
+            refactor) PREFIX="refactor" ;;
+            chore) PREFIX="chore" ;;
+            docs) PREFIX="docs" ;;
+            etc) PREFIX="etc" ;;
+          esac
+
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
 
       - name: Sanitize title and create branch name
