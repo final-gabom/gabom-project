@@ -61,7 +61,7 @@ public class Place extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer viewCount;
 
-	@OneToMany(mappedBy = "missionProof", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private List<PlaceFile> files = new ArrayList<>();
 

@@ -1,5 +1,8 @@
 spring:
   config:
-    import: "application-common.yml"
+    import: "optional:classpath:/application-${spring.profiles.active}.yml"
   profiles:
+    group:
+      dev: dev
+      local: local
     active: local
