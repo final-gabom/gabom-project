@@ -9,16 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write   # 이슈에 댓글 달기 위해 필요
+      issues: write
 
     steps:
       - name: Determine branch prefix from label
         id: extract
         run: |
-          LABELS=$(echo '${{ toJson(github.event.issue.labels) }}' | jq -r '.[].name')
+          echo "이슈 라벨 정보:"
+          echo "${{ toJson(github.event.issue.labels) }}"
+          
+          LABELS=$(echo "${{ toJson(github.event.issue.labels) }}" | jq -r '.[].name')
           PREFIX="issue"
           for label in $LABELS; do
-            label=$(echo "$label" | tr '[:upper:]' '[:lower:]')  # 대소문자 구분 없애기
+            label=$(echo "$label" | tr '[:upper:]' '[:lower:]')  # 대소문자 방지
             case "$label" in
               feature) PREFIX="feat" && break ;;
               bug) PREFIX="fix" && break ;;
@@ -29,14 +32,12 @@ jobs:
           done
           echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
 
-      - name: Sanitize title and create branch name
+      - name: Create branch name
         id: branch
         run: |
           ISSUE_NUMBER=${{ github.event.issue.number }}
           PREFIX=${{ steps.extract.outputs.prefix }}
-
           BRANCH_NAME="${PREFIX}/${ISSUE_NUMBER}"
-
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
