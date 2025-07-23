@@ -3,7 +3,7 @@ package com.explorer.gabom.domain.auth.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.explorer.gabom.domain.auth.dto.request.SignupRequestDto;
+import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserRole;
@@ -21,7 +21,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final AttachmentFileRepository attachmentFileRepository;
 
-	public ApiResponse<Void> signup(SignupRequestDto requestDto) {
+	public ApiResponse<Void> signup(SignupRequest requestDto) {
 		// 이메일 중복 체크
 		if (userRepository.existsByEmail(requestDto.getEmail())) {
 			throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);

@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.auth.controller;
 
-import com.explorer.gabom.domain.auth.dto.request.SignupRequestDto;
+import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
@@ -21,7 +21,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody @Valid SignupRequestDto requestDto){
+    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody @Valid SignupRequest requestDto){
         ApiResponse<Void> response = authService.signup(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
