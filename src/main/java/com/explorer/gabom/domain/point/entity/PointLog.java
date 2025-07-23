@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.point.entity;
 
+import com.explorer.gabom.domain.point.type.PointType;
 import com.explorer.gabom.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,11 +25,14 @@ public class PointLog {
 
     private Long targetId;
 
-    @Column(name = "used_point", nullable = false)
-    private int usedPoint;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PointType pointType;
+
+    @Column(nullable = false)
+    private int point;
 
     @CreatedDate
     @Column(name = "logged_at", nullable = false, updatable = false)
     private LocalDateTime loggedAt;
-
 }
