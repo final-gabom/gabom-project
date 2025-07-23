@@ -38,6 +38,15 @@ public class ApiResponse<T> {
 						  .build();
 	}
 
+	public static <T> ApiResponse<T> success(String message) {
+		return ApiResponse.<T>builder()
+						  .success(true)
+						  .message(message)
+						  .data(null)
+						  .timestamp(LocalDateTime.now())
+						  .build();
+	}
+
 	// 실패 응답용(메세지 커스텀)
 	public static <T> ApiResponse<T> fail(String message, ErrorCode errorCode) {
 		return ApiResponse.<T>builder()

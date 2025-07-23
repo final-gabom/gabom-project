@@ -1,8 +1,5 @@
 package com.explorer.gabom.domain.user.entity;
 
-import com.explorer.gabom.global.security.Role;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import org.hibernate.annotations.SQLDelete;
 
 import com.explorer.gabom.domain.title.entity.Title;
@@ -22,15 +19,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-@Builder
+
 @Entity
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE user SET status = 'INACTIVE', deleted_at = NOW() WHERE id = ?")
-@Table(name = "users")
+@Table(name = "user")
 public class User extends BaseTimeEntity {
 
 	@Id
@@ -51,7 +48,7 @@ public class User extends BaseTimeEntity {
 	private UserRole userRole;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "profile_img_id", nullable = false)
+	@JoinColumn(name = "profile_img_id")
 	private AttachmentFile profileImgId;
 
 	@Enumerated(EnumType.STRING)
@@ -62,13 +59,10 @@ public class User extends BaseTimeEntity {
 	@JoinColumn(name = "title_id")
 	private Title titleId;
 
-	@Column(nullable = false)
 	private String address;
 
-	@Column(nullable = false)
 	private Double lat;
 
-	@Column(nullable = false)
 	private Double lng;
 
 	@Column(nullable = false)
@@ -80,6 +74,17 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer exp;
 
-	@Enumerated(EnumType.STRING)
-	private Role role;
+	@Builder
+	public User(Long id, String email, String password, String nickname, UserRole userRole) {
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.userRole = userRole;
+		this.status = UserStatus.ACTIVE;
+		this.point = 0;
+		this.level = 1;
+		this.exp = 0;
+	}
+
 }
