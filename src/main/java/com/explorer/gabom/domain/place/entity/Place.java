@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
@@ -21,7 +22,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -66,17 +66,15 @@ public class Place extends BaseTimeEntity {
 	@OrderBy("orderIdx ASC")
 	private List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
 
-	@Builder
-	public Place(User user, String title, String address, Double lat, Double lng,
-				 String content, String proofMethod, Integer viewCount) {
+	public Place(PlaceCreateRequest request, User user) {
 		this.user = user;
-		this.title = title;
-		this.address = address;
-		this.lat = lat;
-		this.lng = lng;
-		this.content = content;
-		this.proofMethod = proofMethod;
-		this.viewCount = viewCount;
+		this.title = request.getTitle();
+		this.address = request.getAddress();
+		this.lat = request.getLat();
+		this.lng = request.getLng();
+		this.content = request.getContent();
+		this.proofMethod = request.getProofMethod();
+		this.viewCount = 0; // 기본값
 	}
 
 }
