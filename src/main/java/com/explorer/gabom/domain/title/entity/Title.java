@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.title.entity;
 
+import java.time.LocalDateTime;
+
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
@@ -27,6 +29,12 @@ public class Title extends BaseTimeEntity {
 	public Title(String name, String description) {
 		this.name = name;
 		this.description = description;
+	}
+
+	public void update(String name, String description) {
+		this.name = name;
+		this.description = description;
+		this.updatedAt = LocalDateTime.now();
 	}
 
 
