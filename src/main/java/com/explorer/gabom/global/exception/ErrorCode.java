@@ -9,6 +9,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+	//Title
+	TITLE_DUPLICATED(HttpStatus.BAD_REQUEST, "이미 존재하는 칭호입니다."),
+
+	TITLE_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 칭호를 찾을 수 없습니다."),
+
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
 
