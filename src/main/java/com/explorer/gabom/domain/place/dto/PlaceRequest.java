@@ -2,7 +2,8 @@ package com.explorer.gabom.domain.place.dto;
 
 import java.util.List;
 
-public record PlaceRequest (
+public record PlaceRequest(
+
 	String title,
 	String address,
 	Double lat,
@@ -10,4 +11,6 @@ public record PlaceRequest (
 	String content,
 	String proofMethod,
 	List<Long> imageIds
-) {}
+
+) {
+}
