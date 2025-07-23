@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final AttachmentFileRepository attachmentFileRepository;
+
 
 	public ApiResponse<Void> signup(SignupRequest requestDto) {
 		// 이메일 중복 체크
