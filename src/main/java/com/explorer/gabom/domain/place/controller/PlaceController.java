@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
+import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
+import com.explorer.gabom.global.dto.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +23,11 @@ public class PlaceController {
 
 	// 탐험 장소 생성
 	@PostMapping
-	public ResponseEntity<Void> createPlace(
+	public ResponseEntity<ApiResponse<PlaceCreateResponse>> createPlace(
 		@RequestBody PlaceCreateRequest request /* TODO: , @AuthenticationPrincipal User user */) {
-		// TODO: 실제 유저 정보는 인증 후 받아 처리 예정
-		placeService.createPlace(request /* , user */);
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+
+		PlaceCreateResponse response = placeService.createPlace(request /*, user */);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("장소 등록에 성공했습니다.", response));
 	}
 }
