@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.title.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +22,7 @@ public class TitleController {
 	private final TitleService titleService;
 
 	@PostMapping
-	@PreAuthorize("hasRole('ADMIN')")
+	// @PreAuthorize("hasRole('ADMIN')") 어차피 동작 안해서 spring security 설정 적용 여부에 따라 수정 예정
 	public ResponseEntity<ApiResponse<TitleResponse>> createTitle(
 		@RequestBody @Valid TitleCreateRequest request
 		) {
