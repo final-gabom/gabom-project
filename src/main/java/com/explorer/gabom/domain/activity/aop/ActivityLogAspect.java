@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.activity.aop;
 
+import java.lang.annotation.Annotation;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -8,9 +10,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.explorer.gabom.domain.activity.entity.ActivityLog;
 import com.explorer.gabom.domain.activity.repository.ActivityLogRepository;
 import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.dto.TargetIdentifiable;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,18 +40,22 @@ public class ActivityLogAspect {
 		ActivityType activityType = activityLoggable.value();
 
 		Long userId = extractUserId();
-		Long targetId = null;
+		Long targetId = activityType.isRequiredTargetId() ?
+						extractTargetId(signature, joinPoint.getArgs(), result) : null;
 
-		Object[] args = joinPoint.getArgs();
+		String ipAddress = request.getRemoteAddr();
+		String description = activityType.getMessage();
 
-		if (activityType.getRequiredTargetId()) {
-			targetId = extractTargetId(args);
-			// if (targetId == null) {
-			// 	targetId =
-			// }
-		}
+		ActivityLog activityLog = new ActivityLog(
+			userId,
+			targetId,
+			activityType,
+			description,
+			ipAddress
+		);
 
-		String ipAdress = request.getRemoteAddr();
+		activityLogRepository.save(activityLog);
+		log.info("활동 로그 저장: {}", activityLog);
 	}
 
 	private Long extractUserId() {
@@ -64,13 +73,25 @@ public class ActivityLogAspect {
 		throw new IllegalStateException("알 수 없는 사용자입니다.");
 	}
 
-	private Long extractTargetId(Object[] args) {
-		for (Object arg : args) {
-			if (arg instanceof Long) {
-				Long targetId = (Long)arg;
-				return targetId;
+	private Long extractTargetId(MethodSignature signature, Object[] args, Object result) {
+		// 1. @TargetId 파라미터 확인
+		Annotation[][] paramAnnotations = signature.getMethod().getParameterAnnotations();
+		for (int i = 0; i < args.length; i++) {
+			for (Annotation annotation : paramAnnotations[i]) {
+				if (annotation instanceof TargetId && args[i] instanceof Long) {
+					return (Long)args[i];
+				}
 			}
 		}
+
+		// 2. ResponseDto에서 TargetIdentifiable 확인
+		if (result instanceof ApiResponse<?> apiResponse) {
+			Object data = apiResponse.getData();
+			if (data instanceof TargetIdentifiable identifiable) {
+				return identifiable.getTargetId();
+			}
+		}
+
 		return null;
 	}
 }
