@@ -72,8 +72,8 @@ public class Place extends BaseTimeEntity {
 		this.address = request.getAddress();
 		this.lat = request.getLat();
 		this.lng = request.getLng();
-		this.content = request.getContent();
 		this.proofMethod = request.getProofMethod();
+		this.content = request.getContent();
 		this.viewCount = 0; // 기본값
 	}
 
