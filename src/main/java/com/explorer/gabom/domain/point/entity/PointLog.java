@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "point_usage")
+@Table(name = "point_log")
 @Getter
-public class PointUsage {
+public class PointLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +28,7 @@ public class PointUsage {
     private int usedPoint;
 
     @CreatedDate
-    @Column(name = "useage_at", nullable = false, updatable = false)
-    private LocalDateTime usageAt;
+    @Column(name = "logged_at", nullable = false, updatable = false)
+    private LocalDateTime loggedAt;
 
 }
