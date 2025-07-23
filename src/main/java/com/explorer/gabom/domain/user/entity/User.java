@@ -1,5 +1,8 @@
 package com.explorer.gabom.domain.user.entity;
 
+import com.explorer.gabom.global.security.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import org.hibernate.annotations.SQLDelete;
 
 import com.explorer.gabom.domain.title.entity.Title;
@@ -21,9 +24,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+@Builder
 @Entity
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE user SET status = 'INACTIVE', deleted_at = NOW() WHERE id = ?")
 @Table(name = "users")
@@ -76,4 +80,6 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer exp;
 
+	@Enumerated(EnumType.STRING)
+	private Role role;
 }
