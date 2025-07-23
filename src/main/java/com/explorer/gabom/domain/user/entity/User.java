@@ -49,7 +49,7 @@ public class User extends BaseTimeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "profile_img_id")
-	private AttachmentFile profileImgId;
+	private AttachmentFile profileImg;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
