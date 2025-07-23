@@ -1,31 +1,26 @@
 package com.explorer.gabom.domain.place.dto.request;
 
-import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+@Getter
+public class PlaceCreateRequest {
 
-public record PlaceCreateRequest(
+	private final String title;
+	private final String address;
+	private final Double lat;
+	private final Double lng;
+	private final String content;
+	private final String proofMethod;
 
-	@NotBlank
-	String title,
-
-	@NotBlank
-	String address,
-
-	@NotNull
-	Double lat,
-
-	@NotNull
-	Double lng,
-
-	@NotBlank
-	String content,
-
-	@NotBlank
-	String proofMethod,
-
-	List<Long> imageIds
-
-) {
+	@Builder
+	public PlaceCreateRequest(String title, String address, Double lat, Double lng,
+							  String content, String proofMethod) {
+		this.title = title;
+		this.address = address;
+		this.lat = lat;
+		this.lng = lng;
+		this.content = content;
+		this.proofMethod = proofMethod;
+	}
 }
