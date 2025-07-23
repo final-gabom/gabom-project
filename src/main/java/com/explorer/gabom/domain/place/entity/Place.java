@@ -21,13 +21,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "places")
 @SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
@@ -65,6 +64,19 @@ public class Place extends BaseTimeEntity {
 
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
-	private List<PlaceFile> files = new ArrayList<>();
+	private List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
+
+	@Builder
+	public Place(User user, String title, String address, Double lat, Double lng,
+				 String content, String proofMethod, Integer viewCount) {
+		this.user = user;
+		this.title = title;
+		this.address = address;
+		this.lat = lat;
+		this.lng = lng;
+		this.content = content;
+		this.proofMethod = proofMethod;
+		this.viewCount = viewCount;
+	}
 
 }
