@@ -23,6 +23,6 @@ public class PlaceService {
 
 		Place savedPlace = placeRepository.save(place);
 
-		return new PlaceCreateResponse(savedPlace.getId(), savedPlace.getTitle(), savedPlace.getAddress());
+		return new PlaceCreateResponse(savedPlace.getId());
 	}
 }
