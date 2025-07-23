@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: 추가할 기능에 대한 내용을 작성합니다.
-title: "[feature] "
+title: "[Feature] "
 labels: ''
 assignees: ''
 
