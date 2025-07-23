@@ -6,24 +6,22 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.explorer.gabom.domain.activity.type.ActivityType;
-import com.explorer.gabom.domain.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "activity_log")
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class ActivityLog {
 
@@ -32,9 +30,7 @@ public class ActivityLog {
 	private Long id;
 
 	// 활동 주체
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private Long userId;
 
 	// 타겟 ID (예: 인증글 ID, 장소 ID 등)
 	private Long targetId;
@@ -53,5 +49,13 @@ public class ActivityLog {
 	@CreatedDate
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
+
+	public ActivityLog(Long userId, Long targetId, ActivityType activityType, String description, String ipAddress) {
+		this.userId = userId;
+		this.targetId = targetId;
+		this.activityType = activityType;
+		this.description = description;
+		this.ipAddress = ipAddress;
+	}
 }
 
