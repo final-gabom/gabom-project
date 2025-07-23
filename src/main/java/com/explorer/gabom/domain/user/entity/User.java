@@ -57,7 +57,7 @@ public class User extends BaseTimeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "title_id")
-	private Title titleId;
+	private Title title;
 
 	private String address;
 
