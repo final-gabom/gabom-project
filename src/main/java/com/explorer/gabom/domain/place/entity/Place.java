@@ -28,8 +28,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "places")
-@SQLDelete(sql = "UPDATE places SET deleted_at = NOW() WHERE id = ?")
+@Table(name = "place")
+@SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
 public class Place extends BaseTimeEntity {
 
 	@Id
