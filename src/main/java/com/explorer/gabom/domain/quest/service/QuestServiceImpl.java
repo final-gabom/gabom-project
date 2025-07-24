@@ -7,6 +7,7 @@ import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.quest.dto.request.QuestCreateRequestDto;
 import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponseDto;
+import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponseDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponseDto;
 import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.repository.QuestRepository;
@@ -17,7 +18,9 @@ import com.explorer.gabom.global.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuestServiceImpl implements QuestService {
@@ -61,6 +64,17 @@ public class QuestServiceImpl implements QuestService {
 
 		quest.update(dto, rewardTitle);
 		return QuestUpdateResponseDto.toDto(quest);
+	}
+
+	@Override
+	@Transactional
+	@ActivityLoggable(ActivityType.ADMIN_QUEST_DELETED)
+	public QuestDeleteResponseDto deleteQuest(Long questId) {
+		Quest quest = questRepository.findById(questId)
+									 .orElseThrow(() -> new CustomException(ErrorCode.QUEST_NOT_FOUND));
+
+		questRepository.delete(quest);
+		return QuestDeleteResponseDto.fromId(questId);
 	}
 
 }
