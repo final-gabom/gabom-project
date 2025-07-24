@@ -77,4 +77,13 @@ public class Place extends BaseTimeEntity {
 		this.viewCount = 0; // 기본값
 	}
 
+	public void updatePlace(String title, String address, Double lat, Double lng, String content, String proofMethod) {
+		this.title = title;
+		this.address = address;
+		this.lat = lat;
+		this.lng = lng;
+		this.content = content;
+		this.proofMethod = proofMethod;
+	}
+
 }
