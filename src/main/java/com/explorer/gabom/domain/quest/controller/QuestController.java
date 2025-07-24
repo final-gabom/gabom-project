@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.quest.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.quest.dto.request.QuestCreateRequestDto;
 import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponseDto;
+import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponseDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponseDto;
 import com.explorer.gabom.domain.quest.service.QuestService;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -31,7 +33,8 @@ public class QuestController {
 		@Valid @RequestBody QuestCreateRequestDto request) {
 
 		QuestCreateResponseDto response = questService.createQuest(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("퀘스트가 성공적으로 등록되었습니다.", response));
+		return ResponseEntity.status(HttpStatus.CREATED)
+							 .body(ApiResponse.success("퀘스트가 성공적으로 등록되었습니다.", response));
 	}
 
 	@PatchMapping("admin/quests/{questId}")
@@ -40,6 +43,15 @@ public class QuestController {
 		@Valid @RequestBody QuestUpdateRequestDto request) {
 
 		QuestUpdateResponseDto response = questService.updateQuest(questId, request);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("퀘스트가 성공적으로 수정되었습니다.", response));
+		return ResponseEntity.status(HttpStatus.OK)
+							 .body(ApiResponse.success("퀘스트가 성공적으로 수정되었습니다.", response));
+	}
+
+	@DeleteMapping("/admin/quests/{questId}")
+	public ResponseEntity<ApiResponse<QuestDeleteResponseDto>> deleteQuest(@PathVariable Long questId) {
+
+		QuestDeleteResponseDto response = questService.deleteQuest(questId);
+		return ResponseEntity.status(HttpStatus.OK)
+							 .body(ApiResponse.success("퀘스트가 삭제되었습니다.", response));
 	}
 }
