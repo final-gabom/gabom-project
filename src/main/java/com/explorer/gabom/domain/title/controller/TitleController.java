@@ -16,12 +16,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/admin/titles")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class TitleController {
 	private final TitleService titleService;
 
-	@PostMapping
+	@PostMapping("/admin/titles")
 	// @PreAuthorize("hasRole('ADMIN')") 어차피 동작 안해서 spring security 설정 적용 여부에 따라 수정 예정
 	public ResponseEntity<ApiResponse<TitleCreateResponse>> createTitle(
 		@RequestBody @Valid TitleCreateRequest request
