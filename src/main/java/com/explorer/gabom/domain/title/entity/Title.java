@@ -11,9 +11,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @Table(name = "title")
+@Getter
 public class Title extends BaseTimeEntity {
 
 	@Id

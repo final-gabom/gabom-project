@@ -26,8 +26,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@SQLDelete(sql = "UPDATE user SET status = 'INACTIVE', deleted_at = NOW() WHERE id = ?")
-@Table(name = "user")
+@SQLDelete(sql = "UPDATE users SET status = 'INACTIVE', deleted_at = NOW() WHERE id = ?")
+@Table(name = "users")
 public class User extends BaseTimeEntity {
 
 	@Id
@@ -49,7 +49,7 @@ public class User extends BaseTimeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "profile_img_id")
-	private AttachmentFile profileImgId;
+	private AttachmentFile profileImg;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -57,7 +57,7 @@ public class User extends BaseTimeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "title_id")
-	private Title titleId;
+	private Title title;
 
 	private String address;
 
@@ -85,6 +85,26 @@ public class User extends BaseTimeEntity {
 		this.point = 0;
 		this.level = 1;
 		this.exp = 0;
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updateProfileImg(AttachmentFile profileImg) {
+		this.profileImg = profileImg;
+	}
+
+	public void updateAddress(String address) {
+		this.address = address;
+	}
+
+	public void updateLat(Double lat) {
+		this.lat = lat;
+	}
+
+	public void updateLng(Double lng) {
+		this.lng = lng;
 	}
 
 }
