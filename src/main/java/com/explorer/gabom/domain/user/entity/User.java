@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE user SET status = 'INACTIVE', deleted_at = NOW() WHERE id = ?")
-@Table(name = "user")
+@Table(name = "users")
 public class User extends BaseTimeEntity {
 
 	@Id
