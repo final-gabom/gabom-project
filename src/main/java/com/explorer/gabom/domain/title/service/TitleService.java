@@ -15,27 +15,39 @@ import com.explorer.gabom.global.exception.BusinessException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TitleService {
 	private final TitleRepository titleRepository;
 
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
+		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
+			log.warn("<칭호등록> 실패 - 중복된 이름: {}", request.getName());
 			throw new BusinessException(ErrorCode.TITLE_DUPLICATED);
 		}
 
 		Title title = new Title(request.getName(), request.getDescription());
 		Title saved = titleRepository.save(title);
+
+		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
 		return TitleCreateResponse.from(saved);
 	}
 
 	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
+		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
 		Title title = titleRepository.findById(titleId)
-									 .orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
+									 .orElseThrow(() -> {
+										 log.warn("<칭호수정> 실패 - 존재하지 않는 ID: {}", titleId);
+										 return new BusinessException(ErrorCode.TITLE_NOT_FOUND);
+									 });
 
 		title.update(request.getName(), request.getDescription());
+
+		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
 		return TitleUpdateResponse.from(title);
 	}
 

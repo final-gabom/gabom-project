@@ -31,7 +31,7 @@ public class TitleController {
 	// @PreAuthorize("hasRole('ADMIN')") 어차피 동작 안해서 spring security 설정 적용 여부에 따라 수정 예정
 	public ResponseEntity<ApiResponse<TitleCreateResponse>> createTitle(
 		@RequestBody @Valid TitleCreateRequest request
-		) {
+	) {
 		TitleCreateResponse response = titleService.createTitle(request);
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("칭호가 성공적으로 등록되었습니다.", response));
