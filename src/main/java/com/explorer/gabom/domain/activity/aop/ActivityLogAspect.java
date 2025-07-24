@@ -10,8 +10,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import com.explorer.gabom.domain.activity.entity.ActivityLog;
-import com.explorer.gabom.domain.activity.repository.ActivityLogRepository;
+import com.explorer.gabom.domain.activity.entity.AdminActivityLog;
+import com.explorer.gabom.domain.activity.entity.UserActivityLog;
+import com.explorer.gabom.domain.activity.repository.AdminActivityLogRepository;
+import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
 import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -27,7 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ActivityLogAspect {
 
-	private final ActivityLogRepository activityLogRepository;
+	private final UserActivityLogRepository userActivityLogRepository;
+	private final AdminActivityLogRepository adminActivityLogRepository;
 	private final HttpServletRequest request;
 
 	@AfterReturning(
@@ -46,27 +49,25 @@ public class ActivityLogAspect {
 		String ipAddress = request.getRemoteAddr();
 		String description = activityType.getMessage();
 
-		ActivityLog activityLog = new ActivityLog(
-			userId,
-			targetId,
-			activityType,
-			description,
-			ipAddress
-		);
-
-		activityLogRepository.save(activityLog);
-		log.info("활동 로그 저장: {}", activityLog);
+		if (activityType.isAdminActivity()) {
+			AdminActivityLog adminActivityLog = new AdminActivityLog(userId, targetId, activityType, description,
+																	 ipAddress);
+			adminActivityLogRepository.save(adminActivityLog);
+			log.info("관리자 활동 로그 저장: {}", adminActivityLog);
+		} else {
+			UserActivityLog userActivityLog = new UserActivityLog(userId, targetId, activityType, description,
+																  ipAddress);
+			userActivityLogRepository.save(userActivityLog);
+			log.info("유저 활동 로그 저장: {}", userActivityLog);
+		}
 	}
 
 	private Long extractUserId() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new IllegalStateException("인증된 사용자가 아닙니다.");
 		}
-
 		Object principal = authentication.getPrincipal();
-
 		if (principal instanceof User) {
 			return ((User)principal).getId();
 		}
@@ -74,7 +75,6 @@ public class ActivityLogAspect {
 	}
 
 	private Long extractTargetId(MethodSignature signature, Object[] args, Object result) {
-		// 1. @TargetId 파라미터 확인
 		Annotation[][] paramAnnotations = signature.getMethod().getParameterAnnotations();
 		for (int i = 0; i < args.length; i++) {
 			for (Annotation annotation : paramAnnotations[i]) {
@@ -83,15 +83,12 @@ public class ActivityLogAspect {
 				}
 			}
 		}
-
-		// 2. ResponseDto에서 TargetIdentifiable 확인
 		if (result instanceof ApiResponse<?> apiResponse) {
 			Object data = apiResponse.getData();
 			if (data instanceof TargetIdentifiable identifiable) {
 				return identifiable.getTargetId();
 			}
 		}
-
 		return null;
 	}
 }
