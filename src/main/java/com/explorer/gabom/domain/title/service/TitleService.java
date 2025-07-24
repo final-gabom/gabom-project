@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
+import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
@@ -38,12 +39,16 @@ public class TitleService {
 		return TitleUpdateResponse.from(title);
 	}
 
-	public LocalDateTime deleteTitle(Long titleId) {
+	public TitleDeleteResponse deleteTitle(Long titleId) {
 		Title title = titleRepository.findById(titleId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
+									 .orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
 
 		titleRepository.delete(title);
-		return LocalDateTime.now();
+
+		return new TitleDeleteResponse(
+			title.getId(),
+			LocalDateTime.now()
+		);
 	}
 
 
