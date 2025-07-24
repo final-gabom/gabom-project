@@ -25,7 +25,7 @@ public class QuestServiceImpl implements QuestService {
 
 	@Override
 	@Transactional
-	@ActivityLoggable(ActivityType.QUEST_CREATED)
+	@ActivityLoggable(ActivityType.ADMIN_QUEST_CREATED)
 	public QuestCreateResponseDto createQuest(QuestCreateRequestDto dto) {
 		Title rewardTitle = titleRepository.findById(dto.getRewardTitleId())
 										   .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
