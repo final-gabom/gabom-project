@@ -25,7 +25,7 @@ public class AuthService {
 			throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
 		}
 		// 닉네임 중복 체크
-		if (userRepository.existsByEmail(requestDto.getNickname())) {
+		if (userRepository.existsByNickname(requestDto.getNickname())) {
 			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
 		}
 		// 비밀번호

@@ -87,4 +87,24 @@ public class User extends BaseTimeEntity {
 		this.exp = 0;
 	}
 
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updateProfileImg(AttachmentFile profileImg) {
+		this.profileImg = profileImg;
+	}
+
+	public void updateAddress(String address) {
+		this.address = address;
+	}
+
+	public void updateLat(Double lat) {
+		this.lat = lat;
+	}
+
+	public void updateLng(Double lng) {
+		this.lng = lng;
+	}
+
 }
