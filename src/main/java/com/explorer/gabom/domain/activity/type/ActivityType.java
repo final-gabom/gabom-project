@@ -8,6 +8,7 @@ public enum ActivityType {
 
 	PLACE_SHARED(true, "장소를 등록하였습니다."),
 
+	QUEST_CREATED(true, "퀘스트를 등록하였습니다."),
 	QUEST_COMPLETED(true, "퀘스트를 달성하였습니다."),
 
 	TITLE_EARNED(true, "칭호를 획득하였습니다."),
