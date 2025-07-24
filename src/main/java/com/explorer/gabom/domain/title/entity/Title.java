@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.title.entity;
 
 import java.time.LocalDateTime;
 
+import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
@@ -13,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @Table(name = "title")
 public class Title extends BaseTimeEntity {
@@ -35,6 +35,10 @@ public class Title extends BaseTimeEntity {
 		this.name = name;
 		this.description = description;
 		this.updatedAt = LocalDateTime.now();
+	}
+
+	public TitleCreateResponse toCreateDto() {
+		return new TitleCreateResponse(this.id, this.name, this.description, this.createdAt);
 	}
 
 
