@@ -1,18 +1,27 @@
 package com.explorer.gabom.domain.place.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
+import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.ApiResponse;
 
 import jakarta.validation.Valid;
@@ -40,7 +49,16 @@ public class PlaceController {
 	}
 
 	// 탐험 장소 리스트 조회(검색)
-
+	/*
+	TODO : -> 위도 경도 값 합쳐서 거리 값 추출 후 추가해야 함
+	 */
+	@GetMapping
+	public ResponseEntity<ApiResponse<Page<PlaceListResponse>>> getPlaceList(
+		@RequestParam(defaultValue = "") String query, @RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int size, @AuthenticationPrincipal User user) {
+		Page<PlaceListResponse> result = placeService.getPlaceList(query, page, size);
+		return ResponseEntity.ok(ApiResponse.success("장소 조회에 성공했습니다.", result));
+	}
 	// 탐험 장소 상세 조회
 
 	// 탐험 장소 수정
