@@ -10,7 +10,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "attachment_file")
 public class AttachmentFile {
@@ -25,6 +27,9 @@ public class AttachmentFile {
 
 	@Column(nullable = false)
 	private String fileName;
+
+	@Column(nullable = false)
+	private String fileUrl;
 
 	@Column(nullable = false)
 	private Long fileSize;
