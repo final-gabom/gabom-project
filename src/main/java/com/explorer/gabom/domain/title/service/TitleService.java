@@ -6,7 +6,7 @@ import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
-import com.explorer.gabom.global.exception.BusinessException;
+import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -22,14 +22,14 @@ public class TitleService {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
 			log.warn("<칭호등록> 실패 - 중복된 이름: {}", request.getName());
-			throw new BusinessException(ErrorCode.TITLE_DUPLICATED);
+			throw new CustomException(ErrorCode.TITLE_DUPLICATED);
 		}
 
 		Title title = new Title(request.getName(), request.getDescription());
 		Title saved = titleRepository.save(title);
 
 		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
-		return TitleCreateResponse.from(saved);
+		return saved.toCreateDto();
 	}
 
 }
