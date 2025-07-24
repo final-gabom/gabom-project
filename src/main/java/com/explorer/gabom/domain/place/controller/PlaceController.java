@@ -15,6 +15,7 @@ import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,7 +28,7 @@ public class PlaceController {
 	// 탐험 장소 생성
 	@PostMapping
 	public ResponseEntity<ApiResponse<PlaceCreateResponse>> createPlace(
-		@RequestBody PlaceCreateRequest request
+		@RequestBody @Valid PlaceCreateRequest request
 		/* TODO : 인증 로직 들어오면 주석해제
 		@AuthenticationPrincipal User user */
 	) {
