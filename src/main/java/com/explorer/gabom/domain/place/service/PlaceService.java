@@ -38,7 +38,7 @@ public class PlaceService {
 	@Transactional
 	public void updatePlace(Long placeId, PlaceUpdateRequest request, User user) {
 		Place place = placeRepository.findById(placeId)
-			.orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
 		// 작성자 확인
 		if (!place.getUser().getId().equals(user.getId())) {

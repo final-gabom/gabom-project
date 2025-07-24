@@ -1,12 +1,10 @@
 package com.explorer.gabom.domain.place.dto.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public class PlaceCreateRequest {
 
 	private final String title;

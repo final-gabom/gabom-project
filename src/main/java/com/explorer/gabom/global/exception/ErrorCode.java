@@ -22,6 +22,7 @@ public enum ErrorCode {
 
 	// Place
 	PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장소를 찾을 수 없습니다."),
+
 	PLACE_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 장소에 대한 권한이 없습니다.");
 
 
