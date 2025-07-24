@@ -20,22 +20,18 @@ import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "activity_log")
+@Table(name = "user_activity_log")
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class ActivityLog {
+public class UserActivityLog {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// 활동 주체
 	private Long userId;
-
-	// 타겟 ID (예: 인증글 ID, 장소 ID 등)
 	private Long targetId;
 
-	// 어떤 종류의 활동인지 (ex: 인증글 작성, 좋아요 등)
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ActivityType activityType;
@@ -50,7 +46,8 @@ public class ActivityLog {
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
-	public ActivityLog(Long userId, Long targetId, ActivityType activityType, String description, String ipAddress) {
+	public UserActivityLog(Long userId, Long targetId, ActivityType activityType, String description,
+						   String ipAddress) {
 		this.userId = userId;
 		this.targetId = targetId;
 		this.activityType = activityType;
