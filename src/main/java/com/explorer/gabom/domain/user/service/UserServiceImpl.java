@@ -10,7 +10,9 @@ import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -19,8 +21,16 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto getUser(Long userId) {
+		log.info("유저 상세 정보 조회 시작");
 		User byIdAndStatus = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
 										   .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return UserDto.toDto(byIdAndStatus);
 	}
+
+	@Override
+	public void deleteUser(Long userId) {
+		log.info("회원 탈퇴 시작");
+		userRepository.deleteById(userId);
+	}
+
 }
