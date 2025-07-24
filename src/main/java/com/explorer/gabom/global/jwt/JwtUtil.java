@@ -13,7 +13,6 @@ import com.explorer.gabom.domain.user.type.UserRole;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 
@@ -35,7 +34,6 @@ public class JwtUtil {
 
 	@PostConstruct
 	public void init() {
-		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
 		key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 	}
 
