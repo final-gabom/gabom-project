@@ -1,11 +1,15 @@
 package com.explorer.gabom.domain.title.controller;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,5 +46,14 @@ public class TitleController {
 
 		TitleResponse updated = titleService.updateTitle(titleId, request);
 		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 수정되었습니다.", updated));
+	}
+
+	@DeleteMapping("/{titleId}")
+	public ResponseEntity<ApiResponse<Map<String, LocalDateTime>>> deleteTitle(
+		@PathVariable Long titleId) {
+		LocalDateTime deletedAt = titleService.deleteTitle(titleId);
+
+		Map<String, LocalDateTime> data = Map.of("deletedAt", deletedAt);
+		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 삭제되었습니다.", data));
 	}
 }

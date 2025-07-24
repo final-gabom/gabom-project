@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.title.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
@@ -33,6 +35,14 @@ public class TitleService {
 
 		title.update(request.getName(), request.getDescription());
 		return TitleResponse.from(title);
+	}
+
+	public LocalDateTime deleteTitle(Long titleId) {
+		Title title = titleRepository.findById(titleId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
+
+		titleRepository.delete(title);
+		return LocalDateTime.now();
 	}
 
 
