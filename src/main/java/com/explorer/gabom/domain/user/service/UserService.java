@@ -6,4 +6,6 @@ import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
 public interface UserService {
 	UserDto getUser(Long userId);
 	UserDto updateUser(Long userId, UserUpdateRequest updateRequest);
+
+	void deleteUser(Long userId);
 }

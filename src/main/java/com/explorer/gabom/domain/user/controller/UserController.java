@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.user.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,5 +36,11 @@ public class UserController {
 		@RequestBody UserUpdateRequest updateRequest) {
 		UserDto updateResponse = userService.updateUser(userId, updateRequest);
 		return ResponseEntity.ok(ApiResponse.success("프로필 수정을 완료하였습니다.", updateResponse));
+	}
+
+	@DeleteMapping("/{userId}")
+	public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
+		userService.deleteUser(userId);
+		return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
 	}
 }
