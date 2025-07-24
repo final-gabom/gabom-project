@@ -22,7 +22,7 @@ public class TitleService {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
 			log.warn("<칭호등록> 실패 - 중복된 이름: {}", request.getName());
-			throw new CustomException(ErrorCode.TITLE_DUPLICATED);
+			throw new CustomException(ErrorCode.TITLE_ALREADY_EXISTS);
 		}
 
 		Title title = new Title(request.getName(), request.getDescription());
