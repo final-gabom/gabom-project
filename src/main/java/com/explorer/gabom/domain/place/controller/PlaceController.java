@@ -48,11 +48,10 @@ public class PlaceController {
 	public ResponseEntity<ApiResponse<Void>> updatePlace(
 		@PathVariable Long placeId,
 		@RequestBody PlaceUpdateRequest request
-		/* TODO : 인증 로직 들어오면 주석해제
+		/* TODO : 인증 로직 들어오면 주석 해제
 		@AuthenticationPrincipal User user */
 	) {
-		Long userId = 1L; // TODO: 인증 붙으면 교체
-		placeService.updatePlace(placeId, request, userId);
+		placeService.updatePlace(placeId, 1L, request); // TODO: 인증 들어오면 교체 예정
 		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다."));
 	}
 
