@@ -9,6 +9,7 @@ import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -19,12 +20,14 @@ import lombok.RequiredArgsConstructor;
 public class PlaceService {
 
 	private final PlaceRepository placeRepository;
+	private final UserRepository userRepository;
 
 	// 탐험 장소 생성
-	public PlaceCreateResponse createPlace(PlaceCreateRequest request, User user) {
+	public PlaceCreateResponse createPlace(PlaceCreateRequest request, Long userId) {
+		User user = userRepository.findById(userId)
+								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Place place = new Place(request, user);
-
 		Place savedPlace = placeRepository.save(place);
 
 		return new PlaceCreateResponse(savedPlace.getId());
@@ -36,12 +39,12 @@ public class PlaceService {
 
 	// 탐험 장소 수정
 	@Transactional
-	public void updatePlace(Long placeId, PlaceUpdateRequest request, User user) {
+	public void updatePlace(Long placeId, PlaceUpdateRequest request, Long userId) {
 		Place place = placeRepository.findById(placeId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
 		// 작성자 확인
-		if (!place.getUser().getId().equals(user.getId())) {
+		if (!place.getUser().getId().equals(userId)) {
 			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
 		}
 
