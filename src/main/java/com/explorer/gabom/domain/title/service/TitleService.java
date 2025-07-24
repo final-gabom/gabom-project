@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
-import com.explorer.gabom.domain.title.dto.response.TitleResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
+import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
 import com.explorer.gabom.global.exception.BusinessException;
@@ -28,12 +28,12 @@ public class TitleService {
 		return TitleCreateResponse.from(saved);
 	}
 
-	public TitleResponse updateTitle(Long titleId, TitleUpdateRequest request) {
+	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
 
 		title.update(request.getName(), request.getDescription());
-		return TitleResponse.from(title);
+		return TitleUpdateResponse.from(title);
 	}
 
 
