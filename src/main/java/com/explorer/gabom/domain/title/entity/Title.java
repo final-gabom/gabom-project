@@ -1,6 +1,5 @@
 package com.explorer.gabom.domain.title.entity;
 
-import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
@@ -30,9 +29,7 @@ public class Title extends BaseTimeEntity {
 		this.description = description;
 	}
 
-	public TitleCreateResponse toCreateDto() {
-		return new TitleCreateResponse(this.id, this.name, this.description, this.createdAt);
-	}
+
 
 
 }

@@ -29,7 +29,7 @@ public class TitleService {
 		Title saved = titleRepository.save(title);
 
 		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
-		return saved.toCreateDto();
+		return TitleCreateResponse.toDto(saved);
 	}
 
 }
