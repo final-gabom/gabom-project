@@ -31,4 +31,13 @@ public class PlaceController {
 		PlaceCreateResponse response = placeService.createPlace(request, user);
 		return ResponseEntity.ok(ApiResponse.success("장소 등록이 완료되었습니다.", response));
 	}
+
+	// 탐험 장소 리스트 조회(검색)
+
+	// 탐험 장소 상세 조회
+
+	// 탐험 장소 수정
+
+
+	// 탐험 장소 삭제
 }

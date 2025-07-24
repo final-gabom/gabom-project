@@ -25,4 +25,13 @@ public class PlaceService {
 
 		return new PlaceCreateResponse(savedPlace.getId());
 	}
+
+	// 탐험 장소 리스트 조회(검색)
+
+	// 탐험 장소 상세 조회
+
+	// 탐험 장소 수정
+
+
+	// 탐험 장소 삭제
 }
