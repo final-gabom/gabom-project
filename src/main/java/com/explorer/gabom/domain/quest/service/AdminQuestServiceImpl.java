@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class QuestServiceImpl implements QuestService {
+public class AdminQuestServiceImpl implements AdminQuestService {
 
 	private final QuestRepository questRepository;
 	private final TitleRepository titleRepository;

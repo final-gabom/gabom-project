@@ -15,7 +15,7 @@ import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequest;
 import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponse;
-import com.explorer.gabom.domain.quest.service.QuestService;
+import com.explorer.gabom.domain.quest.service.AdminQuestService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
 import jakarta.validation.Valid;
@@ -24,15 +24,15 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class QuestController {
+public class AdminQuestController {
 
-	private final QuestService questService;
+	private final AdminQuestService adminQuestService;
 
 	@PostMapping("/admin/quests")
 	public ResponseEntity<ApiResponse<QuestCreateResponse>> createQuest(
 		@Valid @RequestBody QuestCreateRequest request) {
 
-		QuestCreateResponse response = questService.createQuest(request);
+		QuestCreateResponse response = adminQuestService.createQuest(request);
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("퀘스트가 성공적으로 등록되었습니다.", response));
 	}
@@ -42,7 +42,7 @@ public class QuestController {
 		@PathVariable Long questId,
 		@Valid @RequestBody QuestUpdateRequest request) {
 
-		QuestUpdateResponse response = questService.updateQuest(questId, request);
+		QuestUpdateResponse response = adminQuestService.updateQuest(questId, request);
 		return ResponseEntity.status(HttpStatus.OK)
 							 .body(ApiResponse.success("퀘스트가 성공적으로 수정되었습니다.", response));
 	}
@@ -50,7 +50,7 @@ public class QuestController {
 	@DeleteMapping("/admin/quests/{questId}")
 	public ResponseEntity<ApiResponse<QuestDeleteResponse>> deleteQuest(@PathVariable Long questId) {
 
-		QuestDeleteResponse response = questService.deleteQuest(questId);
+		QuestDeleteResponse response = adminQuestService.deleteQuest(questId);
 		return ResponseEntity.status(HttpStatus.OK)
 							 .body(ApiResponse.success("퀘스트가 삭제되었습니다.", response));
 	}
