@@ -8,7 +8,6 @@ import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
-import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
@@ -58,11 +57,15 @@ public class TitleService {
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_DELETED)
 	public TitleDeleteResponse deleteTitle(Long titleId) {
+		log.info("<칭호삭제> 요청 - ID: {}", titleId);
 		Title title = titleRepository.findById(titleId)
-									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+									 .orElseThrow(() -> {
+										 log.warn("<칭호삭제> 실패 - 존재하지 않는 ID: {}", titleId);
+										 return new CustomException(ErrorCode.TITLE_NOT_FOUND);
+									 });
 
 		titleRepository.delete(title);
-
+		log.info("<칭호삭제> 성공 - 삭제된 ID: {}", titleId);
 		return TitleDeleteResponse.toDto(title);
 	}
 
