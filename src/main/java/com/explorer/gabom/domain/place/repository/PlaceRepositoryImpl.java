@@ -31,5 +31,5 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 		return placeRepository.findById(placeId)
 							  .orElseThrow(() -> new IllegalArgumentException("업데이트 후 Place 조회를 실패했습니다."));
-	}
+		}
 }
