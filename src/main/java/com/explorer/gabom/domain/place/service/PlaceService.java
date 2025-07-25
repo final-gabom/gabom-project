@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponse;
 import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
@@ -44,6 +45,11 @@ public class PlaceService {
 	}
 
 	// 탐험 장소 상세 조회
+	public PlaceDetailResponse getPlaceDetail(Long placeId) {
+		Place place = placeRepository.findByIdAndDeletedAtIsNull(placeId)
+									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+		return PlaceDetailResponse.from(place);
+	}
 
 	// 탐험 장소 수정
 	@Transactional
