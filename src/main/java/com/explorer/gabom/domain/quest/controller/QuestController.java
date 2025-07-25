@@ -23,7 +23,7 @@ public class QuestController {
 	private final QuestService questService;
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<QuestPage>> getQuestPageByFilter(
+	public ResponseEntity<ApiResponse<QuestPage>> getQuestPage(
 		@PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
