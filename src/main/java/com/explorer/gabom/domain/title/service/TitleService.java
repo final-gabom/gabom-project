@@ -24,14 +24,14 @@ public class TitleService {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
 			log.warn("<칭호등록> 실패 - 중복된 이름: {}", request.getName());
-			throw new CustomException(ErrorCode.TITLE_DUPLICATED);
+			throw new CustomException(ErrorCode.TITLE_ALREADY_EXISTS);
 		}
 
 		Title title = new Title(request.getName(), request.getDescription());
 		Title saved = titleRepository.save(title);
 
 		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
-		return saved.toCreateDto();
+		return TitleCreateResponse.toDto(saved);
 	}
 
 	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {

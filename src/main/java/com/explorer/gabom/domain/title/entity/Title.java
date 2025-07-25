@@ -1,8 +1,5 @@
 package com.explorer.gabom.domain.title.entity;
 
-import java.time.LocalDateTime;
-
-import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
@@ -16,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Table(name = "title")
+@Getter
 public class Title extends BaseTimeEntity {
 
 	@Id
