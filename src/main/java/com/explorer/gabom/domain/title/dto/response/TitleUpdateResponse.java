@@ -12,25 +12,23 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TitleCreateResponse implements TargetIdentifiable {
+public class TitleUpdateResponse implements TargetIdentifiable {
 	private Long id;
 	private String name;
 	private String description;
-	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-	public static TitleCreateResponse toDto(Title title) {
-		return new TitleCreateResponse(
+	public static TitleUpdateResponse toDto(Title title) {
+		return new TitleUpdateResponse(
 			title.getId(),
 			title.getName(),
 			title.getDescription(),
-			title.getCreatedAt()
-			);
+			title.getUpdatedAt()
+		);
 	}
 
 	@Override
 	public Long getTargetId() {
 		return id;
 	}
-
-
 }

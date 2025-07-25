@@ -1,9 +1,14 @@
 package com.explorer.gabom.domain.title.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
+import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
+import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
 import com.explorer.gabom.global.exception.CustomException;
@@ -18,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TitleService {
 	private final TitleRepository titleRepository;
 
+	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
@@ -30,6 +36,22 @@ public class TitleService {
 
 		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
 		return TitleCreateResponse.toDto(saved);
+	}
+
+	@Transactional
+	@ActivityLoggable(ActivityType.ADMIN_TITLE_UPDATED)
+	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
+		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
+		Title title = titleRepository.findById(titleId)
+									 .orElseThrow(() -> {
+										 log.warn("<칭호수정> 실패 - 존재하지 않는 ID: {}", titleId);
+										 return new CustomException(ErrorCode.TITLE_NOT_FOUND);
+									 });
+
+		title.update(request.getName(), request.getDescription());
+
+		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
+		return TitleUpdateResponse.toDto(title);
 	}
 
 }
