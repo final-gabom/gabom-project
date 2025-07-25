@@ -2,6 +2,8 @@ package com.explorer.gabom.domain.title.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
+import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.service.TitleService;

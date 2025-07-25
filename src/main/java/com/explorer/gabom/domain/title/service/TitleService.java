@@ -8,6 +8,7 @@ import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
+import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
