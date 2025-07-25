@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.title.dto.response;
 
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.entity.UserTitle;
-import com.explorer.gabom.global.dto.TargetIdentifiable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserTitleResponse implements TargetIdentifiable {
+public class UserTitleResponse {
 	private Long id;
 	private String name;
 	private String description;
@@ -28,8 +27,4 @@ public class UserTitleResponse implements TargetIdentifiable {
 		);
 	}
 
-	@Override
-	public Long getTargetId() {
-		return id;
-	}
 }

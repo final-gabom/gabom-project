@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
-import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.title.dto.response.UserTitleResponse;
 import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.title.repository.UserTitleRepository;
@@ -27,19 +25,18 @@ public class UserTitleService {
 	private final UserRepository userRepository;
 
 	@Transactional(readOnly = true)
-	@ActivityLoggable(ActivityType.VIEW_USER_TITLES)
 	public List<UserTitleResponse> getUserTitles(Long userId) {
 		log.info("<칭호조회> 요청 - userId: {}", userId);
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> {
-				log.warn("<칭호조회> 실패 - 존재하지 않는 ID: {}", userId);
-				return new CustomException(ErrorCode.USER_NOT_FOUND);
-			});
+								  .orElseThrow(() -> {
+									  log.warn("<칭호조회> 실패 - 존재하지 않는 ID: {}", userId);
+									  return new CustomException(ErrorCode.USER_NOT_FOUND);
+								  });
 
 		List<UserTitle> userTitles = userTitleRepository.findByUser(user);
 		log.info("<칭호조회> 성공 - 조회된 ID: {}", userId);
 		return userTitles.stream()
-			.map(UserTitleResponse::toDto)
-			.collect(Collectors.toList());
+						 .map(UserTitleResponse::toDto)
+						 .collect(Collectors.toList());
 	}
 }
