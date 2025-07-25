@@ -16,6 +16,7 @@ import com.explorer.gabom.domain.activity.repository.AdminActivityLogRepository;
 import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
 import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.TargetIdentifiable;
 
@@ -42,14 +43,17 @@ public class ActivityLogAspect {
 		ActivityLoggable activityLoggable = signature.getMethod().getAnnotation(ActivityLoggable.class);
 		ActivityType activityType = activityLoggable.value();
 
-		Long userId = extractUserId();
+		User currentUser = extractUser();
+		Long userId = currentUser.getId();
+		UserRole userRole = currentUser.getUserRole();
+
 		Long targetId = activityType.isRequiredTargetId() ?
 						extractTargetId(signature, joinPoint.getArgs(), result) : null;
 
 		String ipAddress = request.getRemoteAddr();
 		String description = activityType.getMessage();
 
-		if (activityType.isAdminActivity()) {
+		if (userRole == UserRole.ADMIN) {
 			AdminActivityLog adminActivityLog = new AdminActivityLog(userId, targetId, activityType, description,
 																	 ipAddress);
 			adminActivityLogRepository.save(adminActivityLog);
@@ -62,14 +66,14 @@ public class ActivityLogAspect {
 		}
 	}
 
-	private Long extractUserId() {
+	private User extractUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new IllegalStateException("인증된 사용자가 아닙니다.");
 		}
 		Object principal = authentication.getPrincipal();
-		if (principal instanceof User) {
-			return ((User)principal).getId();
+		if (principal instanceof User user) {
+			return user;
 		}
 		throw new IllegalStateException("알 수 없는 사용자입니다.");
 	}
