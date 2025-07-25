@@ -19,7 +19,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -69,7 +68,7 @@ public class JwtUtil {
 				.claims(claims)
 				.expiration(new Date(System.currentTimeMillis() + expiration))
 				.issuedAt(now)
-				.signWith(key, SignatureAlgorithm.HS256)
+				.signWith(key)
 				.compact();
 
 	}
@@ -116,7 +115,7 @@ public class JwtUtil {
 	 * 유효하지 않은 형식일 경우 {@code INVALID_TOKEN_VALUE} 예외를 발생시킵니다.</p>
 	 *
 	 * @param tokenValue HTTP Authorization 헤더에 담긴 토큰 문자열 (예: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-	 * @return 접두사("Bearer ")가 제거된 실제 토큰 값
+	 * @return 접두사(" Bearer ")가 제거된 실제 토큰 값
 	 * @throws CustomException 헤더 값이 비어 있거나 "Bearer "로 시작하지 않을 경우 예외 발생
 	 */
 	public String substringToken(String tokenValue) {
