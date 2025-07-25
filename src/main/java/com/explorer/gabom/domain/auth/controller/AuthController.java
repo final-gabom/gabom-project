@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.auth.controller;
 
+import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,5 +27,10 @@ public class AuthController {
 	public ResponseEntity<ApiResponse<SignupResponse>> signup(@RequestBody @Valid SignupRequest requestDto) {
 		SignupResponse response = authService.signup(requestDto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("회원가입을 성공했습니다.", response));
+	}
+	@PostMapping("/login")
+	public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
+		LoginResponse response = authService.login(request);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("로그인을 성공했습니다.", response));
 	}
 }
