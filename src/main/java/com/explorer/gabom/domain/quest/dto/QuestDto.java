@@ -28,7 +28,7 @@ public class QuestDto {
 					   .acquireCondition(quest.getAcquireCondition())
 					   .rewardPoint(quest.getRewardPoint())
 					   .rewardExp(quest.getRewardExp())
-					   .rewardTitleId(quest.getRewardTitle().getId())
+					   .rewardTitleId(quest.getRewardTitle() != null ? quest.getRewardTitle().getId() : null)
 					   .build();
 	}
 }
