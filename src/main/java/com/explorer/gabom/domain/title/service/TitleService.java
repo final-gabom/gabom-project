@@ -11,7 +11,7 @@ import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.entity.Title;
-import com.explorer.gabom.domain.title.repository.AdminTitleRepository;
+import com.explorer.gabom.domain.title.repository.TitleRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -21,19 +21,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AdminTitleService {
-	private final AdminTitleRepository adminTitleRepository;
+public class TitleService {
+	private final TitleRepository titleRepository;
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
-		if (adminTitleRepository.existsByName(request.getName())) {
+		if (titleRepository.existsByName(request.getName())) {
 			log.warn("<칭호등록> 실패 - 중복된 이름: {}", request.getName());
 			throw new CustomException(ErrorCode.TITLE_ALREADY_EXISTS);
 		}
 
 		Title title = new Title(request.getName(), request.getDescription());
-		Title saved = adminTitleRepository.save(title);
+		Title saved = titleRepository.save(title);
 
 		log.info("<칭호등록> 성공 - 등록된 ID: {}", saved.getId());
 		return TitleCreateResponse.toDto(saved);
@@ -43,8 +43,8 @@ public class AdminTitleService {
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_UPDATED)
 	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
 		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
-		Title title = adminTitleRepository.findById(titleId)
-										  .orElseThrow(() -> {
+		Title title = titleRepository.findById(titleId)
+									 .orElseThrow(() -> {
 										 log.warn("<칭호수정> 실패 - 존재하지 않는 ID: {}", titleId);
 										 return new CustomException(ErrorCode.TITLE_NOT_FOUND);
 									 });
@@ -58,13 +58,13 @@ public class AdminTitleService {
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_DELETED)
 	public TitleDeleteResponse deleteTitle(Long titleId) {
 		log.info("<칭호삭제> 요청 - ID: {}", titleId);
-		Title title = adminTitleRepository.findById(titleId)
-										  .orElseThrow(() -> {
+		Title title = titleRepository.findById(titleId)
+									 .orElseThrow(() -> {
 										 log.warn("<칭호삭제> 실패 - 존재하지 않는 ID: {}", titleId);
 										 return new CustomException(ErrorCode.TITLE_NOT_FOUND);
 									 });
 
-		adminTitleRepository.delete(title);
+		titleRepository.delete(title);
 		log.info("<칭호삭제> 성공 - 삭제된 ID: {}", titleId);
 		return TitleDeleteResponse.toDto(title);
 	}
