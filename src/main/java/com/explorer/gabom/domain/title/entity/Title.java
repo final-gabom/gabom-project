@@ -30,8 +30,12 @@ public class Title extends BaseTimeEntity {
 	}
 
 	public void update(String name, String description) {
-		this.name = name;
-		this.description = description;
+		if (this.name != null) {		// QueryDSL 도입 후 수정 예정
+			this.name = name;
+		}
+		if (this.description != null) {
+			this.description = description;
+		}
 	}
 
 
