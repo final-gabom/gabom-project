@@ -25,7 +25,4 @@ public enum ActivityType {
 		this.message = message;
 	}
 
-	public boolean isAdminActivity() {
-		return this.name().startsWith("ADMIN_");
-	}
 }
