@@ -16,6 +16,11 @@ import com.explorer.gabom.global.security.jwt.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
+import com.explorer.gabom.global.security.CustomAccessDeniedHandler;
+import com.explorer.gabom.global.security.CustomAuthenticationEntryPoint;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
