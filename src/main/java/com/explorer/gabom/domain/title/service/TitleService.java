@@ -1,7 +1,10 @@
 package com.explorer.gabom.domain.title.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
@@ -20,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TitleService {
 	private final TitleRepository titleRepository;
 
+	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
 		log.info("<칭호등록> 요청 - name: {}, description: {}", request.getName(), request.getDescription());
 		if (titleRepository.existsByName(request.getName())) {
@@ -34,6 +38,8 @@ public class TitleService {
 		return TitleCreateResponse.toDto(saved);
 	}
 
+	@Transactional
+	@ActivityLoggable(ActivityType.ADMIN_TITLE_UPDATED)
 	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
 		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
 		Title title = titleRepository.findById(titleId)
