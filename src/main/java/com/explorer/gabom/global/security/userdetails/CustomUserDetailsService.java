@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 			return CustomUserDetails.from(user);
 		} catch (NumberFormatException e) {
-			throw new CustomException(ErrorCode.INVALID_TOKEN_VALUE);
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		}
 	}
 }

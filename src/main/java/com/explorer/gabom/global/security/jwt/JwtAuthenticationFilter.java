@@ -1,5 +1,7 @@
 package com.explorer.gabom.global.security.jwt;
 
+import static com.explorer.gabom.global.exception.ErrorCode.*;
+
 import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,6 +12,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtProvider jwtProvider;
 	private final UserDetailsService userDetailsService;
+	private final ObjectMapper objectMapper;
 
 	/**
 	 * HTTP 요청을 처리하는 필터로, 요청에 포함된 JWT 토큰을 검증하고 유효한 경우 인증 정보를 SecurityContext에 설정합니다.
@@ -42,41 +50,68 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 									FilterChain filterChain) throws ServletException, IOException {
-		// 요청에서 JWT 토큰을 추출
-		String token = this.getJwtFromRequest(request);
+		try{
+			log.debug("🔐 JWT 인증 필터 시작");
+			// 요청에서 JWT 토큰을 추출
+			String token = this.getJwtFromRequest(request);
 
-		// 토큰이 유효한지 검증
-		if (jwtProvider.validateToken(token)) {
-			// 유효한 토큰이라면, 토큰에서 사용자 ID를 추출
-			String userId = jwtProvider.getUserIdFromToken(token);
-			// 사용자 ID를 기반으로 사용자 정보를 로드
-			UserDetails userDetails = this.userDetailsService.loadUserByUsername(userId);
-			// 사용자 정보와 권한을 기반으로 인증 토큰 생성
-			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-				userDetails, null, userDetails.getAuthorities());
-			// 인증 토큰에 요청 정보를 설정 (추후 세션에서 사용할 수 있도록 설정)
-			authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-			// SecurityContext에 인증 정보를 설정하여 후속 요청에서 사용할 수 있도록 함
-			SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			// 토큰이 있으면 유효성 검증 후 인증 처리
+			if (jwtProvider.validateToken(token)) {
+				// 유효한 토큰이라면, 토큰에서 사용자 ID를 추출
+				String userId = jwtProvider.getUserIdFromToken(token);
+				// 사용자 ID를 기반으로 사용자 정보를 로드
+				UserDetails userDetails = this.userDetailsService.loadUserByUsername(userId);
+				// 사용자 정보와 권한을 기반으로 인증 토큰 생성
+				UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+					userDetails, null, userDetails.getAuthorities());
+				// 인증 토큰에 요청 정보를 설정 (추후 세션에서 사용할 수 있도록 설정)
+				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				// SecurityContext에 인증 정보를 설정하여 후속 요청에서 사용할 수 있도록 함
+				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+				log.debug("✅ 인증 완료 - userId: {}", userId);
+			}
+			filterChain.doFilter(request, response);
+		} catch (CustomException e) {
+			setErrorResponse(response, e.getErrorCode());
+		} catch (Exception e) {
+			setErrorResponse(response, INTERNAL_SERVER_ERROR);
 		}
-		filterChain.doFilter(request, response);
 	}
 
 	/**
-	 * HTTP 요청에서 JWT 토큰을 추출하는 메서드입니다.
+	 * 요청 헤더에서 JWT 토큰을 추출합니다.
 	 * <p>
-	 * Authorization 헤더에서 "Bearer"로 시작하는 토큰을 추출하여 반환합니다.
-	 * 만약 "Bearer"로 시작하지 않거나 헤더가 없으면 null을 반환합니다.
+	 * "Authorization" 헤더가 존재하지만 "Bearer "로 시작하지 않으면 예외를 발생시킵니다.
 	 * </p>
 	 *
 	 * @param request HTTP 요청 객체
-	 * @return JWT 토큰 문자열, 없으면 null
+	 * @return "Bearer " 접두사를 제거한 JWT 토큰 문자열. 헤더가 없으면 null 반환.
+	 * @throws CustomException 토큰 형식이 올바르지 않을 경우
 	 */
 	private String getJwtFromRequest(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7);
+
+		// 1. Authorization 헤더가 아예 없는 경우
+		if (!StringUtils.hasText(bearerToken)) {
+			return null;
 		}
-		return null;
+
+		// 2. 형식이 잘못된 경우 → 예외 발생
+		if (!bearerToken.startsWith("Bearer ")) {
+			throw new CustomException(INVALID_TOKEN);
+		}
+
+		// 3. 정상적인 Bearer 토큰이면 파싱
+		return bearerToken.substring(7);
+	}
+
+	private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+		response.setStatus(errorCode.getHttpStatus().value());
+		response.setContentType("application/json;charset=UTF-8");
+
+		ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode);
+		String json = objectMapper.writeValueAsString(apiResponse);
+
+		response.getWriter().write(json);
 	}
 }

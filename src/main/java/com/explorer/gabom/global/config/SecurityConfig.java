@@ -30,6 +30,8 @@ public class SecurityConfig {
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/api/auth/**").permitAll()
+				.requestMatchers("/api/test/**", "/api/test").authenticated()
 				.anyRequest().permitAll()        // 원활한 개발을 위한 모든 접근 허용
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

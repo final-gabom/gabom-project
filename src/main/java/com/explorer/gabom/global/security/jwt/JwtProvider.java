@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -89,7 +91,7 @@ public class JwtProvider {
 
 		String token = createToken(claims, userId, accessTokenExpiration);
 
-		log.debug("AccessToken 생성 완료 - userId: {}, token: {}", userId, token);
+		log.debug("AccessToken 생성 완료 - userId: {}", userId);
 		return token;
 	}
 
@@ -111,7 +113,7 @@ public class JwtProvider {
 
 		String token = createToken(claims, userId, refreshTokenExpiration);
 
-		log.debug("RefreshToken 생성 완료 - userId: {}, token: {}", userId, token);
+		log.debug("RefreshToken 생성 완료 - userId: {}", userId);
 		return token;
 	}
 
@@ -157,18 +159,23 @@ public class JwtProvider {
 		} catch (MalformedJwtException ex) {
 			// JWT 형식이 잘못된 경우 (구조가 비정상)
 			log.error("Invalid JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		} catch (ExpiredJwtException ex) {
 			// 토큰이 만료된 경우
 			log.error("Expired JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
 		} catch (UnsupportedJwtException ex) {
 			// 지원하지 않는 JWT 형식인 경우
 			log.error("Unsupported JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
 		} catch (IllegalArgumentException ex) {
 			// Claims 문자열이 비어 있거나 null인 경우
 			log.error("JWT claims string is empty. : {}", token, ex);
+			throw new CustomException(ErrorCode.EMPTY_TOKEN);
 		} catch (Exception ex) {
 			// 기타 예외 (예: 서명 실패 등)
 			log.error("Invalid JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.SIGNATURE_INVALID);
 		}
 		return false;
 	}
