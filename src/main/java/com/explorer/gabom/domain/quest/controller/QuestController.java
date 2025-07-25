@@ -6,9 +6,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.quest.dto.QuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestPage;
 import com.explorer.gabom.domain.quest.service.QuestService;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -30,6 +32,15 @@ public class QuestController {
 		QuestPage response = questService.getQuestPage(pageable);
 		return ResponseEntity.status(HttpStatus.OK)
 							 .body(ApiResponse.success("퀘스트 리스트 조회를 성공했습니다.", response));
+	}
+
+	@GetMapping("/{questId}")
+	public ResponseEntity<ApiResponse<QuestDto>> getQuestById(
+		@PathVariable Long questId
+	) {
+		QuestDto response = questService.getQuestById(questId);
+		return ResponseEntity.status(HttpStatus.OK)
+							 .body(ApiResponse.success("퀘스트 조회를 성공했습니다.", response));
 	}
 
 }
