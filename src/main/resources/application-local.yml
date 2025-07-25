@@ -5,7 +5,7 @@ server:
 
 logging:
   level:
-    org.hibernate.SQL: debug
+    com.explorer.gabom: debug
 
 spring:
   config:

@@ -26,8 +26,10 @@ class UserServiceImplTest {
 
 	@Mock
 	private UserRepository userRepository;
+
 	@Mock
 	private AttachmentFileRepository attachmentFileRepository;
+
 	private UserServiceImpl userService;
 
 	private User user;
