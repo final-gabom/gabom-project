@@ -1,11 +1,15 @@
 server:
   port: 8080
+  error:
+    include-stacktrace: always
 
 logging:
   level:
     org.hibernate.SQL: debug
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
@@ -13,7 +17,7 @@ spring:
     password: ${MYSQL_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
         show_sql: true

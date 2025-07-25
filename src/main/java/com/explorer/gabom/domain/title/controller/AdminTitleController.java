@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/titles")
 @RequiredArgsConstructor
-public class TitleController {
+public class AdminTitleController {
 	private final TitleService titleService;
 
 	@PostMapping
@@ -38,6 +38,7 @@ public class TitleController {
 	}
 
 	@PatchMapping("/{titleId}")
+	// @PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiResponse<TitleUpdateResponse>> updateTitle(
 		@PathVariable Long titleId,
 		@RequestBody @Valid TitleUpdateRequest request) {

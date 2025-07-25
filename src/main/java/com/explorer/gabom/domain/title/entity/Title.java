@@ -1,7 +1,5 @@
 package com.explorer.gabom.domain.title.entity;
 
-import java.time.LocalDateTime;
-
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
@@ -13,9 +11,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @NoArgsConstructor
 @Table(name = "title")
+@Getter
 public class Title extends BaseTimeEntity {
 
 	@Id
@@ -32,9 +30,12 @@ public class Title extends BaseTimeEntity {
 	}
 
 	public void update(String name, String description) {
-		this.name = name;
-		this.description = description;
-		this.updatedAt = LocalDateTime.now();
+		if (this.name != null) {		// QueryDSL 도입 후 수정 예정
+			this.name = name;
+		}
+		if (this.description != null) {
+			this.description = description;
+		}
 	}
 
 

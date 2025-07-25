@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "places")
+@Table(name = "place")
 @SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
 public class Place extends BaseTimeEntity {
 
@@ -63,6 +64,26 @@ public class Place extends BaseTimeEntity {
 
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
-	private List<PlaceFile> files = new ArrayList<>();
+	private List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
+
+	public Place(PlaceCreateRequest request, User user) {
+		this.user = user;
+		this.title = request.getTitle();
+		this.address = request.getAddress();
+		this.lat = request.getLat();
+		this.lng = request.getLng();
+		this.proofMethod = request.getProofMethod();
+		this.content = request.getContent();
+		this.viewCount = 0; // 기본값
+	}
+
+	public void updatePlace(String title, String address, Double lat, Double lng, String content, String proofMethod) {
+		this.title = title;
+		this.address = address;
+		this.lat = lat;
+		this.lng = lng;
+		this.content = content;
+		this.proofMethod = proofMethod;
+	}
 
 }
