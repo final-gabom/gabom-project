@@ -17,7 +17,7 @@ public class TitleUpdateResponse {
 	private String description;
 	private LocalDateTime createdAt;
 
-	public static TitleUpdateResponse from(Title title) {
+	public static TitleUpdateResponse toDto(Title title) {
 		return new TitleUpdateResponse(
 			title.getId(),
 			title.getName(),

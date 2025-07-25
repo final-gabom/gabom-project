@@ -39,13 +39,13 @@ public class TitleService {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> {
 										 log.warn("<칭호수정> 실패 - 존재하지 않는 ID: {}", titleId);
-										 return new BusinessException(ErrorCode.TITLE_NOT_FOUND);
+										 return new CustomException(ErrorCode.TITLE_NOT_FOUND);
 									 });
 
 		title.update(request.getName(), request.getDescription());
 
 		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
-		return TitleUpdateResponse.from(title);
+		return TitleUpdateResponse.toDto(title);
 	}
 
 }
