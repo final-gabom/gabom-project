@@ -8,8 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 @Table(name = "title")
 @Getter
 public class Title extends BaseTimeEntity {
@@ -21,4 +23,13 @@ public class Title extends BaseTimeEntity {
 	private String name;
 
 	private String description;
+
+	public Title(String name, String description) {
+		this.name = name;
+		this.description = description;
+	}
+
+
+
+
 }

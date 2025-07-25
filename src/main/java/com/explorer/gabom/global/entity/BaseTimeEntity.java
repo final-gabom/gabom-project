@@ -11,8 +11,8 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 
-@Getter
 @MappedSuperclass
+@Getter
 @EntityListeners(AuditingEntityListener.class)
 public class BaseTimeEntity {
 
