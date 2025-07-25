@@ -11,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class QuestCreateResponseDto implements TargetIdentifiable {
+public class QuestCreateResponse implements TargetIdentifiable {
 	private Long questId;
 	private String title;
 	private String description;
@@ -22,18 +22,18 @@ public class QuestCreateResponseDto implements TargetIdentifiable {
 	private Long rewardTitleId;
 	private LocalDateTime createdAt;
 
-	public static QuestCreateResponseDto toDto(Quest quest) {
-		return QuestCreateResponseDto.builder()
-									 .questId(quest.getId())
-									 .title(quest.getTitle())
-									 .description(quest.getDescription())
-									 .questConditionType(quest.getQuestConditionType())
-									 .acquireCondition(quest.getAcquireCondition())
-									 .rewardPoint(quest.getRewardPoint())
-									 .rewardExp(quest.getRewardExp())
-									 .rewardTitleId(quest.getRewardTitle().getId())
-									 .createdAt(quest.getCreatedAt())
-									 .build();
+	public static QuestCreateResponse toDto(Quest quest) {
+		return QuestCreateResponse.builder()
+								  .questId(quest.getId())
+								  .title(quest.getTitle())
+								  .description(quest.getDescription())
+								  .questConditionType(quest.getQuestConditionType())
+								  .acquireCondition(quest.getAcquireCondition())
+								  .rewardPoint(quest.getRewardPoint())
+								  .rewardExp(quest.getRewardExp())
+								  .rewardTitleId(quest.getRewardTitle().getId())
+								  .createdAt(quest.getCreatedAt())
+								  .build();
 	}
 
 	@Override

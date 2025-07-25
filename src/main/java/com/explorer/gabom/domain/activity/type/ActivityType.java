@@ -15,6 +15,7 @@ public enum ActivityType {
 	// 관리자 활동
 	ADMIN_QUEST_CREATED(true, "퀘스트를 등록하였습니다."),
 	ADMIN_QUEST_UPDATED(true, "퀘스트를 수정하였습니다."),
+	ADMIN_QUEST_DELETED(true, "퀘스트를 삭제하였습니다."),
 	ADMIN_TITLE_CREATED(true,"칭호를 등록하였습니다."),
 	ADMIN_TITLE_UPDATED(true,"칭호를 수정하였습니다.");
 
@@ -26,7 +27,4 @@ public enum ActivityType {
 		this.message = message;
 	}
 
-	public boolean isAdminActivity() {
-		return this.name().startsWith("ADMIN_");
-	}
 }

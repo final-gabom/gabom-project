@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.quest.entity;
 
-import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequestDto;
+import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequest;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
@@ -61,7 +61,7 @@ public class Quest extends BaseTimeEntity {
 		this.rewardTitle = rewardTitle;
 	}
 
-	public void update(QuestUpdateRequestDto dto, Title rewardTitle) {
+	public void update(QuestUpdateRequest dto, Title rewardTitle) {
 		if (dto.getTitle() != null)
 			this.title = dto.getTitle();
 		if (dto.getDescription() != null)

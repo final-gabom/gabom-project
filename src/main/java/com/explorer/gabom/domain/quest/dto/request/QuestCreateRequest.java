@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class QuestCreateRequestDto {
+public class QuestCreateRequest {
 
 	@NotBlank(message = "제목은 필수입니다.")
 	private String title;
