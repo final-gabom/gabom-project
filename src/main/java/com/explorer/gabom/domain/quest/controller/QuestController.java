@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.quest.dto.response.QuestPage;
@@ -25,13 +24,12 @@ public class QuestController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<QuestPage>> getQuestPageByFilter(
-		@PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-		@RequestParam(required = false) String search
+		@PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
 
-		QuestPage response = questService.getQuestPageByFilter(pageable, search);
+		QuestPage response = questService.getQuestPage(pageable);
 		return ResponseEntity.status(HttpStatus.OK)
-							 .body(ApiResponse.success("퀘스트 리스트 조회를 성공했습니다", response));
+							 .body(ApiResponse.success("퀘스트 리스트 조회를 성공했습니다.", response));
 	}
 
 }
