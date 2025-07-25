@@ -1,7 +1,5 @@
 package com.explorer.gabom.domain.title.service;
 
-import java.time.LocalDateTime;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,16 +55,14 @@ public class TitleService {
 		return TitleUpdateResponse.toDto(title);
 	}
 
+	@ActivityLoggable(ActivityType.ADMIN_TITLE_DELETED)
 	public TitleDeleteResponse deleteTitle(Long titleId) {
 		Title title = titleRepository.findById(titleId)
-									 .orElseThrow(() -> new BusinessException(ErrorCode.TITLE_NOT_FOUND));
+									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
 		titleRepository.delete(title);
 
-		return new TitleDeleteResponse(
-			title.getId(),
-			LocalDateTime.now()
-		);
+		return TitleDeleteResponse.toDto(title);
 	}
 
 
