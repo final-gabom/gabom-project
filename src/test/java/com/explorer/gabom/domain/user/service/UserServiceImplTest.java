@@ -20,12 +20,14 @@ import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.file.repository.AttachmentFileRepository;
 
 class UserServiceImplTest {
 
 	@Mock
 	private UserRepository userRepository;
-
+	@Mock
+	private AttachmentFileRepository attachmentFileRepository;
 	private UserServiceImpl userService;
 
 	private User user;
@@ -33,7 +35,7 @@ class UserServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
-		userService = new UserServiceImpl(userRepository);
+		userService = new UserServiceImpl(userRepository, attachmentFileRepository);
 
 		// 공통 User 객체 생성
 		Long userId = 1L;
