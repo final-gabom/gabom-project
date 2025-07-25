@@ -12,7 +12,7 @@ import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponse;
 import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.title.entity.Title;
-import com.explorer.gabom.domain.title.repository.TitleRepository;
+import com.explorer.gabom.domain.title.repository.AdminTitleRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -26,14 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 public class QuestServiceImpl implements QuestService {
 
 	private final QuestRepository questRepository;
-	private final TitleRepository titleRepository;
+	private final AdminTitleRepository adminTitleRepository;
 
 	@Override
 	@Transactional
 	@ActivityLoggable(ActivityType.ADMIN_QUEST_CREATED)
 	public QuestCreateResponse createQuest(QuestCreateRequest dto) {
-		Title rewardTitle = titleRepository.findById(dto.getRewardTitleId())
-										   .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+		Title rewardTitle = adminTitleRepository.findById(dto.getRewardTitleId())
+												.orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
 		Quest quest = new Quest(
 			dto.getTitle(),
@@ -58,8 +58,8 @@ public class QuestServiceImpl implements QuestService {
 
 		Title rewardTitle = null;
 		if (dto.getRewardTitleId() != null) {
-			rewardTitle = titleRepository.findById(dto.getRewardTitleId())
-										 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+			rewardTitle = adminTitleRepository.findById(dto.getRewardTitleId())
+											  .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 		}
 
 		quest.update(dto, rewardTitle);
