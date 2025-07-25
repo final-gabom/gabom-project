@@ -22,13 +22,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/admin/quests/")
 @RequiredArgsConstructor
 public class AdminQuestController {
 
 	private final AdminQuestService adminQuestService;
 
-	@PostMapping("/admin/quests")
+	@PostMapping
 	public ResponseEntity<ApiResponse<QuestCreateResponse>> createQuest(
 		@Valid @RequestBody QuestCreateRequest request) {
 
@@ -37,7 +37,7 @@ public class AdminQuestController {
 							 .body(ApiResponse.success("퀘스트가 성공적으로 등록되었습니다.", response));
 	}
 
-	@PatchMapping("admin/quests/{questId}")
+	@PatchMapping("/{questId}")
 	public ResponseEntity<ApiResponse<QuestUpdateResponse>> updateQuest(
 		@PathVariable Long questId,
 		@Valid @RequestBody QuestUpdateRequest request) {
@@ -47,7 +47,7 @@ public class AdminQuestController {
 							 .body(ApiResponse.success("퀘스트가 성공적으로 수정되었습니다.", response));
 	}
 
-	@DeleteMapping("/admin/quests/{questId}")
+	@DeleteMapping("/{questId}")
 	public ResponseEntity<ApiResponse<QuestDeleteResponse>> deleteQuest(@PathVariable Long questId) {
 
 		QuestDeleteResponse response = adminQuestService.deleteQuest(questId);
