@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.place.repository;
 
+import org.springframework.stereotype.Repository;
+
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.QPlace;
@@ -14,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
-	private final PlaceRepository placeRepository;
 
 	@Override
 	public Place updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
