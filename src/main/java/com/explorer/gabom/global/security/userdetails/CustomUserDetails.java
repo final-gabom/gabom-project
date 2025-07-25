@@ -28,7 +28,7 @@ public class CustomUserDetails implements UserDetails {
 		this.userId = userId;
 		this.email = email;
 		this.password = password;
-		this.role = role.name();
+		this.role = role.getValue();
 	}
 
 	public static CustomUserDetails from(User user) {
