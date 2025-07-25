@@ -32,8 +32,8 @@ public class PlaceController {
 		/* TODO : 인증 로직 들어오면 주석해제
 		@AuthenticationPrincipal User user */
 	) {
-		Long userId = 1L; // TODO: 인증 붙으면 교체
-		PlaceCreateResponse response = placeService.createPlace(request, userId);
+		Long userId = 1L;
+		PlaceCreateResponse response = placeService.createPlace(request, userId); // TODO: 인증 붙으면 교체
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("장소 등록이 완료되었습니다.", response));
@@ -51,8 +51,7 @@ public class PlaceController {
 		/* TODO : 인증 로직 들어오면 주석해제
 		@AuthenticationPrincipal User user */
 	) {
-		Long userId = 1L; // TODO: 인증 붙으면 교체
-		placeService.updatePlace(placeId, request, userId);
+		placeService.updatePlace(placeId, 1L, request); // TODO: 인증 들어오면 교체 예정
 		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다."));
 	}
 

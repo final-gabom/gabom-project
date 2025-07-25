@@ -37,7 +37,7 @@ class UserServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
-		userService = new UserServiceImpl(userRepository,  attachmentFileRepository);
+		userService = new UserServiceImpl(userRepository, attachmentFileRepository);
 
 		// 공통 User 객체 생성
 		Long userId = 1L;

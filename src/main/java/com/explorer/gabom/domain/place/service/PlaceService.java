@@ -39,23 +39,11 @@ public class PlaceService {
 
 	// 탐험 장소 수정
 	@Transactional
-	public void updatePlace(Long placeId, PlaceUpdateRequest request, Long userId) {
-		Place place = placeRepository.findById(placeId)
-									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
-
-		// 작성자 확인
-		if (!place.getUser().getId().equals(userId)) {
+	public void updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
+		Place updatedPlace = placeRepository.updatePlace(placeId, userId, request);
+		if (updatedPlace == null) {
 			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
 		}
-
-		place.updatePlace(
-			request.getTitle(),
-			request.getAddress(),
-			request.getLat(),
-			request.getLng(),
-			request.getContent(),
-			request.getProofMethod()
-		);
 	}
 
 	// 탐험 장소 삭제
