@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class QuestUpdateRequestDto {
+public class QuestUpdateRequest {
 
 	private String title;
 

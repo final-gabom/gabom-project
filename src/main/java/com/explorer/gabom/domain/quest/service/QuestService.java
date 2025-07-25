@@ -1,15 +1,15 @@
 package com.explorer.gabom.domain.quest.service;
 
-import com.explorer.gabom.domain.quest.dto.request.QuestCreateRequestDto;
-import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequestDto;
-import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponseDto;
-import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponseDto;
-import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponseDto;
+import com.explorer.gabom.domain.quest.dto.request.QuestCreateRequest;
+import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequest;
+import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponse;
+import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponse;
+import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponse;
 
 public interface QuestService {
-	QuestCreateResponseDto createQuest(QuestCreateRequestDto dto);
+	QuestCreateResponse createQuest(QuestCreateRequest dto);
 
-	QuestUpdateResponseDto updateQuest(Long questId, QuestUpdateRequestDto dto);
+	QuestUpdateResponse updateQuest(Long questId, QuestUpdateRequest dto);
 
-	QuestDeleteResponseDto deleteQuest(Long questId);
+	QuestDeleteResponse deleteQuest(Long questId);
 }

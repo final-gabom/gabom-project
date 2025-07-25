@@ -9,16 +9,16 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class QuestDeleteResponseDto implements TargetIdentifiable {
+public class QuestDeleteResponse implements TargetIdentifiable {
 
 	private Long questId;
 	private LocalDateTime deletedAt;
 
-	public static QuestDeleteResponseDto fromId(Long questId) {
-		return QuestDeleteResponseDto.builder()
-									 .questId(questId)
-									 .deletedAt(LocalDateTime.now())
-									 .build();
+	public static QuestDeleteResponse fromId(Long questId) {
+		return QuestDeleteResponse.builder()
+								  .questId(questId)
+								  .deletedAt(LocalDateTime.now())
+								  .build();
 	}
 
 	@Override
