@@ -1,7 +1,10 @@
 package com.explorer.gabom.domain.user.service;
 
 import com.explorer.gabom.domain.user.dto.UserDto;
+import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
+
+import jakarta.validation.Valid;
 
 public interface UserService {
 	UserDto getUser(Long userId);
@@ -9,4 +12,6 @@ public interface UserService {
 	UserDto updateUser(Long userId, UserUpdateRequest updateRequest);
 
 	void deleteUser(Long userId);
+
+	void updatePassword(Long userId, @Valid PasswordUpdateRequest passwordUpdateRequest);
 }
