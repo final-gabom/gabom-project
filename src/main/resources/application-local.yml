@@ -14,7 +14,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
     username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:1234}
+    password: ${MYSQL_PASSWORD:ahepfgustn1}
   jpa:
     hibernate:
       ddl-auto: create

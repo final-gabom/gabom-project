@@ -1,19 +1,29 @@
 package com.explorer.gabom.domain.place.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
+import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +50,23 @@ public class PlaceController {
 	}
 
 	// 탐험 장소 리스트 조회(검색)
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<PlaceListResponse>>> getPlaceList(
+		@AuthenticationPrincipal CustomUserDetails user, // JWT 인증 유저
+		@RequestParam(defaultValue = "") String query,
+		@RequestParam Double lat,
+		@RequestParam Double lng,
+		@RequestParam Long lastId,
+		@RequestParam Integer size,
+		@SortDefault(sort = "createdAt", direction = Sort.Direction.DESC) Sort sort // ✅ 기본값 지정
+		) {
+
+		List<PlaceListResponse> response = placeService.getPlaceListByDistance(
+			user.getUserId(), query, sort, lat, lng, lastId, size
+		);
+
+		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", response));
+	}
 
 	// 탐험 장소 상세 조회
 

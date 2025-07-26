@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.explorer.gabom.global.dto.ApiResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,5 +28,14 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.BAD_REQUEST)
 			.body(ApiResponse.fail(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage(),
 								   ErrorCode.VALIDATION_ERROR));
+	}
+
+	@ExceptionHandler(Exception.class)
+	protected ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
+		log.error("[INTERNAL_SERVER_ERROR] 예기치 못한 서버 오류", e);
+		ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+		return ResponseEntity
+			.status(errorCode.getHttpStatus())
+			.body(ApiResponse.fail(errorCode));
 	}
 }

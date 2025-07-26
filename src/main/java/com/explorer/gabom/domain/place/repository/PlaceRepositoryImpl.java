@@ -1,12 +1,21 @@
 package com.explorer.gabom.domain.place.repository;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
+import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.QPlace;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 
@@ -72,5 +81,64 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.selectFrom(place)
 			.where(place.id.eq(placeId))
 			.fetchOne();
+	}
+
+	@Override
+	public List<PlaceListResponse> findPlacesByDistanceAndQuery(Long userId, Sort sort, Double lat, Double lng, String  query, Long  lastId, Integer size) {
+		QPlace place = QPlace.place;
+
+		BooleanBuilder builder = new BooleanBuilder();
+
+		// soft delete
+		builder.and(place.deletedAt.isNull());
+
+		if (query != null && !query.trim().isEmpty()) {
+			builder.and(
+				place.title.containsIgnoreCase(query)
+						   .or(place.address.containsIgnoreCase(query))
+			);
 		}
+
+		// 커서 페이징
+		if (lastId != null) {
+			builder.and(place.id.lt(lastId));
+		}
+
+		// Haversine 거리 계산
+		NumberExpression<Double> distanceExpr = Expressions.numberTemplate(
+			Double.class,
+			"6371 * acos(cos(radians({0})) * cos(radians({1})) * cos(radians({2}) - radians({3})) + sin(radians({0})) * sin(radians({1})))",
+			lat, place.lat, lng, place.lng
+		);
+
+		// 정렬 조건
+		OrderSpecifier<?> orderSpecifier = place.id.desc(); // 기본값
+		if (sort != null && sort.isSorted()) {
+			Sort.Order order = sort.iterator().next();
+			String property = order.getProperty();
+			boolean isAsc = order.getDirection().isAscending();
+
+			if ("createdAt".equals(property)) {
+				orderSpecifier = isAsc ? place.createdAt.asc() : place.createdAt.desc();
+			} else if ("title".equals(property)) {
+				orderSpecifier = isAsc ? place.title.asc() : place.title.desc();
+			}
+		}
+
+		// DTO 바로 생성해서 반환
+		return queryFactory
+			.select(Projections.constructor(PlaceListResponse.class,
+											place.id,
+											place.title,
+											place.address,
+											Expressions.constant(0),
+											place.content,
+											distanceExpr
+			))
+			.from(place)
+			.where(builder)
+			.orderBy(orderSpecifier)
+			.limit(size != null ? size : 10)
+			.fetch();
+	}
 }

@@ -1,11 +1,17 @@
 package com.explorer.gabom.domain.place.service;
 
+import static java.util.stream.Collectors.*;
+
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
@@ -34,6 +40,14 @@ public class PlaceService {
 	}
 
 	// 탐험 장소 리스트 조회(검색)
+	@Transactional(readOnly = true)
+	public List<PlaceListResponse> getPlaceListByDistance(
+
+		Long userId, String query, Sort sort, Double lat, Double lng, Long lastId, Integer size) {
+
+		return placeRepository.findPlacesByDistanceAndQuery(userId, sort, lat, lng, query, lastId, size);
+	}
+
 
 	// 탐험 장소 상세 조회
 
