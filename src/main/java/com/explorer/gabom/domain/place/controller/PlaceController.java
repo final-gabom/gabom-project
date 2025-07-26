@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.place.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +33,7 @@ public class PlaceController {
 		/* TODO : 인증 로직 들어오면 주석해제
 		@AuthenticationPrincipal User user */
 	) {
-		Long userId = 1L;
-		PlaceCreateResponse response = placeService.createPlace(request, userId); // TODO: 인증 붙으면 교체
+		PlaceCreateResponse response = placeService.createPlace(request, 1L); // TODO: 인증 붙으면 교체
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("장소 등록이 완료되었습니다.", response));
@@ -56,4 +56,13 @@ public class PlaceController {
 	}
 
 	// 탐험 장소 삭제
+	@DeleteMapping("/{placeId}")
+	public ResponseEntity<ApiResponse<Void>> deletePlace(
+		@PathVariable Long placeId
+		/* TODO : 인증 로직 들어오면 주석해제
+		@AuthenticationPrincipal User user */
+	) {
+		placeService.deletePlace(placeId, 1L); // TODO: 인증 들어오면 교체 예정
+		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다."));
+	}
 }
