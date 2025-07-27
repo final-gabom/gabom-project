@@ -28,7 +28,6 @@ public class AdminTitleController {
 	private final AdminTitleService adminTitleService;
 
 	@PostMapping
-	// @PreAuthorize("hasRole('ADMIN')") 어차피 동작 안해서 spring security 설정 적용 여부에 따라 수정 예정
 	public ResponseEntity<ApiResponse<TitleCreateResponse>> createTitle(
 		@RequestBody @Valid TitleCreateRequest request
 	) {
@@ -38,7 +37,6 @@ public class AdminTitleController {
 	}
 
 	@PatchMapping("/{titleId}")
-	// @PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiResponse<TitleUpdateResponse>> updateTitle(
 		@PathVariable Long titleId,
 		@RequestBody @Valid TitleUpdateRequest request) {

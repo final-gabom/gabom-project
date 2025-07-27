@@ -3,8 +3,8 @@ package com.explorer.gabom.domain.title.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +22,7 @@ public class UserTitleController {
 
 	@GetMapping("/users/{userId}")
 	public ResponseEntity<ApiResponse<List<UserTitleResponse>>> getUserTitles(
-		@PathVariable Long userId /* @AuthenticationPrincipal 수정 예정 */) {
+		@AuthenticationPrincipal Long userId) {
 		List<UserTitleResponse> titles = userTitleService.getUserTitles(userId);
 		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 조회되었습니다.", titles));
 	}
