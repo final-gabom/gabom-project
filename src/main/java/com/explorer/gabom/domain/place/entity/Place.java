@@ -86,4 +86,8 @@ public class Place extends BaseTimeEntity {
 		this.proofMethod = proofMethod;
 	}
 
+	public void increaseViewCount() {
+		this.viewCount += 1;
+	}
+
 }

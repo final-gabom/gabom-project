@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponse;
 import com.explorer.gabom.domain.place.dto.response.PlaceListResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.domain.user.entity.User;
@@ -69,6 +70,16 @@ public class PlaceController {
 	}
 
 	// 탐험 장소 상세 조회
+	@GetMapping("/{placeId}")
+	public ResponseEntity<ApiResponse<PlaceDetailResponse>> getPlaceDetail(
+		@PathVariable Long placeId,
+		@AuthenticationPrincipal CustomUserDetails user,
+		@RequestParam Double lat,
+		@RequestParam Double lng
+	) {
+		PlaceDetailResponse response = placeService.getPlaceDetail(placeId, lat, lng);
+		return ResponseEntity.ok(ApiResponse.success("장소 조회에 성공했습니다", response));
+	}
 
 	// 탐험 장소 수정
 	@PatchMapping("/{placeId}")
