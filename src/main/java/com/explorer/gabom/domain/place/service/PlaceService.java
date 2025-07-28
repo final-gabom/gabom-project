@@ -28,12 +28,15 @@ public class PlaceService {
 
 	// 탐험 장소 생성
 	public PlaceCreateResponse createPlace(PlaceCreateRequest request, Long userId) {
-		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE).orElseThrow(
+			() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Place place = new Place(request, user);
-		Place savedPlace = placeRepository.save(place);
 
+		// 기본값
+		place.approve();
+
+		Place savedPlace = placeRepository.save(place);
 		return new PlaceCreateResponse(savedPlace.getId());
 	}
 
@@ -53,7 +56,8 @@ public class PlaceService {
 	// 탐험 장소 삭제
 	@Transactional
 	public void deletePlace(Long placeId, Long userId) {
-		Place place = placeRepository.findByIdAndStatusInAndDeletedAtIsNull(placeId, List.of(PlaceStatus.PENDING, PlaceStatus.APPROVED))
+		Place place = placeRepository.findByIdAndStatusInAndDeletedAtIsNull(placeId, List.of(PlaceStatus.PENDING,
+																							 PlaceStatus.APPROVED))
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 		if (!place.getUser().getId().equals(userId)) {
 			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);

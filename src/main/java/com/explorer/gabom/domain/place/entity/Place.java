@@ -71,7 +71,7 @@ public class Place extends BaseTimeEntity {
 
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
-	private List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
+	private final List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
 
 	public Place(PlaceCreateRequest request, User user) {
 		this.user = user;
@@ -81,8 +81,11 @@ public class Place extends BaseTimeEntity {
 		this.lng = request.getLng();
 		this.proofMethod = request.getProofMethod();
 		this.content = request.getContent();
-		this.viewCount = 0; // 조회수 기본값
-		this.status = PlaceStatus.PENDING; // 장소 등록 기본값
+		this.viewCount = 0; // 기본값
+	}
+
+	public void approve() {
+		this.status = PlaceStatus.APPROVED;
 	}
 
 	public void markAsDeleted() {
