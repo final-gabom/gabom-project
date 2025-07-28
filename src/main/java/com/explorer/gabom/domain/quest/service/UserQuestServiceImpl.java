@@ -57,6 +57,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 		userQuest.markRewardClaimed();
 		user.addPoint(userQuest.getQuest().getRewardPoint());
 		user.addExp(userQuest.getQuest().getRewardExp());
+		user.addTitle(userQuest.getQuest().getRewardTitle());
 
 		return QuestRewardResponse.toDto(userQuest.getQuest());
 	}
