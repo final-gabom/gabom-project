@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -17,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class QuestProgressService {
 
 	private final UserQuestRepository userQuestRepository;
+	private final UserRepository userRepository;
 
 	public void updateProgress(User user, QuestConditionType type, int step) {
 		List<UserQuest> userQuests = userQuestRepository
@@ -27,5 +33,27 @@ public class QuestProgressService {
 		}
 
 		userQuestRepository.saveAll(userQuests);
+	}
+
+	@Transactional
+	public QuestRewardResponse claimReward(Long userId, Long userQuestId) {
+		User user = userRepository.findById(userId)
+								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		UserQuest userQuest = userQuestRepository.findByUser_IdAndId(userId, userQuestId)
+												 .orElseThrow(() -> new CustomException(ErrorCode.QUEST_NOT_FOUND));
+
+		if (!userQuest.isCompleted()) {
+			throw new CustomException(ErrorCode.NOT_COMPLETED);
+		}
+		if (userQuest.isRewardClaimed()) {
+			throw new CustomException(ErrorCode.REWARD_ALREADY_CLAIMED);
+		}
+
+		userQuest.markRewardClaimed();
+		user.addPoint(userQuest.getQuest().getRewardPoint());
+		user.addExp(userQuest.getQuest().getRewardExp());
+
+		return QuestRewardResponse.toDto(userQuest.getQuest());
 	}
 }
