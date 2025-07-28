@@ -9,7 +9,6 @@ import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
@@ -43,7 +42,7 @@ public class AuthService {
 						.email(request.getEmail())
 						.password(encodePassword)
 						.nickname(request.getNickname())
-						.userRole(UserRole.USER)
+						.userRole(request.getRole())
 						.build();
 
 		User savedUser = userRepository.save(user);

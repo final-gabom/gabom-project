@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.auth.dto.request;
 
+import com.explorer.gabom.domain.user.type.UserRole;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -22,5 +24,5 @@ public class SignupRequest {
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "비밀번호는 최소 8글자 이상, 대소문자 하나 이상 포함해야합니다.")
 	private String password;
 	@NotBlank(message = "사용자, 관리자를 선택해주세요.")
-	private String role;
+	private UserRole role;
 }
