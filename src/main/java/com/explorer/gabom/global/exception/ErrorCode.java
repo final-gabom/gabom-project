@@ -43,7 +43,10 @@ public enum ErrorCode {
 	NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 값이 없습니다."),
   
 	// Quest
-	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."), ;
+	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
+
+	// MissionProof
+	INVALID_POOF_TYPE(HttpStatus.BAD_REQUEST, "잘못된 값입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
