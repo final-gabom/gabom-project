@@ -107,4 +107,7 @@ public class User extends BaseTimeEntity {
 		this.lng = lng;
 	}
 
+	public void changeTitle(Title newTitle) {
+		this.title = newTitle;
+	}
 }
