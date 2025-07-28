@@ -1,8 +1,10 @@
 package com.explorer.gabom.domain.title.entity;
 
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,26 +15,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_title")
 @Getter
 @NoArgsConstructor
-public class UserTitle {
+@Table(name = "user_title")
+public class UserTitle extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
 	private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "title_id", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "title_id")
 	private Title title;
+
+	private boolean isEquipped;
 
 	public UserTitle(User user, Title title) {
 		this.user = user;
 		this.title = title;
-	}
-	
+  }
+
 }

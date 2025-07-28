@@ -83,6 +83,9 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer exp;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserTitle> userTitles = new ArrayList<>();
+
 	@Builder
 	public User(Long id, String email, String password, String nickname, UserRole userRole) {
 		this.id = id;
