@@ -1,5 +1,8 @@
 package com.explorer.gabom.domain.title.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,8 +13,13 @@ import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
+import com.explorer.gabom.domain.title.dto.response.UserTitleResponse;
 import com.explorer.gabom.domain.title.entity.Title;
+import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -23,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TitleService {
 	private final TitleRepository titleRepository;
+	private final UserRepository userRepository;
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
@@ -67,6 +76,19 @@ public class TitleService {
 		titleRepository.delete(title);
 		log.info("<칭호삭제> 성공 - 삭제된 ID: {}", titleId);
 		return TitleDeleteResponse.toDto(title);
+	}
+
+	@Transactional(readOnly = true)
+	public List<UserTitleResponse> getUserTitles(Long userId) {
+		log.info("<칭호조회> 요청 - userId: {}", userId);
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		List<UserTitle> userTitles = user.getUserTitles();
+		log.info("<칭호조회> 성공 - 조회된 ID: {}", userId);
+		return userTitles.stream()
+						 .map(UserTitleResponse::toDto)
+						 .collect(Collectors.toList());
 	}
 
 
