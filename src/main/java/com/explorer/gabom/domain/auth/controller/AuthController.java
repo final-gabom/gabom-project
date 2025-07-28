@@ -37,7 +37,7 @@ public class AuthController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("로그인을 성공했습니다.", response));
 	}
 	@GetMapping("/check-nickname")
-	public ResponseEntity<ApiResponse<CheckNicknameResponse>> checknickname(@RequestParam String nickname) {
+	public ResponseEntity<ApiResponse<CheckNicknameResponse>> checkNickname(@RequestParam String nickname) {
 		CheckNicknameResponse response = authService.checkNickname(nickname);
 		return ResponseEntity.ok(ApiResponse.success("닉네임 중복확인을 완료하였습니다.", response));
 	}
