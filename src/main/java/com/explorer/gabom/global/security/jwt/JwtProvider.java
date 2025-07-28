@@ -19,7 +19,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -27,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class JwtUtil {
+public class JwtProvider {
 
 	private static final String BEARER_PREFIX = "Bearer ";
 
@@ -69,7 +68,7 @@ public class JwtUtil {
 				.claims(claims)
 				.expiration(new Date(System.currentTimeMillis() + expiration))
 				.issuedAt(now)
-				.signWith(key, SignatureAlgorithm.HS256)
+				.signWith(key)
 				.compact();
 
 	}
@@ -85,10 +84,15 @@ public class JwtUtil {
 	 * @return "Bearer " 접두사가 포함된 Access Token 문자열
 	 */
 	public String createAccessToken(Long userId, UserRole userRole) {
+		log.info("AccessToken 생성 요청 - userId: {}, role: {}", userId, userRole.name());
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("role", userRole);
 		claims.put("type", "ACCESS");
-		return createToken(claims, userId, accessTokenExpiration);
+
+		String token = createToken(claims, userId, accessTokenExpiration);
+
+		log.debug("AccessToken 생성 완료 - userId: {}", userId);
+		return token;
 	}
 
 	/**
@@ -102,28 +106,15 @@ public class JwtUtil {
 	 * @return "Bearer " 접두사가 포함된 Refresh Token 문자열
 	 */
 	public String createRefreshToken(Long userId, UserRole userRole) {
+		log.info("RefreshToken 생성 요청 - userId: {}, role: {}", userId, userRole.name());
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("role", userRole);
 		claims.put("type", "REFRESH");
-		return createToken(claims, userId, refreshTokenExpiration);
-	}
 
-	/**
-	 * Authorization 헤더에서 전달된 값에서 토큰 문자열을 추출합니다.
-	 *
-	 * <p>헤더 값이 존재하고, {@code Bearer } 접두사로 시작하는 경우에만
-	 * 접두사를 제거한 실제 JWT 문자열을 반환합니다.<br>
-	 * 유효하지 않은 형식일 경우 {@code INVALID_TOKEN_VALUE} 예외를 발생시킵니다.</p>
-	 *
-	 * @param tokenValue HTTP Authorization 헤더에 담긴 토큰 문자열 (예: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-	 * @return 접두사("Bearer ")가 제거된 실제 토큰 값
-	 * @throws CustomException 헤더 값이 비어 있거나 "Bearer "로 시작하지 않을 경우 예외 발생
-	 */
-	public String substringToken(String tokenValue) {
-		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-			return tokenValue.substring(7);
-		}
-		throw new CustomException(ErrorCode.INVALID_TOKEN_VALUE);
+		String token = createToken(claims, userId, refreshTokenExpiration);
+
+		log.debug("RefreshToken 생성 완료 - userId: {}", userId);
+		return token;
 	}
 
 	/**
@@ -137,6 +128,7 @@ public class JwtUtil {
 	 * @throws io.jsonwebtoken.JwtException 서명 검증 실패, 만료, 구조 오류 등 JWT가 유효하지 않은 경우 예외 발생
 	 */
 	public Claims getClaims(String token) {
+		log.debug("JWT Claims 파싱 시작");
 		return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
 	}
 
@@ -157,6 +149,7 @@ public class JwtUtil {
 	 * @return 서명 및 만료 여부를 포함한 유효성 검증 결과
 	 */
 	public boolean validateToken(String token) {
+		log.debug("JWT 유효성 검증 시작");
 		try {
 			if (StringUtils.hasText(token)) {
 				// 1. 서명을 검증하고 파싱 시도 (예외 발생 시 false)
@@ -166,18 +159,23 @@ public class JwtUtil {
 		} catch (MalformedJwtException ex) {
 			// JWT 형식이 잘못된 경우 (구조가 비정상)
 			log.error("Invalid JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		} catch (ExpiredJwtException ex) {
 			// 토큰이 만료된 경우
 			log.error("Expired JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
 		} catch (UnsupportedJwtException ex) {
 			// 지원하지 않는 JWT 형식인 경우
 			log.error("Unsupported JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
 		} catch (IllegalArgumentException ex) {
 			// Claims 문자열이 비어 있거나 null인 경우
 			log.error("JWT claims string is empty. : {}", token, ex);
+			throw new CustomException(ErrorCode.EMPTY_TOKEN);
 		} catch (Exception ex) {
 			// 기타 예외 (예: 서명 실패 등)
 			log.error("Invalid JWT token : {}", token, ex);
+			throw new CustomException(ErrorCode.SIGNATURE_INVALID);
 		}
 		return false;
 	}
@@ -193,6 +191,7 @@ public class JwtUtil {
 	 * @throws io.jsonwebtoken.JwtException 서명 검증 실패 또는 형식 오류 발생 시 예외 발생
 	 */
 	public String getUserIdFromToken(String token) {
+		log.debug("JWT에서 사용자 ID 추출 시도");
 		return this.getClaims(token).getSubject();
 	}
 
