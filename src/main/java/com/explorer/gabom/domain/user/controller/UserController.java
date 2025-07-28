@@ -7,23 +7,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.user.dto.UserDto;
-
-import com.explorer.gabom.domain.user.dto.request.UpdateMyTitleRequest;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
+import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
-import com.explorer.gabom.domain.user.dto.response.UpdateMyTitleResponse;
+import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.global.dto.ApiResponse;
-
-import com.explorer.gabom.global.security.jwt.JwtUtil;
-
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
-
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
 	private final UserService userService;
-	private final JwtUtil jwtUtil;
 
 	@GetMapping("/{userId}")
 	public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Long userId) {
@@ -61,22 +54,13 @@ public class UserController {
 	}
 
 	@PatchMapping("/me/titles")
-	public ResponseEntity<ApiResponse<?>> updateTitle(
-		@RequestHeader("Authorization") String authorizationHeader,
-		@RequestBody UpdateMyTitleRequest request) {
+	public ResponseEntity<ApiResponse<UpdateMainTitleResponse>> updateTitle(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UpdateMainTitleRequest request) {
 
-		// 1. Bearer 접두사 제거하고 실제 토큰만 꺼내기
-		String token = jwtUtil.substringToken(authorizationHeader);
-
-		// 2. 토큰에서 userId 추출
-		Long userId = Long.parseLong(jwtUtil.getUserIdFromToken(token));
-
-		// 3. 서비스 호출해서 칭호 변경
-		UpdateMyTitleResponse response = userService.updateMyTitle(userId, request.getTitleId());
-
-		// 4. 응답 반환
+		UpdateMainTitleResponse response = userService.updateMainTitle(userDetails.getUserId(), request.getTitleId());
 		return ResponseEntity.ok(ApiResponse.success("칭호를 변경하였습니다.", response));
-
+	}
 
 	@PatchMapping("/me/password")
 	public ResponseEntity<ApiResponse<Void>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,

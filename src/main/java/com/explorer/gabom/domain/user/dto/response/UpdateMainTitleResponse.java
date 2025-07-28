@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UpdateMyTitleResponse {
+public class UpdateMainTitleResponse {
 	private final Long titleId;
 	private final String titleName;
 }

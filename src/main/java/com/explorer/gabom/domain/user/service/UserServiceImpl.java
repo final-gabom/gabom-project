@@ -10,7 +10,7 @@ import com.explorer.gabom.domain.title.repository.TitleRepository;
 import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
-import com.explorer.gabom.domain.user.dto.response.UpdateMyTitleResponse;
+import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
@@ -32,7 +32,6 @@ public class UserServiceImpl implements UserService {
 	private final TitleRepository titleRepository;
 	private final PasswordValidator passwordValidator;
 	private final PasswordEncoder passwordEncoder;
-
 
 	@Override
 	public UserDto getUser(Long userId) {
@@ -88,15 +87,14 @@ public class UserServiceImpl implements UserService {
 
 	// 내 칭호변경
 	@Override
-	public UpdateMyTitleResponse updateMyTitle(Long userId, Long titleId) {
+	public UpdateMainTitleResponse updateMainTitle(Long userId, Long titleId) {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
 								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		user.changeTitle(title);
-		return new UpdateMyTitleResponse(title.getId(),title.getName());
+		user.setTitle(title);
+		return new UpdateMainTitleResponse(title.getId(), title.getName());
 	}
-
 
 	@Override
 	public void updatePassword(Long userId, PasswordUpdateRequest request) {
@@ -108,6 +106,5 @@ public class UserServiceImpl implements UserService {
 		String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
 		user.updatePassword(encodedNewPassword);
 	}
-
 
 }

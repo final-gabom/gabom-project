@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UpdateMyTitleRequest {
+public class UpdateMainTitleRequest {
 	private final Long titleId;
 }

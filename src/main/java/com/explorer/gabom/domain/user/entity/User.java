@@ -107,12 +107,12 @@ public class User extends BaseTimeEntity {
 		this.lng = lng;
 	}
 
-
-	public void changeTitle(Title newTitle) {
+	public void setTitle(Title newTitle) {
 		this.title = newTitle;
+	}
 
 	public void updatePassword(String encodedNewPassword) {
 		this.password = encodedNewPassword;
-
 	}
 }
+
