@@ -2,8 +2,6 @@ package com.explorer.gabom.domain.title.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
-import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.service.TitleService;
@@ -31,7 +28,6 @@ public class AdminTitleController {
 	private final TitleService titleService;
 
 	@PostMapping
-	// @PreAuthorize("hasRole('ADMIN')") 어차피 동작 안해서 spring security 설정 적용 여부에 따라 수정 예정
 	public ResponseEntity<ApiResponse<TitleCreateResponse>> createTitle(
 		@RequestBody @Valid TitleCreateRequest request
 	) {
@@ -41,7 +37,6 @@ public class AdminTitleController {
 	}
 
 	@PatchMapping("/{titleId}")
-	// @PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiResponse<TitleUpdateResponse>> updateTitle(
 		@PathVariable Long titleId,
 		@RequestBody @Valid TitleUpdateRequest request) {
