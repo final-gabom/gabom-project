@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.place.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +51,7 @@ public class PlaceService {
 	// 탐험 장소 삭제
 	@Transactional
 	public void deletePlace(Long placeId, Long userId) {
-		Place place = placeRepository.findByIdAndStatusAndDeletedAtIsNull(placeId, PlaceStatus.APPROVED)
+		Place place = placeRepository.findByIdAndStatusInAndDeletedAtIsNull(placeId, List.of(PlaceStatus.PENDING, PlaceStatus.APPROVED))
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 		if (!place.getUser().getId().equals(userId)) {
 			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
