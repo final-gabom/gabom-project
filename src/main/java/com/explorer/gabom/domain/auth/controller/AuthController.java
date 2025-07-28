@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
-import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
 import jakarta.validation.Valid;
@@ -26,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 public class AuthController {
 	private final AuthService authService;
-	private final UserService userService;
 
 	@PostMapping("/signup")
 	public ResponseEntity<ApiResponse<SignupResponse>> signup(@RequestBody @Valid SignupRequest requestDto) {
@@ -39,9 +37,9 @@ public class AuthController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("로그인을 성공했습니다.", response));
 	}
 	@GetMapping("/check-nickname")
-	public ResponseEntity<ApiResponse<CheckNicknameResponse>> check(@RequestParam String nickname) {
+	public ResponseEntity<ApiResponse<CheckNicknameResponse>> checknickname(@RequestParam String nickname) {
 		CheckNicknameResponse response = authService.checkNickname(nickname);
-		return ResponseEntity.ok(ApiResponse.success(null, response));
+		return ResponseEntity.ok(ApiResponse.success("닉네임 중복확인을 완료하였습니다.", response));
 	}
 
 }

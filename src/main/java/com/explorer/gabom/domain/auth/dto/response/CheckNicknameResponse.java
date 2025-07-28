@@ -7,5 +7,4 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CheckNicknameResponse {
 	private boolean available;
-	private String message;
 }
