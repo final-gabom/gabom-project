@@ -13,6 +13,7 @@ import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -27,7 +28,8 @@ public class PlaceService {
 
 	// 탐험 장소 생성
 	public PlaceCreateResponse createPlace(PlaceCreateRequest request, Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Place place = new Place(request, user);
 		Place savedPlace = placeRepository.save(place);
