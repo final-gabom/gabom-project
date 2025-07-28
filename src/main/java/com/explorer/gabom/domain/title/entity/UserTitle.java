@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "user_title")
 public class UserTitle extends BaseTimeEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -32,5 +33,10 @@ public class UserTitle extends BaseTimeEntity {
 	private Title title;
 
 	private boolean isEquipped;
+
+	public UserTitle(User user, Title title) {
+		this.user = user;
+		this.title = title;
+  }
 
 }

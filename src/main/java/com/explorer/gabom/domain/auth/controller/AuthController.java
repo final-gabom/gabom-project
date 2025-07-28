@@ -1,12 +1,15 @@
 package com.explorer.gabom.domain.auth.controller;
 
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
+import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
@@ -33,4 +36,10 @@ public class AuthController {
 		LoginResponse response = authService.login(request);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("로그인을 성공했습니다.", response));
 	}
+	@GetMapping("/check-nickname")
+	public ResponseEntity<ApiResponse<CheckNicknameResponse>> checkNickname(@RequestParam String nickname) {
+		CheckNicknameResponse response = authService.checkNickname(nickname);
+		return ResponseEntity.ok(ApiResponse.success("닉네임 중복확인을 완료하였습니다.", response));
+	}
+
 }

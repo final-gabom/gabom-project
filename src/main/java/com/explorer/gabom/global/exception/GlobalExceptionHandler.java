@@ -2,9 +2,12 @@ package com.explorer.gabom.global.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.explorer.gabom.global.dto.ApiResponse;
 
@@ -16,9 +19,16 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(CustomException.class)
 	protected ResponseEntity<ApiResponse<Void>> handleBusinessException(CustomException e) {
+		ErrorCode errorCode = e.getErrorCode();
+
+		log.warn("[{}] {} (status: {})",
+				 errorCode.name(),
+				 errorCode.getMessage(),
+				 errorCode.getHttpStatus().value());
+
 		return ResponseEntity
-			.status(e.getErrorCode().getHttpStatus()) // 예외에 정의된 상태 코드로 응답
-			.body(ApiResponse.fail(e.getErrorCode())); // 공통 응답 포맷으로 메시지 반환
+			.status(errorCode.getHttpStatus()) // 예외에 정의된 상태 코드로 응답
+			.body(ApiResponse.fail(errorCode)); // 공통 응답 포맷으로 메시지 반환
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -28,6 +38,33 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.BAD_REQUEST)
 			.body(ApiResponse.fail(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage(),
 								   ErrorCode.VALIDATION_ERROR));
+	}
+
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	protected ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+		log.warn("[METHOD_NOT_ALLOWED] {} (status: 405)", e.getMessage());
+		ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
+		return ResponseEntity
+			.status(errorCode.getHttpStatus())
+			.body(ApiResponse.fail(errorCode));
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	protected ResponseEntity<ApiResponse<Void>> handleMessageNotReadable(HttpMessageNotReadableException e) {
+		log.warn("[BAD_REQUEST] 요청 바디 파싱 실패 (status: 400)");
+		ErrorCode errorCode = ErrorCode.BAD_REQUEST;
+		return ResponseEntity
+			.status(errorCode.getHttpStatus())
+			.body(ApiResponse.fail(errorCode));
+	}
+
+	@ExceptionHandler(NoHandlerFoundException.class)
+	protected ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundException e) {
+		log.warn("[NOT_FOUND] 요청 경로 없음 (status: 404)");
+		ErrorCode errorCode = ErrorCode.NOT_FOUND;
+		return ResponseEntity
+			.status(errorCode.getHttpStatus())
+			.body(ApiResponse.fail(errorCode));
 	}
 
 	@ExceptionHandler(Exception.class)

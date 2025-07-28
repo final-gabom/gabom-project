@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.user.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -10,12 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.user.dto.UserDto;
+import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
+import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
+import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -43,5 +51,23 @@ public class UserController {
 	public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
+	}
+
+	@PatchMapping("/me/titles")
+	public ResponseEntity<ApiResponse<UpdateMainTitleResponse>> updateTitle(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody UpdateMainTitleRequest request) {
+
+		UpdateMainTitleResponse response = userService.updateMainTitle(userDetails.getUserId(), request.getTitleId());
+		return ResponseEntity.ok(ApiResponse.success("칭호를 변경하였습니다.", response));
+	}
+
+	@PatchMapping("/me/password")
+	public ResponseEntity<ApiResponse<Void>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
+															@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
+		log.info("비밀번호 변경 요청: userId={}", userDetails.getUserId());
+		userService.updatePassword(userDetails.getUserId(), passwordUpdateRequest);
+		return ResponseEntity.ok(ApiResponse.success("비밀번호가 성공적으로 변경되었습니다."));
+
 	}
 }

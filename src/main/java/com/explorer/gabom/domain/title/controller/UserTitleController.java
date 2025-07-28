@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.title.dto.response.UserTitleResponse;
-import com.explorer.gabom.domain.title.service.UserTitleService;
+import com.explorer.gabom.domain.title.service.TitleService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/titles")
 public class UserTitleController {
-	private final UserTitleService userTitleService;
+	private final TitleService titleService;
 
 	@GetMapping("/users/{userId}")
 	public ResponseEntity<ApiResponse<List<UserTitleResponse>>> getUserTitles(
-		@PathVariable Long userId /* @AuthenticationPrincipal 수정 예정 */) {
-		List<UserTitleResponse> titles = userTitleService.getUserTitles(userId);
+		@PathVariable Long userId) {
+		List<UserTitleResponse> titles = titleService.getUserTitles(userId);
 		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 조회되었습니다.", titles));
 	}
 }
+

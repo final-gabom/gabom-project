@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.place.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,8 @@ import com.explorer.gabom.global.entity.BaseTimeEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,6 +65,10 @@ public class Place extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer viewCount;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private PlaceStatus status;
+
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
@@ -74,16 +81,13 @@ public class Place extends BaseTimeEntity {
 		this.lng = request.getLng();
 		this.proofMethod = request.getProofMethod();
 		this.content = request.getContent();
-		this.viewCount = 0; // 기본값
+		this.viewCount = 0; // 조회수 기본값
+		this.status = PlaceStatus.PENDING; // 장소 등록 기본값
 	}
 
-	public void updatePlace(String title, String address, Double lat, Double lng, String content, String proofMethod) {
-		this.title = title;
-		this.address = address;
-		this.lat = lat;
-		this.lng = lng;
-		this.content = content;
-		this.proofMethod = proofMethod;
+	public void markAsDeleted() {
+		this.deletedAt = LocalDateTime.now();
+		this.status = PlaceStatus.DELETED;
 	}
 
 	public void increaseViewCount() {

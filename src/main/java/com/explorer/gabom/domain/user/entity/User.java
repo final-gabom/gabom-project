@@ -1,13 +1,18 @@
 package com.explorer.gabom.domain.user.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.annotations.SQLDelete;
 
 import com.explorer.gabom.domain.title.entity.Title;
+import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 import com.explorer.gabom.global.file.entity.AttachmentFile;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +23,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,6 +65,9 @@ public class User extends BaseTimeEntity {
 	@JoinColumn(name = "title_id")
 	private Title title;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserTitle> userTitles = new ArrayList<>();
+
 	private String address;
 
 	private Double lat;
@@ -87,6 +96,22 @@ public class User extends BaseTimeEntity {
 		this.exp = 0;
 	}
 
+	public void addPoint(int point) {
+		this.point += point;
+	}
+
+	public void addExp(int exp) {
+		this.exp += exp;
+	}
+
+	public void addTitle(Title title) {
+		boolean alreadyHas = userTitles.stream()
+									   .anyMatch(userTitle -> userTitle.getTitle().equals(title));
+		if (!alreadyHas) {
+			userTitles.add(new UserTitle(this, title));
+		}
+	}
+
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
 	}
@@ -107,4 +132,12 @@ public class User extends BaseTimeEntity {
 		this.lng = lng;
 	}
 
+	public void setTitle(Title newTitle) {
+		this.title = newTitle;
+	}
+
+	public void updatePassword(String encodedNewPassword) {
+		this.password = encodedNewPassword;
+	}
 }
+

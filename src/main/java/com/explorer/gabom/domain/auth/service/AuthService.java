@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
@@ -43,7 +43,7 @@ public class AuthService {
 						.email(request.getEmail())
 						.password(encodePassword)
 						.nickname(request.getNickname())
-						.userRole(UserRole.USER)
+						.userRole(request.getRole())
 						.build();
 
 		User savedUser = userRepository.save(user);
@@ -64,5 +64,13 @@ public class AuthService {
 		String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
 		return LoginResponse.toDto(accessToken, refreshToken);
+	}
+	// 닉네임 중복 확인
+	public CheckNicknameResponse checkNickname(String nickname) {
+		boolean exists = userRepository.existsByNickname(nickname);
+		if (exists) {
+			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
+		return new CheckNicknameResponse(true);
 	}
 }
