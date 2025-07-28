@@ -81,7 +81,8 @@ public class Place extends BaseTimeEntity {
 		this.lng = request.getLng();
 		this.proofMethod = request.getProofMethod();
 		this.content = request.getContent();
-		this.viewCount = 0; // 기본값
+		this.viewCount = 0; // 조회수 기본값
+		this.status = PlaceStatus.PENDING; // 장소 등록 기본값
 	}
 
 	public void markAsDeleted() {
