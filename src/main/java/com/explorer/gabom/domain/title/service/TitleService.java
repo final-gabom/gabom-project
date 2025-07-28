@@ -17,7 +17,6 @@ import com.explorer.gabom.domain.title.dto.response.UserTitleResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
-import com.explorer.gabom.domain.title.repository.TitleRepositoryCustom;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 public class TitleService {
 	private final TitleRepository titleRepository;
 	private final UserRepository userRepository;
-	private final TitleRepositoryCustom titleRepositoryCustom;
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
@@ -56,7 +54,7 @@ public class TitleService {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
-		titleRepositoryCustom.updateTitle(titleId, request.getName(), request.getDescription());
+		titleRepository.updateTitle(titleId, request.getName(), request.getDescription());
 
 		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
 		return TitleUpdateResponse.toDto(title);
