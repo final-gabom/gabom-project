@@ -59,4 +59,8 @@ public class UserQuest {
 	public boolean isCompleted() {
 		return this.progressStatus == ProgressStatus.COMPLETED;
 	}
+
+	public void markRewardClaimed() {
+		this.rewardClaimed = true;
+	}
 }
