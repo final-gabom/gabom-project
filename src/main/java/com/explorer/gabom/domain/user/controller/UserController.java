@@ -12,15 +12,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.user.dto.UserDto;
+
 import com.explorer.gabom.domain.user.dto.request.UpdateMyTitleRequest;
+import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
 import com.explorer.gabom.domain.user.dto.response.UpdateMyTitleResponse;
 import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.global.dto.ApiResponse;
+
 import com.explorer.gabom.global.security.jwt.JwtUtil;
 
-import lombok.RequiredArgsConstructor;
+import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -50,6 +59,7 @@ public class UserController {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
 	}
+
 	@PatchMapping("/me/titles")
 	public ResponseEntity<ApiResponse<?>> updateTitle(
 		@RequestHeader("Authorization") String authorizationHeader,
@@ -66,5 +76,14 @@ public class UserController {
 
 		// 4. 응답 반환
 		return ResponseEntity.ok(ApiResponse.success("칭호를 변경하였습니다.", response));
+
+
+	@PatchMapping("/me/password")
+	public ResponseEntity<ApiResponse<Void>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
+															@RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
+		log.info("비밀번호 변경 요청: userId={}", userDetails.getUserId());
+		userService.updatePassword(userDetails.getUserId(), passwordUpdateRequest);
+		return ResponseEntity.ok(ApiResponse.success("비밀번호가 성공적으로 변경되었습니다."));
+
 	}
 }

@@ -9,11 +9,10 @@ import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.security.jwt.JwtUtil;
+import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.explorer.gabom.global.validator.PasswordValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final PasswordValidator passwordValidator;
-	private final JwtUtil jwtUtil;
+	private final JwtProvider jwtProvider;
 
 	public SignupResponse signup(SignupRequest request) {
 		// 이메일 중복 체크
@@ -43,7 +42,7 @@ public class AuthService {
 						.email(request.getEmail())
 						.password(encodePassword)
 						.nickname(request.getNickname())
-						.userRole(UserRole.USER)
+						.userRole(request.getRole())
 						.build();
 
 		User savedUser = userRepository.save(user);
@@ -60,8 +59,8 @@ public class AuthService {
 		passwordValidator.verifyMatch(request.getPassword(), user.getPassword());
 
 		//토큰을 생성
-		String accessToken = jwtUtil.createAccessToken(user.getId(), user.getUserRole());
-		String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getUserRole());
+		String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
+		String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
 		return LoginResponse.toDto(accessToken, refreshToken);
 	}
