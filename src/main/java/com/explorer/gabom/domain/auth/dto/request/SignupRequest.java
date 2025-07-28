@@ -4,6 +4,7 @@ import com.explorer.gabom.domain.user.type.UserRole;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,6 @@ public class SignupRequest {
 	@NotBlank(message = "비밀번호 입력은 필수입니다.")
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "비밀번호는 최소 8글자 이상, 대소문자 하나 이상 포함해야합니다.")
 	private String password;
-	@NotBlank(message = "사용자, 관리자를 선택해주세요.")
+	@NotNull(message = "사용자, 관리자를 선택해주세요.")
 	private UserRole role;
 }
