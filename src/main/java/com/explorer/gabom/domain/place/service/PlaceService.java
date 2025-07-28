@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.place.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +9,7 @@ import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
 import com.explorer.gabom.domain.place.entity.Place;
+import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -24,8 +27,7 @@ public class PlaceService {
 
 	// 탐험 장소 생성
 	public PlaceCreateResponse createPlace(PlaceCreateRequest request, Long userId) {
-		User user = userRepository.findById(userId)
-								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Place place = new Place(request, user);
 		Place savedPlace = placeRepository.save(place);
@@ -47,4 +49,14 @@ public class PlaceService {
 	}
 
 	// 탐험 장소 삭제
+	@Transactional
+	public void deletePlace(Long placeId, Long userId) {
+		Place place = placeRepository.findByIdAndStatusInAndDeletedAtIsNull(placeId, List.of(PlaceStatus.PENDING, PlaceStatus.APPROVED))
+									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+		if (!place.getUser().getId().equals(userId)) {
+			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
+		}
+
+		place.markAsDeleted(); // 실제 삭제하지 않고 status 변경
+	}
 }
