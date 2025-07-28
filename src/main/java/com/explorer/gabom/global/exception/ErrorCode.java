@@ -49,7 +49,10 @@ public enum ErrorCode {
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
 	USER_QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 퀘스트를 찾을 수 없습니다."),
 	NOT_COMPLETED(HttpStatus.BAD_REQUEST, "퀘스트가 완료되지 않았습니다."),
-	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다.");
+	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."),
+
+	// MissionProof
+	INVALID_PROOF_TYPE(HttpStatus.NOT_FOUND, "잘못된 값입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;

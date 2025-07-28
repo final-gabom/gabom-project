@@ -40,7 +40,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 				throw new CustomException(ErrorCode.PLACE_NOT_FOUND);
 			}
 		} else {
-			throw new CustomException(ErrorCode.INVALID_POOF_TYPE);
+			throw new CustomException(ErrorCode.INVALID_PROOF_TYPE);
 		}
 
 		// 3. 엔티티 생성 및 저장
