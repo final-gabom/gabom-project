@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.quest.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,5 +17,7 @@ public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 		QuestConditionType questConditionType,
 		ProgressStatus progressStatus
 	);
+
+	Optional<UserQuest> findByUser_IdAndId(Long userId, Long id);
 
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.entity.User;
@@ -63,5 +64,13 @@ public class AuthService {
 		String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
 		return LoginResponse.toDto(accessToken, refreshToken);
+	}
+	// 닉네임 중복 확인
+	public CheckNicknameResponse checkNickname(String nickname) {
+		boolean exists = userRepository.existsByNickname(nickname);
+		if (exists) {
+			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
+		return new CheckNicknameResponse(true);
 	}
 }

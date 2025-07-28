@@ -65,6 +65,9 @@ public class User extends BaseTimeEntity {
 	@JoinColumn(name = "title_id")
 	private Title title;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserTitle> userTitles = new ArrayList<>();
+
 	private String address;
 
 	private Double lat;
@@ -80,9 +83,6 @@ public class User extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Integer exp;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<UserTitle> userTitles = new ArrayList<>();
-
 	@Builder
 	public User(Long id, String email, String password, String nickname, UserRole userRole) {
 		this.id = id;
@@ -94,6 +94,22 @@ public class User extends BaseTimeEntity {
 		this.point = 0;
 		this.level = 1;
 		this.exp = 0;
+	}
+
+	public void addPoint(int point) {
+		this.point += point;
+	}
+
+	public void addExp(int exp) {
+		this.exp += exp;
+	}
+
+	public void addTitle(Title title) {
+		boolean alreadyHas = userTitles.stream()
+									   .anyMatch(userTitle -> userTitle.getTitle().equals(title));
+		if (!alreadyHas) {
+			userTitles.add(new UserTitle(this, title));
+		}
 	}
 
 	public void updateNickname(String nickname) {
