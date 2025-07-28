@@ -56,7 +56,7 @@ public class TitleService {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
-		titleRepositoryCustom.updateTitleFields(titleId, request.getName(), request.getDescription());
+		titleRepositoryCustom.updateTitle(titleId, request.getName(), request.getDescription());
 
 		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
 		return TitleUpdateResponse.toDto(title);

@@ -1,5 +1,5 @@
 package com.explorer.gabom.domain.title.repository;
 
 public interface TitleRepositoryCustom {
-	void updateTitleFields(Long titleId, String name, String description);
+	void updateTitle(Long titleId, String name, String description);
 }
