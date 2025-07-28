@@ -19,11 +19,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class QuestProgressService {
+public class UserQuestServiceImpl implements UserQuestService {
 
 	private final UserQuestRepository userQuestRepository;
 	private final UserRepository userRepository;
 
+	@Override
+	@Transactional
 	public void updateProgress(User user, QuestConditionType type, int step) {
 		List<UserQuest> userQuests = userQuestRepository
 			.findByUserAndQuest_QuestConditionTypeAndProgressStatus(user, type, ProgressStatus.IN_PROGRESS);
@@ -35,13 +37,15 @@ public class QuestProgressService {
 		userQuestRepository.saveAll(userQuests);
 	}
 
+	@Override
 	@Transactional
 	public QuestRewardResponse claimReward(Long userId, Long userQuestId) {
 		User user = userRepository.findById(userId)
 								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		UserQuest userQuest = userQuestRepository.findByUser_IdAndId(userId, userQuestId)
-												 .orElseThrow(() -> new CustomException(ErrorCode.QUEST_NOT_FOUND));
+												 .orElseThrow(
+													 () -> new CustomException(ErrorCode.USER_QUEST_NOT_FOUND));
 
 		if (!userQuest.isCompleted()) {
 			throw new CustomException(ErrorCode.NOT_COMPLETED);
