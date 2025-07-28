@@ -87,6 +87,14 @@ public class User extends BaseTimeEntity {
 		this.exp = 0;
 	}
 
+	public void addPoint(int point) {
+		this.point += point;
+	}
+
+	public void addExp(int exp) {
+		this.exp += exp;
+	}
+
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
 	}
