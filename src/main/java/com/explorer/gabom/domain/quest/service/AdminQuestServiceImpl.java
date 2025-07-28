@@ -33,7 +33,7 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 	@ActivityLoggable(ActivityType.ADMIN_QUEST_CREATED)
 	public QuestCreateResponse createQuest(QuestCreateRequest dto) {
 		Title rewardTitle = titleRepository.findById(dto.getRewardTitleId())
-												.orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+										   .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
 		Quest quest = new Quest(
 			dto.getTitle(),
@@ -59,7 +59,7 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 		Title rewardTitle = null;
 		if (dto.getRewardTitleId() != null) {
 			rewardTitle = titleRepository.findById(dto.getRewardTitleId())
-											  .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+										 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 		}
 
 		quest.update(dto, rewardTitle);
