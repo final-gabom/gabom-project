@@ -15,10 +15,9 @@ import com.explorer.gabom.domain.activity.entity.UserActivityLog;
 import com.explorer.gabom.domain.activity.repository.AdminActivityLogRepository;
 import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
 import com.explorer.gabom.domain.activity.type.ActivityType;
-import com.explorer.gabom.domain.user.entity.User;
-import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.TargetIdentifiable;
+import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +42,9 @@ public class ActivityLogAspect {
 		ActivityLoggable activityLoggable = signature.getMethod().getAnnotation(ActivityLoggable.class);
 		ActivityType activityType = activityLoggable.value();
 
-		User currentUser = extractUser();
-		Long userId = currentUser.getId();
-		UserRole userRole = currentUser.getUserRole();
+		CustomUserDetails currentUser = extractUser();
+		Long userId = currentUser.getUserId();
+		String userRole = currentUser.getRole();
 
 		Long targetId = activityType.isRequiredTargetId() ?
 						extractTargetId(signature, joinPoint.getArgs(), result) : null;
@@ -53,7 +52,7 @@ public class ActivityLogAspect {
 		String ipAddress = request.getRemoteAddr();
 		String description = activityType.getMessage();
 
-		if (userRole == UserRole.ADMIN) {
+		if (userRole == "ROLE_ADMIN") {
 			AdminActivityLog adminActivityLog = new AdminActivityLog(userId, targetId, activityType, description,
 																	 ipAddress);
 			adminActivityLogRepository.save(adminActivityLog);
@@ -66,14 +65,14 @@ public class ActivityLogAspect {
 		}
 	}
 
-	private User extractUser() {
+	private CustomUserDetails extractUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new IllegalStateException("인증된 사용자가 아닙니다.");
 		}
 		Object principal = authentication.getPrincipal();
-		if (principal instanceof User user) {
-			return user;
+		if (principal instanceof CustomUserDetails customUserDetails) {
+			return customUserDetails;
 		}
 		throw new IllegalStateException("알 수 없는 사용자입니다.");
 	}
