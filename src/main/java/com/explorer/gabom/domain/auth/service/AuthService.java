@@ -68,10 +68,10 @@ public class AuthService {
 	}
 	// 닉네임 중복 확인
 	public CheckNicknameResponse checkNickname(String nickname) {
-		if (userRepository.existsByNickname(nickname)) {
+		boolean exists = userRepository.existsByNickname(nickname);
+		if (exists) {
 			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
 		}
-		boolean available = !userRepository.existsByNickname(nickname);
-		return new CheckNicknameResponse(available);
+		return new CheckNicknameResponse(true);
 	}
 }
