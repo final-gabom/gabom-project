@@ -16,7 +16,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "user_block", uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"blocker_id", "blocked_id"})
@@ -28,6 +30,9 @@ public class UserBlock {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	//기본 생성자
+	public UserBlock(){};
+	
 	// 차단한 유저
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "blocker_id", nullable = false)
@@ -41,4 +46,8 @@ public class UserBlock {
 	@CreatedDate
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
+
+	public UserBlock(User blocker, User blocked) {
+	}
+
 }

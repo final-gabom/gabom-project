@@ -23,6 +23,8 @@ public enum ErrorCode {
 
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
+	CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST,"자신을 차단할 수 없습니다."),
+	ALREADY_BLOCKED_USER(HttpStatus.CONFLICT,"이미 차단된 유저입니다."),
 
 	// Auth
 	INVALID_TOKEN(HttpStatus.BAD_REQUEST, "잘못된 토큰 값입니다."),
@@ -53,5 +55,6 @@ public enum ErrorCode {
 
 	private final HttpStatus httpStatus;
 	private final String message;
+
 
 }
