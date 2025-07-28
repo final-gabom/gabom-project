@@ -16,10 +16,10 @@ public class TitleDeleteResponse implements TargetIdentifiable {
 	private Long id;
 	private LocalDateTime deletedAt;
 
-	public static TitleDeleteResponse toDto(Title title) {
+	public static TitleDeleteResponse toDto(Title title, LocalDateTime deletedAt) {
 		return new TitleDeleteResponse(
 			title.getId(),
-			title.getDeletedAt()
+			deletedAt
 		);
 	}
 	@Override

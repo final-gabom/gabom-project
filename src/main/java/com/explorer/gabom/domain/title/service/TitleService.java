@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.title.service;
 
+  import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,9 +67,13 @@ public class TitleService {
 		Title title = titleRepository.findById(titleId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
+		LocalDateTime deletedAt = LocalDateTime.now();
+
+		TitleDeleteResponse response = TitleDeleteResponse.toDto(title, deletedAt);
+
 		titleRepository.delete(title);
 		log.info("<칭호삭제> 성공 - 삭제된 ID: {}", titleId);
-		return TitleDeleteResponse.toDto(title);
+		return response;
 	}
 
 	@Transactional(readOnly = true)
