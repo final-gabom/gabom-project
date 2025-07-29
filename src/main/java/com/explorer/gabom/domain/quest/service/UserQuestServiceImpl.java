@@ -28,7 +28,8 @@ public class UserQuestServiceImpl implements UserQuestService {
 	@Transactional
 	public void updateProgress(User user, QuestConditionType type, int step) {
 		List<UserQuest> userQuests = userQuestRepository
-			.findByUserAndQuest_QuestConditionTypeAndProgressStatus(user, type, ProgressStatus.IN_PROGRESS);
+			.findByUserAndQuest_QuestConditionTypeAndProgressStatusAndQuest_DeletedFalse(user, type,
+																						 ProgressStatus.IN_PROGRESS);
 
 		for (UserQuest userQuest : userQuests) {
 			userQuest.increaseProgress(step);
@@ -43,7 +44,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 		User user = userRepository.findById(userId)
 								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		UserQuest userQuest = userQuestRepository.findByUser_IdAndId(userId, userQuestId)
+		UserQuest userQuest = userQuestRepository.findByUser_IdAndIdAndQuest_DeletedFalse(userId, userQuestId)
 												 .orElseThrow(
 													 () -> new CustomException(ErrorCode.USER_QUEST_NOT_FOUND));
 
