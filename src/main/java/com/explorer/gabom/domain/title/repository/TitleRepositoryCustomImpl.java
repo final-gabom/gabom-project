@@ -13,7 +13,7 @@ public class TitleRepositoryCustomImpl implements TitleRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public void updateTitleFields(Long titleId, String name,  String description) {
+	public void updateTitle(Long titleId, String name,  String description) {
 		QTitle title = QTitle.title;
 
 		var update = queryFactory.update(title)

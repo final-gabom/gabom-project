@@ -5,9 +5,12 @@ import static com.explorer.gabom.global.exception.ErrorCode.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.explorer.gabom.domain.title.entity.Title;
+import com.explorer.gabom.domain.title.repository.TitleRepository;
 import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
+import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
@@ -26,6 +29,7 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final AttachmentFileRepository fileRepository;
+	private final TitleRepository titleRepository;
 	private final PasswordValidator passwordValidator;
 	private final PasswordEncoder passwordEncoder;
 
@@ -79,6 +83,17 @@ public class UserServiceImpl implements UserService {
 	public void deleteUser(Long userId) {
 		log.info("회원 탈퇴 시작");
 		userRepository.deleteById(userId);
+	}
+
+	// 내 칭호변경
+	@Override
+	public UpdateMainTitleResponse updateMainTitle(Long userId, Long titleId) {
+		Title title = titleRepository.findById(titleId)
+									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		user.setTitle(title);
+		return new UpdateMainTitleResponse(title.getId(), title.getName());
 	}
 
 	@Override
