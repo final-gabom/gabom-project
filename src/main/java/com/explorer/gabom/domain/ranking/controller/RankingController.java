@@ -24,7 +24,8 @@ public class RankingController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<RankingPage>> getRankingPage(
-		@PageableDefault(page = 0, size = 10, sort = "level", direction = Sort.Direction.DESC) Pageable pageable
+		@PageableDefault(page = 0, size = 10, sort = {"level",
+			"exp"}, direction = Sort.Direction.DESC) Pageable pageable
 	) {
 		RankingPage response = rankingService.getRankingPage(pageable);
 		return ResponseEntity.status(HttpStatus.OK)
