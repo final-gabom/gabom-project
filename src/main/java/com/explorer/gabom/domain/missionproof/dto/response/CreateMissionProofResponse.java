@@ -12,12 +12,12 @@ import lombok.Getter;
 public class CreateMissionProofResponse {
 
 	private Long missionProofId;
-	private int rewardPoint;
 
 	private Long writerId;
 	private String fieldType;
 	private String writerNickname;
 	private int writerLevel;
+	private String writerTitle;
 	private String writerProfileImageUrl;
 
 	private String title;

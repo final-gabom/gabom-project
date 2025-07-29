@@ -68,6 +68,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 										 .writerId(user.getId())
 										 .writerNickname(user.getNickname())
 										 .writerLevel(user.getLevel())
+										 .writerTitle(user.getTitle() != null ? user.getTitle().getName() : null)
 										 .writerProfileImageUrl(user.getProfileImg() != null ? user.getProfileImg().getFileUrl() : null)
 										 .title(saved.getTitle())
 										 .content(saved.getContent())
