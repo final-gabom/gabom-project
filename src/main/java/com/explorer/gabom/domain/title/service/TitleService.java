@@ -12,7 +12,6 @@ import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
-import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.dto.response.UserTitleResponse;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.entity.UserTitle;
@@ -49,15 +48,15 @@ public class TitleService {
 
 	@Transactional
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_UPDATED)
-	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
+	public void updateTitle(Long titleId, TitleUpdateRequest request) {
 		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
-		Title title = titleRepository.findById(titleId)
-									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+		titleRepository.findById(titleId)
+					   .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
+		// 조건부 수정
 		titleRepository.updateTitle(titleId, request.getName(), request.getDescription());
 
 		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
-		return TitleUpdateResponse.toDto(title);
 	}
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_DELETED)
@@ -83,6 +82,5 @@ public class TitleService {
 						 .map(UserTitleResponse::toDto)
 						 .collect(Collectors.toList());
 	}
-
 
 }
