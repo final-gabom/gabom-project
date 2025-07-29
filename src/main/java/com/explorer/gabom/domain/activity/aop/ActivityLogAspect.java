@@ -15,7 +15,6 @@ import com.explorer.gabom.domain.activity.entity.UserActivityLog;
 import com.explorer.gabom.domain.activity.repository.AdminActivityLogRepository;
 import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
 import com.explorer.gabom.domain.activity.type.ActivityType;
-import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.TargetIdentifiable;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
@@ -86,12 +85,10 @@ public class ActivityLogAspect {
 				}
 			}
 		}
-		if (result instanceof ApiResponse<?> apiResponse) {
-			Object data = apiResponse.getData();
-			if (data instanceof TargetIdentifiable identifiable) {
-				return identifiable.getTargetId();
-			}
+		if (result instanceof TargetIdentifiable identifiable) {
+			return identifiable.getTargetId();
 		}
+
 		return null;
 	}
 }
