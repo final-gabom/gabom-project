@@ -30,8 +30,7 @@ public class UserBlock {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	//기본 생성자
-	public UserBlock(){};
+
 	
 	// 차단한 유저
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -48,6 +47,10 @@ public class UserBlock {
 	private LocalDateTime createdAt;
 
 	public UserBlock(User blocker, User blocked) {
+		this.blocker = blocker;
+		this.blocked = blocked;
+		this.createdAt = LocalDateTime.now();
 	}
-
+	//기본 생성자
+	public UserBlock(){};
 }

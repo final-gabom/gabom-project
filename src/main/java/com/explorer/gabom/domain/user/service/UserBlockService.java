@@ -35,6 +35,6 @@ public class UserBlockService {
 		}
 			UserBlock userBlock = new UserBlock(blocker, blocked);
 			userBlockRepository.save(userBlock);
-			return new UserBlockResponse(userBlock.getId(), blocked.getId());
+			return new UserBlockResponse(blocker.getId(), blocked.getId());
 	}
 }
