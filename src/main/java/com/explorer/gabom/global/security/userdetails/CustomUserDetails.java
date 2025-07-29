@@ -22,13 +22,15 @@ public class CustomUserDetails implements UserDetails {
 	private String email;
 	private String password;
 	private String role;
+	private User user;
 
 	@Builder
-	private CustomUserDetails(Long userId, String email, String password, UserRole role) {
+	private CustomUserDetails(Long userId, String email, String password, UserRole role, User user) {
 		this.userId = userId;
 		this.email = email;
 		this.password = password;
 		this.role = role.getValue();
+		this.user = user;
 	}
 
 	public static CustomUserDetails from(User user) {
@@ -37,6 +39,7 @@ public class CustomUserDetails implements UserDetails {
 								.email(user.getEmail())
 								.password(user.getPassword())
 								.role(user.getUserRole())
+								.user(user)
 								.build();
 	}
 
@@ -52,6 +55,10 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return "";
+		return String.valueOf(this.userId);
+	}
+
+	public User getUser() {
+		return this.user;
 	}
 }
