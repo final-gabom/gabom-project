@@ -23,6 +23,8 @@ import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 public class TitleService {
 	private final TitleRepository titleRepository;
 	private final UserRepository userRepository;
+	@PersistenceContext
+	private EntityManager em;
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_CREATED)
 	public TitleCreateResponse createTitle(TitleCreateRequest request) {
@@ -51,13 +55,22 @@ public class TitleService {
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_UPDATED)
 	public TitleUpdateResponse updateTitle(Long titleId, TitleUpdateRequest request) {
 		log.info("<칭호수정> 요청 - ID: {}, name: {}, description: {}", titleId, request.getName(), request.getDescription());
-		Title title = titleRepository.findById(titleId)
+		titleRepository.findById(titleId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
+		// 조건부 수정
 		titleRepository.updateTitle(titleId, request.getName(), request.getDescription());
 
+		// 영속성 컨텍스트 초기화
+		em.flush();
+		em.clear();
+
+		// 변경된 값 재조회
+		Title updated = titleRepository.findById(titleId)
+													 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+
 		log.info("<칭호수정> 성공 - 수정된 ID: {}", titleId);
-		return TitleUpdateResponse.toDto(title);
+		return TitleUpdateResponse.toDto(updated);
 	}
 
 	@ActivityLoggable(ActivityType.ADMIN_TITLE_DELETED)
