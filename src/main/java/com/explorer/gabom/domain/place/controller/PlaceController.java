@@ -1,21 +1,28 @@
 package com.explorer.gabom.domain.place.controller;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
+import com.explorer.gabom.domain.place.dto.response.OffsetDto;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
@@ -42,6 +49,23 @@ public class PlaceController {
 	}
 
 	// 탐험 장소 리스트 조회(검색)
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<OffsetDto<PlaceSummary>>> getPlaceList(
+		@RequestParam Sort sort,
+		@RequestParam(required = false) String query,
+		@RequestParam Double lat,
+		@RequestParam Double lng,
+		@RequestParam(defaultValue = "0") Long lastId,
+		@RequestParam(defaultValue = "10") Integer size
+	) {
+		OffsetDto<PlaceSummary> result = placeService.getPlaceList(
+			sort, query, lat, lng, lastId, size
+		);
+		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", result));
+	}
+
+
 
 	// 탐험 장소 상세 조회
 
