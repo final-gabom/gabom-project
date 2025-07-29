@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.quest.entity;
 
+import java.time.LocalDateTime;
+
 import com.explorer.gabom.domain.quest.dto.request.QuestUpdateRequest;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.title.entity.Title;
@@ -43,12 +45,19 @@ public class Quest extends BaseTimeEntity {
 
 	@Column(name = "reward_point", nullable = false)
 	private int rewardPoint;
+
 	@Column(name = "reward_exp", nullable = false)
 	private int rewardExp;
 
 	@ManyToOne
 	@JoinColumn(name = "title_id")
 	private Title rewardTitle;
+
+	@Column(nullable = false)
+	private boolean deleted = false;
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
 
 	public Quest(String title, String description, QuestConditionType questConditionType,
 				 int acquireCondition, int rewardPoint, int rewardExp, Title rewardTitle) {
@@ -76,5 +85,10 @@ public class Quest extends BaseTimeEntity {
 			this.rewardExp = dto.getRewardExp();
 		if (rewardTitle != null)
 			this.rewardTitle = rewardTitle;
+	}
+
+	public void markAsDeleted() {
+		this.deleted = true;
+		this.deletedAt = LocalDateTime.now();
 	}
 }
