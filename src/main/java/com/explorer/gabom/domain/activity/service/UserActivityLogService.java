@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.dto.response.UserActivityLogListResponse;
 import com.explorer.gabom.domain.activity.dto.response.UserActivityLogResponse;
 import com.explorer.gabom.domain.activity.entity.UserActivityLog;
 import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
@@ -23,7 +24,7 @@ public class UserActivityLogService {
 	private final UserActivityLogRepository userActivityLogRepository;
 
 	@Transactional(readOnly = true)
-	public Page<UserActivityLogResponse> getMyLogs(Long userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+	public UserActivityLogListResponse getMyLogs(Long userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
 		log.info("<활동로그조회> 요청 - userId: {}, from: {}, to: {}, page: {}, size: {}", userId, from, to, pageable.getPageNumber(), pageable.getPageSize());
 
 		if (userId == null) {
@@ -33,6 +34,7 @@ public class UserActivityLogService {
 		Page<UserActivityLog> logs = userActivityLogRepository.searchMyLogs(userId, from, to, pageable);
 		log.info("<활동로그조회> 성공 - 총 {}건", logs.getTotalElements());
 
-		return logs.map(UserActivityLogResponse::toDto);
+		Page<UserActivityLogResponse> responsePage = logs.map(UserActivityLogResponse::toDto);
+		return UserActivityLogListResponse.toDto(responsePage);
 	}
 }
