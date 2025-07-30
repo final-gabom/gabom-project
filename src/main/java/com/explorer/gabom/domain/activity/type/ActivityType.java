@@ -12,6 +12,7 @@ public enum ActivityType {
 	QUEST_VIEWED(false, "퀘스트를 전체 조회하였습니다."),
 	TITLE_EARNED(true, "칭호를 획득하였습니다."),
 	AUTH_LOGIN(false, "로그인하였습니다."),
+	VIEW_USER_TITLES(true, "칭호를 조회하였습니다."),
 
 	// 관리자 활동
 	ADMIN_QUEST_CREATED(true, "퀘스트를 등록하였습니다."),

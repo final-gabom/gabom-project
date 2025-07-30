@@ -15,9 +15,23 @@ spring:
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
+
+  # 이메일 인증 시 필요
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
         show_sql: true
@@ -41,3 +55,9 @@ jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
   access-expiration: 3600000  # 1시간
   refresh-expiration: 1209600000  # 14일
+
+
+# redis 설정
+  redis:
+    host: localhost
+    port: 6379

@@ -14,7 +14,6 @@ import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
 import com.explorer.gabom.domain.title.dto.request.TitleUpdateRequest;
 import com.explorer.gabom.domain.title.dto.response.TitleCreateResponse;
 import com.explorer.gabom.domain.title.dto.response.TitleDeleteResponse;
-import com.explorer.gabom.domain.title.dto.response.TitleUpdateResponse;
 import com.explorer.gabom.domain.title.service.TitleService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
@@ -37,12 +36,12 @@ public class AdminTitleController {
 	}
 
 	@PatchMapping("/{titleId}")
-	public ResponseEntity<ApiResponse<TitleUpdateResponse>> updateTitle(
+	public ResponseEntity<ApiResponse<Void>> updateTitle(
 		@PathVariable Long titleId,
 		@RequestBody @Valid TitleUpdateRequest request) {
 
-		TitleUpdateResponse updated = titleService.updateTitle(titleId, request);
-		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 수정되었습니다.", updated));
+		titleService.updateTitle(titleId, request);
+		return ResponseEntity.ok(ApiResponse.success("칭호가 성공적으로 수정되었습니다."));
 	}
 
 	@DeleteMapping("/{titleId}")

@@ -12,12 +12,12 @@ import com.explorer.gabom.domain.user.entity.User;
 
 public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 
-	List<UserQuest> findByUserAndQuest_QuestConditionTypeAndProgressStatus(
+	List<UserQuest> findByUserAndQuest_QuestConditionTypeAndProgressStatusAndQuest_DeletedFalse(
 		User user,
 		QuestConditionType questConditionType,
 		ProgressStatus progressStatus
 	);
 
-	Optional<UserQuest> findByUser_IdAndId(Long userId, Long id);
+	Optional<UserQuest> findByUser_IdAndIdAndQuest_DeletedFalse(Long userId, Long id);
 
 }
