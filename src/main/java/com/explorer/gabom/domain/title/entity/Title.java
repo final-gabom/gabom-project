@@ -29,7 +29,4 @@ public class Title extends BaseTimeEntity {
 		this.description = description;
 	}
 
-	public String getValue() {
-		return this.name;
-	}
 }

@@ -59,7 +59,7 @@ public class PlaceService {
 		place.increaseViewCount();
 
 		User user = place.getUser();
-		String userTitle = user.getTitle() != null ? user.getTitle().getValue() : null;
+		String userTitle = user.getTitle() != null ? user.getTitle().getName() : null;
 
 		UserSummaryDto writer = UserSummaryDto.builder()
 											  .id(user.getId())
