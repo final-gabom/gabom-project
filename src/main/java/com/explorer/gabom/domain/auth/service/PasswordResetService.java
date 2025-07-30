@@ -24,7 +24,7 @@ public class PasswordResetService {
     // 인증코드 전송
     public void sendResetCode(PasswordResetRequest request) {
         String email = request.getEmail();
-        if (!userRepository.existsByNickname(email)) {
+        if (!userRepository.existsByEmail(email)) {
             log.warn("가입되지 않은 이메일 요청: {}", email);
             throw new CustomException(ErrorCode.EMAIL_NOT_FOUND);
         }
