@@ -2,6 +2,8 @@ package com.explorer.gabom.domain.auth.service;
 
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.EmailRequest;
+import com.explorer.gabom.domain.auth.dto.request.PasswordResetRequest;
+import com.explorer.gabom.global.validator.PasswordValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -42,5 +44,11 @@ public class EmailCodeStorageService {
     public void setEmailVerified(EmailCodeVerifyRequest request, long expirationSeconds) {
         String email = request.getEmail();
         redisTemplate.opsForValue().set("EMAIL_VERIFIED:" + email, "true", expirationSeconds, TimeUnit.SECONDS);
+    }
+
+    // 비밀번호 재설정코드 저장
+    public void savePasswordResetCode(PasswordResetRequest request, String passWordCode,long expirationSeconds) {
+        String email = request.getEmail();
+        redisTemplate.opsForValue().set("PASSWORD_RESET_CODE:" + email, passWordCode, expirationSeconds, TimeUnit.SECONDS);
     }
 }
