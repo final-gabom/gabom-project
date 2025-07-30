@@ -3,6 +3,8 @@ package com.explorer.gabom.domain.quest.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.explorer.gabom.domain.quest.entity.UserQuest;
@@ -19,5 +21,7 @@ public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 	);
 
 	Optional<UserQuest> findByUser_IdAndIdAndQuest_DeletedFalse(Long userId, Long id);
+
+	Page<UserQuest> findByUser_IdAndQuest_DeletedFalse(Long userId, Pageable pageable);
 
 }
