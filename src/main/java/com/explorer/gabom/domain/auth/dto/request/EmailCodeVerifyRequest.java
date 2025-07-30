@@ -14,4 +14,8 @@ public class EmailCodeVerifyRequest {
     private final String email;
     @NotBlank(message = "인증코드 입력은 필수입니다.")
     private final String code;
+
+    public static EmailCodeVerifyRequest onlyEmail(String email) {
+        return new EmailCodeVerifyRequest(email,null);
+    }
 }

@@ -32,15 +32,15 @@ public class EmailCodeStorageService {
     }
 
     // 인증 완료 여부 확인
-    public boolean isEmailVerified(EmailCodeVerifyRequest request) {
-        String email = request.getEmail();
+    public boolean isEmailVerified(EmailCodeVerifyRequest verifiedRequest) {
+        String email = verifiedRequest.getEmail();
         String checkEmail = redisTemplate.opsForValue().get("EMAIL_VERIFIED:" + email);
         return "true".equals(checkEmail);
     }
 
     // 인증 완료 상태 저장
-    public void setEmailVerified(EmailCodeVerifyRequest request, long expirationSeconds) {
-        String email = request.getEmail();
+    public void setEmailVerified(EmailCodeVerifyRequest verifiedRequest, long expirationSeconds) {
+        String email = verifiedRequest.getEmail();
         redisTemplate.opsForValue().set("EMAIL_VERIFIED:" + email, "true", expirationSeconds, TimeUnit.SECONDS);
     }
 }
