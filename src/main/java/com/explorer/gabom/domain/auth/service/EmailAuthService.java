@@ -55,7 +55,7 @@ public class EmailAuthService {
         //이미 인증된 이메일인지 확인
         if (emailCodeStorageService.isEmailVerified(request)) {
             log.warn("이미 인증된 이메일: {}", email);
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
         // redis에 저장된 인증코드 가져오기
         String savedCode = emailCodeStorageService.getEmailAuthCode(new EmailRequest(email));
