@@ -4,7 +4,7 @@ import org.hibernate.annotations.SQLDelete;
 
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
-import com.explorer.gabom.global.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

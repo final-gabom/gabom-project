@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
+import com.explorer.gabom.domain.title.repository.TitleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +22,7 @@ import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.global.validator.PasswordValidator;
 
 class UserServiceImplTest {
@@ -37,7 +38,8 @@ class UserServiceImplTest {
 
 	@Mock
 	private PasswordValidator passwordValidator;
-
+	@Mock
+	private TitleRepository titleRepository;
 	private UserServiceImpl userService;
 
 	private User user;
@@ -45,7 +47,7 @@ class UserServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
-		userService = new UserServiceImpl(userRepository, attachmentFileRepository, passwordValidator, passwordEncoder);
+		userService = new UserServiceImpl(userRepository, attachmentFileRepository,titleRepository, passwordValidator, passwordEncoder);
 
 		// 공통 User 객체 생성
 		Long userId = 1L;
