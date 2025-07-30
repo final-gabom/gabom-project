@@ -1,26 +1,34 @@
 package com.explorer.gabom.domain.place.repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.file.entity.QAttachmentFile;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
-import com.explorer.gabom.domain.place.dto.response.OffsetDto;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.QPlace;
+import com.explorer.gabom.domain.place.entity.QPlaceFile;
+import com.explorer.gabom.domain.place.mapper.PlaceSummaryMapper;
 import com.explorer.gabom.domain.title.entity.QTitle;
-import com.explorer.gabom.domain.title.entity.QUserTitle;
 import com.explorer.gabom.domain.user.entity.QUser;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -71,12 +79,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			throw new CustomException(ErrorCode.NO_FIELDS_TO_UPDATE);
 		}
 
-		long updated = update
-			.where(
-				place.id.eq(placeId),
-				place.user.id.eq(userId)
-			)
-			.execute();
+		long updated = update.where(place.id.eq(placeId), place.user.id.eq(userId)).execute();
 
 		// 서비스에서 PLACE_NO_PERMISSION 처리
 		if (updated == 0) {
@@ -84,92 +87,105 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 		}
 
 		// 최종 상태 재조회 후 반환
-		return queryFactory
-			.selectFrom(place)
-			.where(place.id.eq(placeId))
-			.fetchOne();
+		return queryFactory.selectFrom(place).where(place.id.eq(placeId)).fetchOne();
 	}
 
 	@Override
-	public OffsetDto<PlaceSummary> findPlaceSummaries(Sort sort, String query, Double lat, Double lng, Long lastId,
-													  Integer size) {
+	public PageResponse<PlaceSummary> findPlaceSummaries(String keyword, Double lat, Double lng, Pageable pageable) {
 		QPlace place = QPlace.place;
-		QUser user = QUser.user;
-		QUserTitle userTitle = QUserTitle.userTitle;
-		QTitle title = QTitle.title;
+		QPlaceFile placeFile = QPlaceFile.placeFile;
+		QAttachmentFile file = QAttachmentFile.attachmentFile;
+		QUser writer = QUser.user;
+		QAttachmentFile subFile = new QAttachmentFile("sf");
+		QTitle title = new QTitle("title");
 
-		// 삭제되지 않은 장소만 조회
-		BooleanBuilder builder = new BooleanBuilder().and(place.deletedAt.isNull());
+		BooleanBuilder builder = getKeywordFilter(keyword).and(place.deletedAt.isNull());
 
-		// 장소 이름 검색 & 주소 검색
-		if (query != null && !query.isBlank()) {
-			builder.and(place.title.containsIgnoreCase(query)
-				   .or(place.address.containsIgnoreCase(query)));
-		}
+		NumberExpression<Double> distanceExpr = (lat != null && lng != null)
+												? getDistanceExpression(lat, lng, place.lat, place.lng)
+													.divide(1000.0)        // ➜ km 단위
+												: null;
 
-		// 커서 조건 동적 구성
-		if (lastId != null) {
-			BooleanExpression cursorCondition = buildCursorCondition(orderList, place, lastId, lat, lng);
-			if (cursorCondition != null) {
-				builder.and(cursorCondition);
-			}
-		}
-
-		JPAQuery<PlaceSummary> baseQuery = queryFactory
-			.select(Projections.constructor(PlaceSummary.class,
-											place.id,
-											place.title,
-											place.address,
-											place.lat,
-											place.lng,
-											Expressions.constant("https://dummy.image.url"), // imageUrl
-											Expressions.constant(0), // proofCount
-											Expressions.constant(0.0), // avgRating
-											place.viewCount,
-											user.id,
-											user.nickname,
-											user.level,
-											title.name
-			))
+		JPAQuery<Tuple> query = queryFactory
+			.select(
+				place.id,
+				place.title,
+				place.address,
+				place.lat,
+				place.lng,
+				place.viewCount,
+				writer.id,
+				writer.nickname,
+				writer.level,
+				writer.title.name,
+				file.fileId,
+				file.filePath,
+				distanceExpr.as("distance")
+			)
 			.from(place)
-			.join(place.user, user)
-			.leftJoin(userTitle).on(userTitle.user.eq(user))
-			.leftJoin(userTitle.title, title)
+			.join(place.user, writer)
+			.leftJoin(writer.title, title)
+			.leftJoin(placeFile).on(placeFile.place.eq(place))
+			.leftJoin(file).on(file.eq(placeFile.file),
+							   file.fileId.eq(JPAExpressions.select(subFile.fileId)
+															.from(subFile)
+															.join(placeFile).on(placeFile.file.eq(subFile))
+															.where(placeFile.place.eq(place), subFile.deleted.isFalse())
+															.orderBy(subFile.orderIdx.asc())
+															.limit(1)))
 			.where(builder);
 
-		// ✅ 거리 기반 정렬 여부 확인
-		Sort.Order distanceOrder = sort.getOrderFor("distance");
+		applySort(query, pageable, distanceExpr);
+		Long total = Optional.ofNullable(queryFactory
+											 .select(place.count())
+											 .from(place)
+											 .join(place.user, writer)
+											 .where(builder)
+											 .fetchOne()).orElse(0L);
 
-		List<PlaceSummary> content;
+		List<Tuple> tuples = query.offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
 
+		List<PlaceSummary> content = tuples.stream()
+										   .map(PlaceSummaryMapper::fromTuple)
+										   .toList();
 
-		NumberExpression<Double> distanceExpr = getDistanceExpression(lat, lng, place.lat, place.lng);
-
-
-
-		return new OffsetDto<>(
-			content,
-			null, size, null, null, hasNext
-		);
+		return PageResponse.toDto(new PageImpl<>(content, pageable, total));
 	}
 
-	private BooleanExpression buildCursorCondition(Sort sort, QPlace place, Long lastId, Double lat, Double lng) {
-		// 정렬 필드 목록 구성 (id 보조 정렬 필드 항상 추가)
-		if (sort.stream().noneMatch(order -> order.getProperty().equals("id"))) {
-			sort = sort.and(Sort.by("id").descending());
+	private void applySort(JPAQuery<Tuple> query, Pageable pageable, NumberExpression<Double> distanceExpr) {
+		PathBuilder<Place> entityPath = new PathBuilder<>(Place.class, "place");
+
+		for (Sort.Order order : pageable.getSort()) {
+			if (order.getProperty().equals("distance") && distanceExpr != null) {
+				query.orderBy(order.isAscending() ? distanceExpr.asc() : distanceExpr.desc());
+			} else {
+				query.orderBy(new OrderSpecifier<>(
+					order.isAscending() ? Order.ASC : Order.DESC,
+					entityPath.getComparable(order.getProperty(), Comparable.class)
+				));
+			}
 		}
+	}
 
-		BooleanExpression condition = null;
-
-
+	private BooleanBuilder getKeywordFilter(String keyword) {
+		QPlace place = QPlace.place;
+		if (keyword == null || keyword.isBlank())
+			return new BooleanBuilder();
+		return new BooleanBuilder().and(
+			place.title.containsIgnoreCase(keyword)
+					   .or(place.address.containsIgnoreCase(keyword))
+		);
 	}
 
 	private NumberExpression<Double> getDistanceExpression(double lat, double lng, NumberPath<Double> targetLat,
 														   NumberPath<Double> targetLng) {
+
 		return Expressions.numberTemplate(
 			Double.class,
-			"6371 * acos(cos(radians({0})) * cos(radians({1})) * cos(radians({2}) - radians({3})) + sin(radians({0})) * sin(radians({1})))",
-			lat, targetLat, lng, targetLng
-		).as("distance");
+			//   ST_Distance_Sphere(POINT(lon1, lat1), POINT(lon2, lat2))
+			"ST_Distance_Sphere(point({1}, {0}), point({3}, {2}))",
+			lat, lng,        // {0}: refLat  {1}: refLng
+			targetLat, targetLng   // {2}: place.lat {3}: place.lng
+		);
 	}
 }

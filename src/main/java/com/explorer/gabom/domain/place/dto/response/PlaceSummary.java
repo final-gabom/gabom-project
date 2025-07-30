@@ -1,20 +1,23 @@
 package com.explorer.gabom.domain.place.dto.response;
 
-import lombok.Builder;
+import com.explorer.gabom.domain.file.dto.ThumbnailDto;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
 @Builder
-public record PlaceSummary(
-	Long placeId,
-	String title,
-	String address,
-	Double latitude,
-	Double longitude,
-	String imageUrl,
-	Integer proofCount,
-	Double avgRating,
-	Integer viewCount,
-	Long writerId,
-	String nickname,
-	Integer level,
-	String writerTitle
-) {}
+public class PlaceSummary {
+	private final Long placeId;
+	private final String title;
+	private final String address;
+	private final Double latitude;
+	private final Double longitude;
+	private final Integer missionProofCount;
+	private final Double avgRating;
+	private final Integer viewCount;
+	private final UserSummaryDto writer;
+	private final ThumbnailDto thumbnail;
+	private final Double distance;
+}
