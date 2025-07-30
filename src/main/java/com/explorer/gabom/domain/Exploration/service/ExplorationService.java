@@ -8,12 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.Exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.Exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.Exploration.repository.ExplorationRepository;
+import com.explorer.gabom.domain.Exploration.vo.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.util.DistanceCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,5 +35,14 @@ public class ExplorationService {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Place place = placeRepository.findById(placeId).orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+
+
+		double lat1 = user.getLat();
+		double lng1 = user.getLng();
+		double lat2 = place.getLat();
+		double lng2 = place.getLng();
+
+		double distance = DistanceCalculator.calculate(lat1, lng1, lat2, lng2);
+		int reward = RewardCalculator.calculate(distance);
 	}
 }
