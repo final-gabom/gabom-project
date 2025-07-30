@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.service.UserQuestService;
+import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
@@ -41,11 +43,14 @@ public class UserQuestController {
 	@GetMapping
 	public ResponseEntity<ApiResponse<PageResponse<UserQuestDto>>> getProgress(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PageableDefault(page = 0, size = 10, sort = {"progressStatus",
-			"completedAt"}, direction = Sort.Direction.ASC) Pageable pageable
+		@PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+		@RequestParam(value = "status", required = false) ProgressStatus progressStatus
 	) {
 		PageResponse<UserQuestDto> response = userQuestService.getProgress(
-			userDetails.getUserId(), pageable);
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("유저의 퀘스트 조회를 성공했습니다.", response));
+			userDetails.getUserId(), progressStatus, pageable);
+
+		return ResponseEntity.ok(
+			ApiResponse.success("유저 퀘스트 조회에 성공했습니다.", response)
+		);
 	}
 }
