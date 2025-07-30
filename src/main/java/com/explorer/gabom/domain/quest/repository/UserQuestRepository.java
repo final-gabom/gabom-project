@@ -24,4 +24,10 @@ public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 
 	Page<UserQuest> findByUser_IdAndQuest_DeletedFalse(Long userId, Pageable pageable);
 
+	Page<UserQuest> findByUser_IdAndQuest_DeletedFalseAndProgressStatus(
+		Long userId,
+		ProgressStatus progressStatus,
+		Pageable pageable
+	);
+
 }
