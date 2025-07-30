@@ -31,6 +31,12 @@ public class UserController {
 
 	private final UserService userService;
 
+	@GetMapping("/me")
+	public ResponseEntity<ApiResponse<UserDto>> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		UserDto userDto = userService.getUser(userDetails.getUserId());
+		return ResponseEntity.ok(ApiResponse.success("내 프로필 조회를 성공하였습니다.", userDto));
+	}
+
 	@GetMapping("/{userId}")
 	public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Long userId) {
 		UserDto response = userService.getUser(userId);
