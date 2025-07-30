@@ -4,7 +4,7 @@ public class DistanceCalculator {
 
 	private static final int EARTH_RADIUS = 6371000;
 
-	public static double calculate(double lat1, double lng1, double lat2, double lng2) {
+	public static double calculateMeters(double lat1, double lng1, double lat2, double lng2) {
 		double dLat = Math.toRadians(lat2 - lat1);
 		double dLon = Math.toRadians(lng2 - lng1);
 
@@ -13,7 +13,10 @@ public class DistanceCalculator {
 				Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
 		return EARTH_RADIUS * c;
+	}
+
+	public static double calculateKm(double lat1, double lng1, double lat2, double lng2) {
+		return calculateMeters(lat1, lng1, lat2, lng2) / 1000.0;
 	}
 }
