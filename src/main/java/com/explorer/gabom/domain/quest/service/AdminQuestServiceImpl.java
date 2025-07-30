@@ -53,7 +53,7 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 	@Transactional
 	@ActivityLoggable(ActivityType.ADMIN_QUEST_UPDATED)
 	public QuestUpdateResponse updateQuest(Long questId, QuestUpdateRequest dto) {
-		Quest quest = questRepository.findById(questId)
+		Quest quest = questRepository.findByIdAndDeletedFalse(questId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.QUEST_NOT_FOUND));
 
 		Title rewardTitle = null;
@@ -70,11 +70,13 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 	@Transactional
 	@ActivityLoggable(ActivityType.ADMIN_QUEST_DELETED)
 	public QuestDeleteResponse deleteQuest(Long questId) {
-		Quest quest = questRepository.findById(questId)
+		Quest quest = questRepository.findByIdAndDeletedFalse(questId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.QUEST_NOT_FOUND));
 
-		questRepository.delete(quest);
-		return QuestDeleteResponse.fromId(questId);
+		quest.markAsDeleted();
+		questRepository.save(quest);
+
+		return QuestDeleteResponse.toDto(quest);
 	}
 
 }
