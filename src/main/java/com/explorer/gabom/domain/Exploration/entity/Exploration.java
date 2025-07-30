@@ -3,7 +3,6 @@ package com.explorer.gabom.domain.Exploration.entity;
 import java.time.LocalDateTime;
 
 import com.explorer.gabom.domain.place.entity.Place;
-import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
