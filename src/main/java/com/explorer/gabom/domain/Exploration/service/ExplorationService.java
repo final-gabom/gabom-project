@@ -54,8 +54,8 @@ public class ExplorationService {
 		Exploration exploration = Exploration.builder()
 											 .user(user)
 											 .place(place)
-											 .rewordExp(rewardExp)
-											 .rewordPoint(rewardPoint)
+											 .rewardExp(rewardExp)
+											 .rewardPoint(rewardPoint)
 											 .startAt(startAt)
 											 .endAt(endAt)
 											 .build();

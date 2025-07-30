@@ -31,19 +31,19 @@ public class Exploration extends BaseTimeEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Place place;
 
-	private int rewordPoint;
-	private int rewordExp;
+	private int rewardPoint;
+	private int rewardExp;
 
 	private LocalDateTime startAt;
 	private LocalDateTime endAt;
 
 	@Builder
-	public Exploration(User user, Place place, int rewordPoint, int rewordExp,
+	public Exploration(User user, Place place, int rewardPoint, int rewardExp,
 					   LocalDateTime startAt, LocalDateTime endAt) {
 		this.user = user;
 		this.place = place;
-		this.rewordPoint = rewordPoint;
-		this.rewordExp = rewordExp;
+		this.rewardPoint = rewardPoint;
+		this.rewardExp = rewardExp;
 		this.startAt = startAt;
 		this.endAt = endAt;
 	}
