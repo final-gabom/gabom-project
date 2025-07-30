@@ -38,12 +38,13 @@ public class ExplorationService {
 		Place place = placeRepository.findById(placeId).orElseThrow(
 			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
-		double lat1 = user.getLat();
-		double lng1 = user.getLng();
-		double lat2 = place.getLat();
-		double lng2 = place.getLng();
+		double userLat = request.getLat();
+		double userLng = request.getLng();
 
-		double distance = DistanceCalculator.calculate(lat1, lng1, lat2, lng2);
+		double placeLat = place.getLat();
+		double placeLng = place.getLng();
+
+		double distance = DistanceCalculator.calculate(userLat, userLng, placeLat, placeLng);
 		int rewardExp = RewardCalculator.calculate(distance);
 		int rewardPoint = RewardCalculator.calculate(distance);
 
