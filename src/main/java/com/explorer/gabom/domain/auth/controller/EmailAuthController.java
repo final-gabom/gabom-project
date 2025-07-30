@@ -24,8 +24,9 @@ public class EmailAuthController {
         emailAuthService.sendAuthCode(request);
         return ResponseEntity.ok(ApiResponse.success("인증 코드를 이메일로 발송했습니다."));
     }
+
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<Void>>verifiedEmail(@RequestBody EmailCodeVerifyRequest request) {
+    public ResponseEntity<ApiResponse<Void>> verifiedEmail(@RequestBody EmailCodeVerifyRequest request) {
         emailAuthService.verifyAuthCode((request));
         return ResponseEntity.ok(ApiResponse.success("이메일 인증이 완료 되었습니다."));
     }
