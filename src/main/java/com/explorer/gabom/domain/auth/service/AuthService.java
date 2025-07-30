@@ -32,7 +32,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         // 이메일 인증 체크
-        EmailCodeVerifyRequest verifiedRequest = new EmailCodeVerifyRequest(request.getEmail(), null);
+        EmailCodeVerifyRequest verifiedRequest = EmailCodeVerifyRequest.onlyEmail(request.getEmail());
         if (!emailCodeStorageService.isEmailVerified(verifiedRequest)) {
             throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
         }

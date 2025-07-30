@@ -28,7 +28,7 @@ public class AuthController {
     // 포스트맨 회원가입시 테스트용
     @PostMapping("/test/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> testSignup(@RequestBody @Valid SignupRequest requestDto) {
-        SignupResponse response = authService.signup(requestDto);
+        SignupResponse response = authService.testSignup(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("회원가입을 성공했습니다.", response));
     }
 
