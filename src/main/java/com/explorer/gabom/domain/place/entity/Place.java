@@ -93,4 +93,9 @@ public class Place extends BaseTimeEntity {
 		this.status = PlaceStatus.DELETED;
 	}
 
+	public void increaseViewCount() {
+		this.viewCount += 1;
+	}
+
+
 }
