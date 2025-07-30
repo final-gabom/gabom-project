@@ -26,7 +26,7 @@ public class AttachmentFileServiceImpl implements AttachmentFileService {
 
 	@Override
 	@Transactional
-	public UploadFileResponse uploadImageFile(MultipartFile file, String fileType, Long refId) throws IOException {
+	public UploadFileResponse uploadImageFile(MultipartFile file, FileType fileType, Long refId) throws IOException {
 		String hash = this.fileStorageService.uploadImage(file);
 
 		String mimeType = MimeUtil.getMimeType(file.getOriginalFilename());
@@ -35,11 +35,11 @@ public class AttachmentFileServiceImpl implements AttachmentFileService {
 		}
 
 		AttachmentFile attachmentFile = AttachmentFile.builder()
-													  .fileType(FileType.valueOf(fileType))
+													  .fileType(fileType)
 													  .fileName(file.getOriginalFilename())
 													  .fileSize(file.getSize())
 													  .refId(refId)
-													  .mimeType(MimeUtil.getMimeType(file.getOriginalFilename()))
+													  .mimeType(mimeType)
 													  .hash(hash)
 													  .filePath(fileStorageService.getTargetPath(hash))
 													  .build();
