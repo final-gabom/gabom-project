@@ -59,6 +59,7 @@ public class AttachmentFile {
 		this.refId = refId;
 		this.mimeType = mimeType;
 		this.hash = hash;
+		this.filePath = filePath;
 		this.orderIdx = orderIdx;
 	}
 

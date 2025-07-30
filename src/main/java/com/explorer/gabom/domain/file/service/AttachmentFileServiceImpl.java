@@ -28,8 +28,6 @@ public class AttachmentFileServiceImpl implements AttachmentFileService {
 	@Transactional
 	public UploadFileResponse uploadImageFile(MultipartFile file, String fileType, Long refId) throws IOException {
 		String hash = this.fileStorageService.uploadImage(file);
-		System.out.println("hash: " + hash);
-		System.out.println("filePath: " + fileStorageService.getTargetPath(hash));
 
 		String mimeType = MimeUtil.getMimeType(file.getOriginalFilename());
 		if (mimeType == null || !mimeType.startsWith("image/")) {
@@ -47,6 +45,7 @@ public class AttachmentFileServiceImpl implements AttachmentFileService {
 													  .build();
 
 		AttachmentFile savedFile = this.attachmentFileRepository.save(attachmentFile);
+		System.out.println("savedFilePath: " + savedFile.getFilePath());
 
 		return UploadFileResponse.toDto(savedFile);
 	}

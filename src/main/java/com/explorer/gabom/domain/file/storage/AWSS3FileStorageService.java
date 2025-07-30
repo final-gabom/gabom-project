@@ -57,10 +57,6 @@ public class AWSS3FileStorageService implements FileStorageService {
 	@Override
 	public String uploadImage(MultipartFile file) throws IOException {
 		String hash = ResourceHashUtil.generateHash(file.getInputStream());
-
-		log.debug("hash = {}", hash);
-		log.debug("targetPath = {}", getTargetPath(hash));
-		log.debug("keyPrefix = {}", keyPrefix);
 		uploadToS3(file, hash, true);
 		return hash;
 	}
