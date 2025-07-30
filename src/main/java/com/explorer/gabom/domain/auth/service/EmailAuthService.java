@@ -1,5 +1,8 @@
 package com.explorer.gabom.domain.auth.service;
 
+import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,8 +18,12 @@ public class EmailAuthService {
 	private final RedisService redisService;
 
 	private static final long AUTH_CODE_EXPIRATION_SECONDS = 300;
+	private final UserRepository userRepository;
 
 	public void sendAuthCode(EmailRequest request) {
+		if (userRepository.existsByEmail(request.getEmail())) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+		}
 		String authCode = generateRandomCode();
 		redisService.saveEmailAuthCode(request, authCode, AUTH_CODE_EXPIRATION_SECONDS);
 
