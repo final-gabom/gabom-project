@@ -34,7 +34,7 @@ public class UserDto {
 		return UserDto.builder().id(user.getId())
 					  .nickname(user.getNickname())
 					  .email(user.getEmail())
-					  .profileImgUrl(user.getProfileImg() != null ? user.getProfileImg().getFileUrl() : null)
+					  .profileImgUrl(user.getProfileImg() != null ? user.getProfileImg().getFilePath() : null)
 					  .title(user.getTitle() != null ? TitleDto.toDto(user.getTitle()) : null)
 					  .address(user.getAddress() != null ? user.getAddress() : null)
 					  .level(user.getLevel())

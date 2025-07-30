@@ -1,4 +1,4 @@
-package com.explorer.gabom.global.file.util;
+package com.explorer.gabom.domain.file.util;
 
 import org.springframework.util.StringUtils;
 

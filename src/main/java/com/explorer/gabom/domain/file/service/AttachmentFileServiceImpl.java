@@ -1,0 +1,54 @@
+package com.explorer.gabom.domain.file.service;
+
+import java.io.IOException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.explorer.gabom.domain.file.dto.response.UploadFileResponse;
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.storage.FileStorageService;
+import com.explorer.gabom.domain.file.type.FileType;
+import com.explorer.gabom.domain.file.util.MimeUtil;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class AttachmentFileServiceImpl implements AttachmentFileService {
+
+	private final FileStorageService fileStorageService;
+	private final AttachmentFileRepository attachmentFileRepository;
+
+	@Override
+	@Transactional
+	public UploadFileResponse uploadImageFile(MultipartFile file, String fileType, Long refId) throws IOException {
+		String hash = this.fileStorageService.uploadImage(file);
+		System.out.println("hash: " + hash);
+		System.out.println("filePath: " + fileStorageService.getTargetPath(hash));
+
+		String mimeType = MimeUtil.getMimeType(file.getOriginalFilename());
+		if (mimeType == null || !mimeType.startsWith("image/")) {
+			throw new CustomException(ErrorCode.INVALID_FILE_TYPE);
+		}
+
+		AttachmentFile attachmentFile = AttachmentFile.builder()
+													  .fileType(FileType.valueOf(fileType))
+													  .fileName(file.getOriginalFilename())
+													  .fileSize(file.getSize())
+													  .refId(refId)
+													  .mimeType(MimeUtil.getMimeType(file.getOriginalFilename()))
+													  .hash(hash)
+													  .filePath(fileStorageService.getTargetPath(hash))
+													  .build();
+
+		AttachmentFile savedFile = this.attachmentFileRepository.save(attachmentFile);
+
+		return UploadFileResponse.toDto(savedFile);
+	}
+
+}

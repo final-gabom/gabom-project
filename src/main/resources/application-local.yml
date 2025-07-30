@@ -45,11 +45,11 @@ spring:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
       region:
-        static: ap-northeast-2
+        static: us-east-2
       s3:
         bucket: ${AWS_BUCKET_NAME}
-      key:
-        prefix: test/images/
+        key:
+          prefix: test/
 
 jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
