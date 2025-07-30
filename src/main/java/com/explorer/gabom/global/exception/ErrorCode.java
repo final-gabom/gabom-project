@@ -38,7 +38,8 @@ public enum ErrorCode {
 	INCORRECT_PASSWORD(HttpStatus.FORBIDDEN, "비밀번호가 일치하지 않습니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-
+	EXPIRED_CODE(HttpStatus.UNAUTHORIZED,"만료된 인증코드입니다."),
+	CODE_NOT_MATCH(HttpStatus.FORBIDDEN, "인증코드가 일치하지 않습니다."),
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 
@@ -51,7 +52,7 @@ public enum ErrorCode {
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
 	USER_QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 퀘스트를 찾을 수 없습니다."),
 	NOT_COMPLETED(HttpStatus.BAD_REQUEST, "퀘스트가 완료되지 않았습니다."),
-	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다.");
+	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."), ;
 
 	private final HttpStatus httpStatus;
 	private final String message;
