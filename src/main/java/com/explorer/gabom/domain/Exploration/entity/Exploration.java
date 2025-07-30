@@ -1,0 +1,51 @@
+package com.explorer.gabom.domain.Exploration.entity;
+
+import java.time.LocalDateTime;
+
+import com.explorer.gabom.domain.place.entity.Place;
+import com.explorer.gabom.domain.place.entity.PlaceStatus;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.entity.BaseTimeEntity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Getter
+@NoArgsConstructor
+public class Exploration extends BaseTimeEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private User user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Place place;
+
+	private int rewordPoint;
+	private int rewordExp;
+
+	private LocalDateTime startAt;
+	private LocalDateTime endAt;
+
+	@Builder
+	public Exploration(User user, Place place, int rewordPoint, int rewordExp,
+					   LocalDateTime startAt, LocalDateTime endAt) {
+		this.user = user;
+		this.place = place;
+		this.rewordPoint = rewordPoint;
+		this.rewordExp = rewordExp;
+		this.startAt = startAt;
+		this.endAt = endAt;
+	}
+}
