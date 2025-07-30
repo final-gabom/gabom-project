@@ -28,4 +28,5 @@ public class Title extends BaseTimeEntity {
 		this.name = name;
 		this.description = description;
 	}
+
 }

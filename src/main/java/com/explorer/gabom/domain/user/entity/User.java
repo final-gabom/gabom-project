@@ -10,7 +10,7 @@ import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
-import com.explorer.gabom.global.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
