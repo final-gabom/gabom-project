@@ -1,0 +1,18 @@
+package com.explorer.gabom.domain.auth.dto.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+
+public class EmailCodeVerifyRequest {
+    @Email
+    @NotBlank(message = "이메일을 입력해주세요.")
+    private final String email;
+    @NotBlank(message = "인증코드 입력은 필수입니다.")
+    private final String code;
+}
