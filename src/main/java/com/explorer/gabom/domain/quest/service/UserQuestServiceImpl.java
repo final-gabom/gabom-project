@@ -2,8 +2,11 @@ package com.explorer.gabom.domain.quest.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
@@ -11,6 +14,7 @@ import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -61,5 +65,12 @@ public class UserQuestServiceImpl implements UserQuestService {
 		user.addTitle(userQuest.getQuest().getRewardTitle());
 
 		return QuestRewardResponse.toDto(userQuest.getQuest());
+	}
+
+	@Override
+	public PageResponse<UserQuestDto> getProgress(Long userId, Pageable pageable) {
+		Page<UserQuestDto> userQuestDtoPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalse(userId, pageable)
+																 .map(UserQuestDto::toDto);
+		return PageResponse.toDto(userQuestDtoPage);
 	}
 }
