@@ -15,7 +15,7 @@ import com.explorer.gabom.domain.auth.dto.request.EmailRequest;
 public class EmailAuthService {
 
 	private final JavaMailSender emailSender;
-	private final RedisService redisService;
+	private final EmailCodeStorageService redisService;
 
 	private static final long AUTH_CODE_EXPIRATION_SECONDS = 300;
 	private final UserRepository userRepository;

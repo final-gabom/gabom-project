@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class RedisService {
+public class EmailCodeStorageService {
 	public final RedisTemplate<String, String> redisTemplate;
 
 	// 인증 코드 저장
