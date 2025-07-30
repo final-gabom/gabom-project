@@ -68,9 +68,17 @@ public class UserQuestServiceImpl implements UserQuestService {
 	}
 
 	@Override
-	public PageResponse<UserQuestDto> getProgress(Long userId, Pageable pageable) {
-		Page<UserQuestDto> userQuestDtoPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalse(userId, pageable)
-																 .map(UserQuestDto::toDto);
+	public PageResponse<UserQuestDto> getProgress(Long userId, ProgressStatus progressStatus, Pageable pageable) {
+		Page<UserQuest> userQuestPage;
+
+		if (progressStatus != null) {
+			userQuestPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalseAndProgressStatus(
+				userId, progressStatus, pageable);
+		} else {
+			userQuestPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalse(userId, pageable);
+		}
+
+		Page<UserQuestDto> userQuestDtoPage = userQuestPage.map(UserQuestDto::toDto);
 		return PageResponse.toDto(userQuestDtoPage);
 	}
 }
