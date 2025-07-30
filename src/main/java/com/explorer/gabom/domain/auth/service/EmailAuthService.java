@@ -46,14 +46,14 @@ public class EmailAuthService {
     }
 
     // 이메일 인증코드 검증
-    public void verifyAuthCode(EmailCodeVerifyRequest request) {
-        String email = request.getEmail();
-        String code = request.getCode();
+    public void verifyAuthCode(EmailCodeVerifyRequest verifiedRequest) {
+        String email = verifiedRequest.getEmail();
+        String code = verifiedRequest.getCode();
 
         log.debug("이메일 인증 요청: email={}, code={}", email, code);
 
         //이미 인증된 이메일인지 확인
-        if (emailCodeStorageService.isEmailVerified(request)) {
+        if (emailCodeStorageService.isEmailVerified(verifiedRequest)) {
             log.warn("이미 인증된 이메일: {}", email);
             throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
@@ -72,7 +72,7 @@ public class EmailAuthService {
         emailCodeStorageService.deleteEmailAuthCode(new EmailRequest(email));
 
         // 인증 상태를 유지(10분 유지)
-        emailCodeStorageService.setEmailVerified(request, 600);
+        emailCodeStorageService.setEmailVerified(verifiedRequest, 600);
         log.info("이메일 인증 성공: {}", email);
     }
 }
