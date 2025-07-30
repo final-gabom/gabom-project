@@ -16,7 +16,7 @@ import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.global.validator.PasswordValidator;
 
 import lombok.RequiredArgsConstructor;

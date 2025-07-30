@@ -39,6 +39,18 @@ spring:
         use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: us-east-2
+      s3:
+        bucket: ${AWS_BUCKET_NAME}
+        key:
+          prefix: test/
+
 jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
   access-expiration: 3600000  # 1시간

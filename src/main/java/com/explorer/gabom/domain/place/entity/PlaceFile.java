@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.place.entity;
 
-import com.explorer.gabom.global.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
