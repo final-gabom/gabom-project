@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.Exploration.vo;
 
-public enum Reward {
+public enum RewardRange {
 
 	RANGE_1_3(1, 3, 50),
 	RANGE_3_5(3, 5, 100),
@@ -13,7 +13,7 @@ public enum Reward {
 	private final double maxKm;
 	private final int rewardPoint;
 
-	Reward(double minKm, double maxKm, int rewardPoint) {
+	RewardRange(double minKm, double maxKm, int rewardPoint) {
 		this.minKm = minKm;
 		this.maxKm = maxKm;
 		this.rewardPoint = rewardPoint;
