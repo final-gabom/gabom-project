@@ -10,8 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.activity.dto.response.UserActivityLogResponse;
 import com.explorer.gabom.domain.activity.entity.UserActivityLog;
 import com.explorer.gabom.domain.activity.repository.UserActivityLogRepository;
-import com.explorer.gabom.global.exception.CustomException;
-import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,16 +22,13 @@ public class UserActivityLogService {
 	private final UserActivityLogRepository userActivityLogRepository;
 
 	@Transactional(readOnly = true)
-	public Page<UserActivityLogResponse> getMyLogs(Long userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+	public PageResponse<UserActivityLogResponse> getMyLogs(Long userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
 		log.info("<활동로그조회> 요청 - userId: {}, from: {}, to: {}, page: {}, size: {}", userId, from, to, pageable.getPageNumber(), pageable.getPageSize());
-
-		if (userId == null) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED);
-		}
 
 		Page<UserActivityLog> logs = userActivityLogRepository.searchMyLogs(userId, from, to, pageable);
 		log.info("<활동로그조회> 성공 - 총 {}건", logs.getTotalElements());
 
-		return logs.map(UserActivityLogResponse::toDto);
+		Page<UserActivityLogResponse> responsePage = logs.map(UserActivityLogResponse::toDto);
+		return PageResponse.toDto(responsePage);
 	}
 }

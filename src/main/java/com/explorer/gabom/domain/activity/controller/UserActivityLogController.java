@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.activity.controller;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -14,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.explorer.gabom.domain.activity.dto.response.UserActivityLogListResponse;
 import com.explorer.gabom.domain.activity.dto.response.UserActivityLogResponse;
 import com.explorer.gabom.domain.activity.service.UserActivityLogService;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class UserActivityLogController {
 	private final UserActivityLogService userActivityLogService;
 
 	@GetMapping("/me")
-	public ResponseEntity<ApiResponse<UserActivityLogListResponse>> getMyLogs(
+	public ResponseEntity<ApiResponse<PageResponse<UserActivityLogResponse>>> getMyLogs(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestParam(required = false)
 		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
@@ -39,8 +38,7 @@ public class UserActivityLogController {
 	)  {
 		Long userId = customUserDetails.getUserId();
 
-		Page<UserActivityLogResponse> logs = userActivityLogService.getMyLogs(userId, from, to, pageable);
-		UserActivityLogListResponse response = UserActivityLogListResponse.toDto(logs);
+		PageResponse<UserActivityLogResponse> response = userActivityLogService.getMyLogs(userId, from, to, pageable);
 		return ResponseEntity.ok(ApiResponse.success("활동 로그가 성공적으로 조회되었습니다.", response));
 	}
 
