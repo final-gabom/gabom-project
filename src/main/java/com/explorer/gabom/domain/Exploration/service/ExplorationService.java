@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.Exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.Exploration.dto.response.ExplorationStartResponse;
+import com.explorer.gabom.domain.Exploration.entity.Exploration;
 import com.explorer.gabom.domain.Exploration.repository.ExplorationRepository;
 import com.explorer.gabom.domain.Exploration.vo.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -34,8 +35,8 @@ public class ExplorationService {
 		}
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		Place place = placeRepository.findById(placeId).orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
-
+		Place place = placeRepository.findById(placeId).orElseThrow(
+			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
 		double lat1 = user.getLat();
 		double lng1 = user.getLng();
@@ -43,6 +44,29 @@ public class ExplorationService {
 		double lng2 = place.getLng();
 
 		double distance = DistanceCalculator.calculate(lat1, lng1, lat2, lng2);
-		int reward = RewardCalculator.calculate(distance);
+		int rewardExp = RewardCalculator.calculate(distance);
+		int rewardPoint = RewardCalculator.calculate(distance);
+
+		LocalDateTime startAt = LocalDateTime.now();
+		LocalDateTime endAt = startAt.plusHours(3); // TODO: 탐험 제한시간 갱신 기능 구현 시 수정 예정
+
+		Exploration exploration = Exploration.builder()
+											 .user(user)
+											 .place(place)
+											 .rewordExp(rewardExp)
+											 .rewordPoint(rewardPoint)
+											 .startAt(startAt)
+											 .endAt(endAt)
+											 .build();
+
+		explorationRepository.save(exploration);
+
+		return ExplorationStartResponse.builder()
+									   .explorationId(exploration.getId())
+									   .rewardPoint(rewardPoint)
+									   .rewardExp(rewardExp)
+									   .startAt(startAt)
+									   .endAt(endAt)
+									   .build();
 	}
 }
