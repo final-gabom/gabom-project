@@ -71,7 +71,7 @@ public class PlaceService {
 		// 🔥 파일 조회
 		List<AttachmentFile> files = attachmentFileRepository.findByFileTypeAndRefIdAndDeletedFalse(FileType.PLACE, place.getId());
 		List<FileResponseDto> fileDtos = files.stream()
-												 .map(FileResponseDto::fromEntity)
+												 .map(FileResponseDto::toDto)
 												 .collect(Collectors.toList());
 
 		return PlaceDetailResponseDto.builder()

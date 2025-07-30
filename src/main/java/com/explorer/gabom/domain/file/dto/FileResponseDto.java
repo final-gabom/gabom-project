@@ -16,7 +16,7 @@ public class FileResponseDto {
 	private final Long fileSize;
 	private final String filePath;
 
-	public static FileResponseDto fromEntity(AttachmentFile file) {
+	public static FileResponseDto toDto(AttachmentFile file) {
 		return FileResponseDto.builder()
 							  .fileId(file.getFileId())
 							  .fileType(file.getFileType().name())
