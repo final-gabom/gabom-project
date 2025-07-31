@@ -81,4 +81,7 @@ public class MissionProof extends BaseTimeEntity {
 		this.imageFiles.addAll(newFiles);
 	}
 
+
+	public void delete() {
+	}
 }

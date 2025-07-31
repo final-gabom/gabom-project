@@ -10,4 +10,7 @@ public interface MissionProofService {
 
 	CreateMissionProofResponse updateMissionProof(Long id, UpdateMissionProofRequest request, Long userId);
 
+
+	void deleteMissionProof(Long id, Long userId);
+
 }
