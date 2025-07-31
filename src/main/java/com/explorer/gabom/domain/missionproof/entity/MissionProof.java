@@ -72,4 +72,7 @@ public class MissionProof extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MissionProofType fieldType;
+
+	public void delete() {
+	}
 }

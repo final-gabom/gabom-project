@@ -6,4 +6,7 @@ import com.explorer.gabom.domain.user.entity.User;
 
 public interface MissionProofService {
 	CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser);
+
+	void deleteMissionProof(Long id, Long userId);
+
 }

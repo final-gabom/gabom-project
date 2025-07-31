@@ -2,6 +2,8 @@ package com.explorer.gabom.domain.missionproof.service;
 
 
 
+import static com.explorer.gabom.global.exception.ErrorCode.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,5 +69,18 @@ public class MissionProofServiceImpl implements MissionProofService{
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
 
 		return CreateMissionProofResponse.toDto(savedMissionProof);
+	}
+
+	@Override
+	@Transactional
+	public void deleteMissionProof(Long id, Long userId) {
+		MissionProof missionProof = missionProofRepository.findById(id)
+														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
+
+		if (!missionProof.getUser().getId().equals(userId)) {
+			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
+		}
+
+		missionProof.delete();
 	}
 }
