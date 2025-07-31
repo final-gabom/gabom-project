@@ -15,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreateMissionProofResponse {
 
-	private Long missionProofId;
+	private Long id;
 	private MissionProofType fieldType;
 
 	private UserSummaryDto writer;
@@ -25,9 +25,11 @@ public class CreateMissionProofResponse {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
+	private String profileImages;
+
 	public static CreateMissionProofResponse toDto(MissionProof missionProof) {
 		return CreateMissionProofResponse.builder()
-										 .missionProofId(missionProof.getId())
+										 .id(missionProof.getId())
 										 .fieldType(missionProof.getFieldType())
 										 .writer(UserSummaryDto.toDto(missionProof.getUser()))
 										 .title(missionProof.getTitle())
