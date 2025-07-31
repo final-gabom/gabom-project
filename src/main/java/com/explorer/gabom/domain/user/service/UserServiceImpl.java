@@ -48,15 +48,12 @@ public class UserServiceImpl implements UserService {
     }
     @Transactional
     @Override
-    public UserDto updateUser(Long userId, UserUpdateRequest updateRequest) {
+    public UserDto updateUser(User user, UserUpdateRequest updateRequest) {
         String nickname = updateRequest.getNickname();
         String profileImgId = updateRequest.getProfileImgId();
         String address = updateRequest.getAddress();
         Double lat = updateRequest.getLat();
         Double lng = updateRequest.getLng();
-
-        User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         // 닉네임 변경 시 중복 검사
         if (nickname != null && !nickname.equals(user.getNickname())) {

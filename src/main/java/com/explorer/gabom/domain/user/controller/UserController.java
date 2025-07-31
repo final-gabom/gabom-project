@@ -5,6 +5,7 @@ import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
 import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
+import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
@@ -40,7 +41,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDto>> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UserUpdateRequest updateRequest) {
-        UserDto updateResponse = userService.updateUser(userDetails.getUserId(), updateRequest);
+        User user = userDetails.getUser();
+        UserDto updateResponse = userService.updateUser(user, updateRequest);
         return ResponseEntity.ok(ApiResponse.success("프로필 수정을 완료하였습니다.", updateResponse));
     }
 
