@@ -39,7 +39,6 @@ public class ExplorationController {
 	}
 
 	// 탐험 중인 장소 조회
-	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/current")
 	public ResponseEntity<ApiResponse<ExplorationCurrentResponse>> getCurrentExploration(
 		@AuthenticationPrincipal CustomUserDetails userDetails
