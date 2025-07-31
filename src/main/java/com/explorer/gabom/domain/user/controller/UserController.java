@@ -46,9 +46,10 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("프로필 수정을 완료하였습니다.", updateResponse));
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(userId);
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        userService.deleteUser(user);
         return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
     }
 

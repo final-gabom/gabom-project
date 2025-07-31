@@ -83,9 +83,9 @@ public class UserServiceImpl implements UserService {
     }
     @Transactional
     @Override
-    public void deleteUser(Long userId) {
-        log.info("회원 탈퇴 시작");
-        userRepository.deleteById(userId);
+    public void deleteUser(User user) {
+        log.info("회원 탈퇴 시작: userId={}", user.getId());
+        userRepository.delete(user);
     }
 
     // 내 칭호변경
