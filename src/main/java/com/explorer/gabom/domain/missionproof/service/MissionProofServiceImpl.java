@@ -6,10 +6,12 @@ import static com.explorer.gabom.global.exception.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
@@ -90,7 +92,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 
 		// 3. 이미지 파일 연관 조회
 		List<AttachmentFile> imageFiles = attachmentFileRepository
-			.findAllByFilePathIn(request.getImgFiles());
+			.findAllByFileIdIn(request.getImgFileIds());
 
 		// 4. 엔티티 수정
 		existing.update(request.getTitle(), request.getContent(), imageFiles);
@@ -109,6 +111,10 @@ public class MissionProofServiceImpl implements MissionProofService{
 											  .title(user.getTitle() != null ? user.getTitle().getName() : null)
 											  .build();
 
+		List<FileResponseDto> profileImages = imageFiles.stream()
+														.map(FileResponseDto::toDto)
+														.collect(Collectors.toList());
+
 		// 6. 응답 생성
 		return CreateMissionProofResponse.builder()
 										 .id(existing.getId())
@@ -118,7 +124,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 										 .content(existing.getContent())
 										 .createdAt(existing.getCreatedAt())
 										 .updatedAt(existing.getUpdatedAt())
-										 .profileImages(profileImagePath)
+										 .profileImages(profileImages)
 										 .build();
 	}
 }

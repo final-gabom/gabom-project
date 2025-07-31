@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 public class UpdateMissionProofRequest {
 	private String title;
 	private String content;
-	private List<String> imgFiles;
+	private List<String> imgFileIds;
 }
