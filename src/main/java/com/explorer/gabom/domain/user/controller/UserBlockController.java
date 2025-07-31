@@ -29,7 +29,7 @@ public class UserBlockController {
         return ResponseEntity.ok(ApiResponse.success("유저를 차단했습니다.", response));
     }
 
-    @DeleteMapping("/unBlock/{userId}")
+    @DeleteMapping("/unblock/{userId}")
     public ResponseEntity<ApiResponse<Void>> unBlockUser(
             @PathVariable("userId") Long blockedUserId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
