@@ -14,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
@@ -138,5 +140,20 @@ public class MissionProofServiceImpl implements MissionProofService{
 		}
 
 		missionProof.delete();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public MissionProofDetailResponse getMissionProofDetail(Long id) {
+		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
+														  .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MISSION_PROOF));
+
+		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id, FileType.MISSION_PROOF);
+
+		List<FileResponseDto> profileImages = imageFiles.stream()
+														.map(FileResponseDto::toDto)
+														.collect(Collectors.toList());
+
+		return MissionProofDetailResponse.toDto(missionProof, profileImages);
 	}
 }

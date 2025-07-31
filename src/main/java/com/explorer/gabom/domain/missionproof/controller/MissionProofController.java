@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.service.MissionProofService;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
@@ -55,5 +57,13 @@ public class MissionProofController {
 	) {
 		missionProofService.deleteMissionProof(id, userDetails.getUserId());
 		return ResponseEntity.ok(ApiResponse.success("삭제 성공", null));
+	}
+
+	@GetMapping("/{missionProofId}")
+	public ResponseEntity<ApiResponse<MissionProofDetailResponse>> getMissionProofDetail(
+		@PathVariable Long missionProofId
+	) {
+		MissionProofDetailResponse response = missionProofService.getMissionProofDetail(missionProofId);
+		return ResponseEntity.ok(ApiResponse.success("조회 성공", response));
 	}
 }
