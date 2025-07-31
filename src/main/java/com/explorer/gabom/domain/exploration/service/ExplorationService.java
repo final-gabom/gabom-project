@@ -76,7 +76,7 @@ public class ExplorationService {
 
 	// 탐험 제한 시간 연장
 	@Transactional
-	public ExplorationExtendTimeResponse explorationExtendTimeResponse(Long userId, Long explorationId) {
+	public ExplorationExtendTimeResponse extendExplorationTime(Long userId, Long explorationId) {
 		Exploration exploration = explorationRepository.findById(explorationId)
 													   .orElseThrow(
 														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
