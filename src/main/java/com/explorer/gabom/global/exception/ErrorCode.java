@@ -61,7 +61,11 @@ public enum ErrorCode {
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
 	USER_QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 퀘스트를 찾을 수 없습니다."),
 	NOT_COMPLETED(HttpStatus.BAD_REQUEST, "퀘스트가 완료되지 않았습니다."),
-	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."), ;
+	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."),
+
+	// MissionProof
+	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
+	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
