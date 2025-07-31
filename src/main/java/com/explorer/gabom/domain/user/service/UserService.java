@@ -18,7 +18,7 @@ public interface UserService {
 	void deleteUser(User user);
 
 
-	UpdateMainTitleResponse updateMainTitle(Long userId, Long titleId);
+	UpdateMainTitleResponse updateMainTitle(User user, Long titleId);
   
 	void updatePassword(Long userId, @Valid PasswordUpdateRequest passwordUpdateRequest);
 

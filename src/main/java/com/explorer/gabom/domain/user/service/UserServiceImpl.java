@@ -91,11 +91,12 @@ public class UserServiceImpl implements UserService {
     // 내 칭호변경
     @Transactional
     @Override
-    public UpdateMainTitleResponse updateMainTitle(Long userId, Long titleId) {
+    public UpdateMainTitleResponse updateMainTitle(User user, Long titleId) {
         Title title = titleRepository.findById(titleId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
-        User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
         user.setTitle(title);
         return new UpdateMainTitleResponse(title.getId(), title.getName());
     }

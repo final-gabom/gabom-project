@@ -58,7 +58,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UpdateMainTitleRequest request) {
 
-        UpdateMainTitleResponse response = userService.updateMainTitle(userDetails.getUserId(), request.getTitleId());
+        UpdateMainTitleResponse response = userService.updateMainTitle(userDetails.getUser(), request.getTitleId());
         return ResponseEntity.ok(ApiResponse.success("칭호를 변경하였습니다.", response));
     }
 
