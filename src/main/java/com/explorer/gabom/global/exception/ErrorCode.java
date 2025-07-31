@@ -51,6 +51,9 @@ public enum ErrorCode {
 	PLACE_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 장소에 대한 권한이 없습니다."),
 	NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 값이 없습니다."),
 
+	// Exploration
+	ALREADY_STARTED_EXPLORATION(HttpStatus.CONFLICT, "이미 해당 장소 탐험이 진행 중입니다."),
+
 	// Quest
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
 	USER_QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 퀘스트를 찾을 수 없습니다."),
