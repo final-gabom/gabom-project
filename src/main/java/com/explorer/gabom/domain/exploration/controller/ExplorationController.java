@@ -44,7 +44,6 @@ public class ExplorationController {
 	public ResponseEntity<ApiResponse<ExplorationCurrentResponse>> getCurrentExploration(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Long userId = userDetails.getUserId();
 		ExplorationCurrentResponse response = explorationService.getCurrentExploration(userDetails.getUserId());
 		return ResponseEntity.ok(ApiResponse.success("현재 탐험 중인 장소 조회에 성공했습니다.", response));
 	}
