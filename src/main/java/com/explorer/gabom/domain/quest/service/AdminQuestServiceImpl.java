@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.quest.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
@@ -10,9 +12,13 @@ import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponse;
 import com.explorer.gabom.domain.quest.entity.Quest;
+import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.repository.QuestRepository;
+import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -27,6 +33,8 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 
 	private final QuestRepository questRepository;
 	private final TitleRepository titleRepository;
+	private final UserRepository userRepository;
+	private final UserQuestRepository userQuestRepository;
 
 	@Override
 	@Transactional
@@ -44,8 +52,13 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 			dto.getRewardExp(),
 			rewardTitle
 		);
-
 		Quest saved = questRepository.save(quest);
+		List<User> users = userRepository.findAll();
+		List<UserQuest> userQuests = users.stream()
+										  .map(user -> new UserQuest(user, saved))
+										  .toList();
+		userQuestRepository.saveAll(userQuests);
+
 		return QuestCreateResponse.toDto(saved);
 	}
 
@@ -62,7 +75,23 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 										 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 		}
 
+		boolean acquireConditionChanged = dto.getAcquireCondition() != null &&
+			dto.getAcquireCondition() != quest.getAcquireCondition();
+
 		quest.update(dto, rewardTitle);
+
+		if (acquireConditionChanged) {
+			List<UserQuest> userQuests = userQuestRepository.findAllByQuestAndQuest_DeletedFalse(quest);
+			for (UserQuest userQuest : userQuests) {
+				if (userQuest.getProgressCount() >= quest.getAcquireCondition()) {
+					userQuest.markCompleted();
+				} else {
+					userQuest.markInProgress();
+				}
+			}
+			userQuestRepository.saveAll(userQuests);
+		}
+
 		return QuestUpdateResponse.toDto(quest);
 	}
 
@@ -75,6 +104,12 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 
 		quest.markAsDeleted();
 		questRepository.save(quest);
+
+		List<UserQuest> userQuests = userQuestRepository.findAllByQuest(quest);
+		for (UserQuest userQuest : userQuests) {
+			userQuest.markAsDeleted();
+		}
+		userQuestRepository.saveAll(userQuests);
 
 		return QuestDeleteResponse.toDto(quest);
 	}
