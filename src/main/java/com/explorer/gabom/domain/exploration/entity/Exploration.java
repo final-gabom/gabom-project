@@ -47,4 +47,8 @@ public class Exploration extends BaseTimeEntity {
 		this.startAt = startAt;
 		this.endAt = endAt;
 	}
+
+	public void extendDeadline() {
+		this.endAt = this.endAt.plusHours(3);
+	}
 }

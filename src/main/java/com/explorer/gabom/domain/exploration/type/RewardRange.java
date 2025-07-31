@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.exploration.vo;
+package com.explorer.gabom.domain.exploration.type;
 
 public enum RewardRange {
 

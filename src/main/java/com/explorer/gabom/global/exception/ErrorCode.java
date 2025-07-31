@@ -54,6 +54,9 @@ public enum ErrorCode {
 	NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 값이 없습니다."),
 
 	// Exploration
+	EXPLORATION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 탐험을 찾을 수 없습니다."),
+	EXPLORATION_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 탐험에 대한 권한이 없습니다."),
+	EXPLORATION_ALREADY_ENDED(HttpStatus.CONFLICT, "탐험이 이미 종료되었습니다."),
 	ALREADY_STARTED_EXPLORATION(HttpStatus.CONFLICT, "이미 해당 장소 탐험이 진행 중입니다."),
 	NO_ACTIVE_EXPLORATION(HttpStatus.NOT_FOUND, "현재 진행 중인 탐험이 없습니다."),
 
@@ -61,7 +64,12 @@ public enum ErrorCode {
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
 	USER_QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 퀘스트를 찾을 수 없습니다."),
 	NOT_COMPLETED(HttpStatus.BAD_REQUEST, "퀘스트가 완료되지 않았습니다."),
-	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."), ;
+	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."),
+
+	// MissionProof
+	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
+	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
+	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN,"미션 인증글 삭제 권한이 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
