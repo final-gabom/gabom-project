@@ -7,10 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
-import com.explorer.gabom.domain.exploration.vo.RewardCalculator;
+import com.explorer.gabom.global.util.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
@@ -51,7 +52,7 @@ public class ExplorationService {
 		int rewardPoint = RewardCalculator.calculate(distance);
 
 		LocalDateTime startAt = LocalDateTime.now();
-		LocalDateTime endAt = startAt.plusHours(3); // TODO: 탐험 제한시간 갱신 기능 구현 시 수정 예정
+		LocalDateTime endAt = startAt.plusHours(3);
 
 		Exploration exploration = Exploration.builder()
 											 .user(user)
@@ -71,6 +72,26 @@ public class ExplorationService {
 									   .startAt(startAt)
 									   .endAt(endAt)
 									   .build();
+	}
+
+	// 탐험 제한 시간 연장
+	@Transactional
+	public ExplorationExtendTimeResponse extendExplorationTime(Long userId, Long explorationId) {
+		Exploration exploration = explorationRepository.findById(explorationId)
+													   .orElseThrow(
+														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+
+		// 탐험 권한이 없는 경우
+		if (!exploration.getUser().getId().equals(userId)) {
+			throw new CustomException(ErrorCode.EXPLORATION_NO_PERMISSION);
+		}
+		// 이미 종료된 탐험인 경우
+		if (exploration.getEndAt().isBefore(LocalDateTime.now())) {
+			throw new CustomException(ErrorCode.EXPLORATION_ALREADY_ENDED);
+		}
+
+		exploration.extendDeadline();
+		return new ExplorationExtendTimeResponse(exploration.getId(), exploration.getEndAt());
 	}
 
 	// 탐험 중인 장소 조회
