@@ -76,7 +76,7 @@ public class ExplorationService {
 	// 탐험 중인 장소 조회
 	public ExplorationCurrentResponse getCurrentExploration(Long userId) {
 		Exploration exploration = explorationRepository
-			.findTopByUserIdAndEndAtAfterOrderByStartedAtDesc(userId, LocalDateTime.now())
+			.findTopByUserIdAndEndAtAfterOrderByStartAtDesc(userId, LocalDateTime.now())
 			.orElseThrow(() -> new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION));
 
 		Place place = exploration.getPlace();
