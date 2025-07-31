@@ -24,7 +24,7 @@ public class PasswordResetService {
     private final JavaMailSender emailSender;
     private final EmailCodeStorageService emailCodeStorageService;
 
-    private static final long PASSWORD_RESET_CODE_EXPIRATION_SECONDS = 300;
+    private static final long PASSWORD_RESET_CODE_EXPIRATION_SECONDS = 600;
     private final PasswordEncoder passwordEncoder;
 
     // 인증코드 전송
@@ -58,12 +58,7 @@ public class PasswordResetService {
 
         log.info("[비밀번호 재설정 시작] 이메일: {}", email);
 
-        // 인증 확인
-        if (!emailCodeStorageService.isPasswordResetVerified(request)) {
-            log.warn("[비밀번호 재설정 실패] 인증되지 않은 이메일 요청: {}", email);
-            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
-        }
-        log.info("[인증 완료 확인] 이메일: {}", email);
+
         // redis에 저장된 비밀번호 재설정 인증 코드 조회
         String savedCode = emailCodeStorageService.getPasswordResetCode(request);
         if (savedCode == null) {
@@ -78,6 +73,11 @@ public class PasswordResetService {
             throw new CustomException(ErrorCode.CODE_NOT_MATCH);
         }
         log.info("[인증 코드 일치] 이메일: {}", email);
+
+        //  인증 완료 상태 저장
+        emailCodeStorageService.setPasswordResetVerified(request, 600);
+        log.info("[비밀번호 재설정 인증 상태 저장 완료] 이메일: {}", email);
+
         // 사용자 조회
         User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
                 .orElseThrow(() -> {
