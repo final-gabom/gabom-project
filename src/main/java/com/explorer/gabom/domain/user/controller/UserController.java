@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        UserDto userDto = userService.getUser(userDetails.getUserId());
+        UserDto userDto = userService.getUser(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.success("내 프로필 조회를 성공하였습니다.", userDto));
     }
 

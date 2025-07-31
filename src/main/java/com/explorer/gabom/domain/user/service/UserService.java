@@ -5,10 +5,11 @@ import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
 import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 
+import com.explorer.gabom.domain.user.entity.User;
 import jakarta.validation.Valid;
 
 public interface UserService {
-	UserDto getUser(Long userId);
+	UserDto getUser(User user);
 
 	UserDto updateUser(Long userId, UserUpdateRequest updateRequest);
 
