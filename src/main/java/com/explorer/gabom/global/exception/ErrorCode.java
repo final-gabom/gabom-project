@@ -42,6 +42,7 @@ public enum ErrorCode {
 	CODE_NOT_MATCH(HttpStatus.FORBIDDEN, "인증코드가 일치하지 않습니다."),
 	EMAIL_ALREADY_VERIFIED(HttpStatus.CONFLICT,"이미 인증된 이메일입니다." ),
 	EMAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED,"인증되지 않은 이메일입니다." ),
+	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 이메일입니다."),
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 	INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
@@ -50,6 +51,9 @@ public enum ErrorCode {
 	PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장소를 찾을 수 없습니다."),
 	PLACE_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 장소에 대한 권한이 없습니다."),
 	NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 값이 없습니다."),
+
+	// Exploration
+	ALREADY_STARTED_EXPLORATION(HttpStatus.CONFLICT, "이미 해당 장소 탐험이 진행 중입니다."),
 
 	// Quest
 	QUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 퀘스트를 찾을 수 없습니다."),
