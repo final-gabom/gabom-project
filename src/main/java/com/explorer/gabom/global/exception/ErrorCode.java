@@ -64,9 +64,9 @@ public enum ErrorCode {
 	REWARD_ALREADY_CLAIMED(HttpStatus.CONFLICT, "보상을 이미 수령하였습니다."),
 
 	// MissionProof
-
-	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN, "해당 인증글을 삭제할 권한이 없습니다."),
-	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 인증글입니다.");
+	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
+	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
+	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN,"미션 인증글 삭제 권한이 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;

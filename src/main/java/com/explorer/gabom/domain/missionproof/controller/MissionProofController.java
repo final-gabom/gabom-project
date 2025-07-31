@@ -6,11 +6,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
+import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.service.MissionProofService;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -34,6 +36,16 @@ public class MissionProofController {
 		CreateMissionProofResponse response = missionProofService.createMissionProof(request, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("미션 인증이 완료되었습니다.", response));
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<ApiResponse<CreateMissionProofResponse>> updateMissionProof(
+		@PathVariable Long id,
+		@RequestBody UpdateMissionProofRequest request,
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		CreateMissionProofResponse response = missionProofService.updateMissionProof(id, request, userDetails.getUserId());
+		return ResponseEntity.ok(ApiResponse.success("수정 성공", response));
 	}
 
 	@DeleteMapping("/{id}")

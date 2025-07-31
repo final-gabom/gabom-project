@@ -73,6 +73,15 @@ public class MissionProof extends BaseTimeEntity {
 	@Column(nullable = false)
 	private MissionProofType fieldType;
 
+	public void update(String title, String content, List<AttachmentFile> newFiles) {
+		this.title = title;
+		this.content = content;
+		// 기존 리스트를 clear 후 addAll로 교체 (orphan 문제 방지)
+		this.imageFiles.clear();
+		this.imageFiles.addAll(newFiles);
+	}
+
+
 	public void delete() {
 	}
 }
