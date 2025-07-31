@@ -22,7 +22,7 @@ public class UserSummaryDto {
 							 .id(user.getId())
 							 .nickname(user.getNickname())
 							 .level(user.getLevel())
-							 .title(user.getTitle().getName())
+							 .title(user.getTitle() != null ? user.getTitle().getName() : null)
 							 .build();
 	}
 }

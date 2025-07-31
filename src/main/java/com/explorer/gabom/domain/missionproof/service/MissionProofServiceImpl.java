@@ -74,9 +74,8 @@ public class MissionProofServiceImpl implements MissionProofService{
 	@Override
 	@Transactional
 	public void deleteMissionProof(Long id, Long userId) {
-		MissionProof missionProof = missionProofRepository.findById(id)
+		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
 														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
-
 		if (!missionProof.getUser().getId().equals(userId)) {
 			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
 		}
