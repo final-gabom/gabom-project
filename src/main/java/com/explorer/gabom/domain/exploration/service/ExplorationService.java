@@ -11,7 +11,7 @@ import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeR
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
-import com.explorer.gabom.domain.exploration.vo.RewardCalculator;
+import com.explorer.gabom.global.util.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
