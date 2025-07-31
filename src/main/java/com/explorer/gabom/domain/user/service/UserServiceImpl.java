@@ -103,9 +103,10 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updatePassword(Long userId, PasswordUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    public void updatePassword(User user, PasswordUpdateRequest request) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
 
         passwordValidator.verifyMatch(request.getOldPassword(), user.getPassword());
 

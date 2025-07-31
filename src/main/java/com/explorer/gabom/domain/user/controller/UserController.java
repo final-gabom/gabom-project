@@ -65,8 +65,8 @@ public class UserController {
     @PatchMapping("/me/password")
     public ResponseEntity<ApiResponse<Void>> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                             @RequestBody @Valid PasswordUpdateRequest passwordUpdateRequest) {
-        log.info("비밀번호 변경 요청: userId={}", userDetails.getUserId());
-        userService.updatePassword(userDetails.getUserId(), passwordUpdateRequest);
+        log.info("비밀번호 변경 요청: userId={}", userDetails.getUser().getId());
+        userService.updatePassword(userDetails.getUser(), passwordUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success("비밀번호가 성공적으로 변경되었습니다."));
 
     }

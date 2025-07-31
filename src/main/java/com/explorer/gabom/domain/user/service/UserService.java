@@ -20,6 +20,6 @@ public interface UserService {
 
 	UpdateMainTitleResponse updateMainTitle(User user, Long titleId);
   
-	void updatePassword(Long userId, @Valid PasswordUpdateRequest passwordUpdateRequest);
+	void updatePassword(User user, @Valid PasswordUpdateRequest passwordUpdateRequest);
 
 }
