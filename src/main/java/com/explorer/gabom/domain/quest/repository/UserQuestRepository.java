@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
@@ -20,11 +21,15 @@ public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 		ProgressStatus progressStatus
 	);
 
+	List<UserQuest> findAllByQuestAndQuest_DeletedFalse(Quest quest);
+
+	List<UserQuest> findAllByQuest(Quest quest);
+
 	Optional<UserQuest> findByUser_IdAndIdAndQuest_DeletedFalse(Long userId, Long id);
 
 	Page<UserQuest> findByUser_IdAndQuest_DeletedFalse(Long userId, Pageable pageable);
 
-	Page<UserQuest> findByUser_IdAndQuest_DeletedFalseAndProgressStatus(
+	Page<UserQuest> findByUser_IdAndProgressStatusAndQuest_DeletedFalse(
 		Long userId,
 		ProgressStatus progressStatus,
 		Pageable pageable
