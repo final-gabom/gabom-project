@@ -72,7 +72,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 		Page<UserQuest> userQuestPage;
 
 		if (progressStatus != null) {
-			userQuestPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalseAndProgressStatus(
+			userQuestPage = userQuestRepository.findByUser_IdAndProgressStatusAndQuest_DeletedFalse(
 				userId, progressStatus, pageable);
 		} else {
 			userQuestPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalse(userId, pageable);
