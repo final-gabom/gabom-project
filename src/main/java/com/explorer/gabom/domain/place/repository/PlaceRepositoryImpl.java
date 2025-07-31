@@ -152,6 +152,32 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 		return PageResponse.toDto(new PageImpl<>(content, pageable, total));
 	}
 
+	@Override
+	public List<Tuple> findWithinRadius(double lat, double lon, double minKm, double maxKm) {
+		QPlace p = QPlace.place;
+
+		// 1) 기준점 <-> 장소 간 거리를 미터 단위로 계산
+		NumberExpression<Double> distMeter = Expressions.numberTemplate(
+			Double.class,
+			"ST_Distance_Sphere(POINT({1}, {0}), POINT({3}, {2}))",
+			lat, lon,                      // {0}=lat, {1}=lon
+			p.lat, p.lng                   // {2}=place.lat, {3}=place.lng
+		);
+
+		// 2) 필터용 경계값 (km -> m 단위)
+		double minMeters = minKm * 1_000;
+		double maxMeters = maxKm * 1_000;
+
+		return queryFactory
+			.select(
+				p.id,
+				distMeter.divide(1_000.0)  // km 단위로 변환
+			)
+			.from(p)
+			.where(distMeter.between(minMeters, maxMeters))
+			.fetch();
+	}
+
 	private void applySort(JPAQuery<Tuple> query, Pageable pageable, NumberExpression<Double> distanceExpr) {
 		PathBuilder<Place> entityPath = new PathBuilder<>(Place.class, "place");
 

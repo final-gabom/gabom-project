@@ -43,7 +43,7 @@ public class UserController {
 		return ResponseEntity.ok(ApiResponse.success("회원 정보 조회를 성공하였습니다.", response));
 	}
 
-	//todo : AuthenticationPrinciple 에서 유저 아이디 가져오도록 수정
+	// todo : AuthenticationPrinciple 에서 유저 아이디 가져오도록 수정
 	// User 프로필 수정
 	@PatchMapping("/me/{userId}")
 	public ResponseEntity<ApiResponse<UserDto>> updateUser(
