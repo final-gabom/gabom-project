@@ -34,15 +34,18 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    @Override
     public UserDto getUser(User user) {
-        log.info("유저 상세 정보 조회 시작");
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new CustomException(USER_NOT_FOUND);
-            return UserDto.toDto(user);
-        }
+        return UserDto.toDto(user);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public UserDto getUser(Long userId) {
+        log.info("유저 상세 정보 조회 시작");
+        User byIdAndStatus = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        return UserDto.toDto(byIdAndStatus);
+    }
     @Transactional
     @Override
     public UserDto updateUser(Long userId, UserUpdateRequest updateRequest) {
@@ -81,7 +84,6 @@ public class UserServiceImpl implements UserService {
         }
         return UserDto.toDto(user);
     }
-
     @Transactional
     @Override
     public void deleteUser(Long userId) {

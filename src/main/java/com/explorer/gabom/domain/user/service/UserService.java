@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 public interface UserService {
 	UserDto getUser(User user);
 
+	UserDto getUser(Long userId);
+
 	UserDto updateUser(Long userId, UserUpdateRequest updateRequest);
 
 	void deleteUser(Long userId);
