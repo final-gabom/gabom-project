@@ -30,10 +30,10 @@ public class UserBlockService {
         User blocked = userRepository.findByIdAndStatus(blockedId, UserStatus.ACTIVE)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
-        boolean alreadyBlocked = userBlockRepository.existsByBlockerAndBlocked(blocker, blocked);
-        if (alreadyBlocked) {
-            throw new CustomException(ALREADY_BLOCKED_USER);
-        }
+        if(userBlockRepository.existsByBlockerAndBlocked(blocker, blocked)){
+			throw new CustomException(ALREADY_BLOCKED_USER);
+		}
+
         UserBlock userBlock = new UserBlock(blocker, blocked);
         userBlockRepository.save(userBlock);
         return new UserBlockResponse(blocker.getId(), blocked.getId());
