@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.explorer.gabom.domain.file.dto.response.UploadFileResponse;
 import com.explorer.gabom.domain.file.service.AttachmentFileService;
+import com.explorer.gabom.domain.file.type.FileType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +24,7 @@ public class AttachmentFileController {
 
 	@PostMapping("/image")
 	public ResponseEntity<UploadFileResponse> uploadImageFile(@RequestParam MultipartFile file,
-															  @RequestParam String fileType,
+															  @RequestParam FileType fileType,
 															  @RequestParam Long refId) throws IOException {
 		return ResponseEntity.ok(this.attachmentFileService.uploadImageFile(file, fileType, refId));
 	}
