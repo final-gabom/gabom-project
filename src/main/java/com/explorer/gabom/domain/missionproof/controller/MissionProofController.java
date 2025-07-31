@@ -27,9 +27,9 @@ public class MissionProofController {
 	@PostMapping
 	public ResponseEntity<ApiResponse<CreateMissionProofResponse>> createMissionProof(
 		@Valid @RequestBody CreateMissionProofRequest request,
-		@AuthenticationPrincipal CustomUserDetails user
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		CreateMissionProofResponse response = missionProofService.createMissionProof(request, user);
+		CreateMissionProofResponse response = missionProofService.createMissionProof(request, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.CREATED)
 							 .body(ApiResponse.success("미션 인증이 완료되었습니다.", response));
 	}

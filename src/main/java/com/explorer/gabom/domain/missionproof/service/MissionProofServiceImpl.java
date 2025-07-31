@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.missionproof.service;
 
-import static com.explorer.gabom.domain.title.entity.QUserTitle.*;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +21,7 @@ import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
-import com.explorer.gabom.domain.user.dto.UserSummaryDto;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,19 +30,13 @@ import lombok.RequiredArgsConstructor;
 public class MissionProofServiceImpl implements MissionProofService{
 
 	private final MissionProofRepository missionProofRepository;
-	private final UserRepository userRepository;
 	private final PlaceRepository placeRepository;
-	private final AttachmentFileRepository attachmentFileRepository; // PLACE 인증인 경우 사용
+	private final AttachmentFileRepository attachmentFileRepository;
 
 
 	@Override
 	@Transactional
-	public CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, CustomUserDetails userDetails) {
-		Long userId = userDetails.getUserId();
-
-		// 1. 사용자 조회
-		User user = userRepository.findById(userId)
-								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+	public CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser) {
 
 		// 2. PLACE 타입인 경우 Place 유효성 검증
 		Place place = null;
@@ -60,7 +53,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 
 		// 4. MissionProof 엔티티 생성
 		MissionProof missionProof = MissionProof.builder()
-												.user(user)
+												.user(loginUser)
 												.place(place)
 												.targetId(request.getTargetId())
 												.fieldType(request.getFieldType())
@@ -71,24 +64,8 @@ public class MissionProofServiceImpl implements MissionProofService{
 												.build();
 
 		// 5. 저장
-		missionProofRepository.save(missionProof);
+		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
 
-		UserSummaryDto writer = UserSummaryDto.builder()
-											  .id(user.getId())
-											  .nickname(user.getNickname())
-											  .level(user.getLevel())
-											  .title(user.getTitle() != null ? user.getTitle().getName() : null)
-											  .build();
-
-		// 6. 응답 반환
-		return CreateMissionProofResponse.builder()
-										 .missionProofId(missionProof.getId())
-										 .fieldType(missionProof.getFieldType())
-										 .writer(writer)
-										 .title(missionProof.getTitle())
-										 .content(missionProof.getContent())
-										 .createdAt(missionProof.getCreatedAt())
-										 .updatedAt(missionProof.getUpdatedAt())
-										 .build();
+		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}
 }
