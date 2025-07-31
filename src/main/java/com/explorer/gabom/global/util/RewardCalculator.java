@@ -1,4 +1,6 @@
-package com.explorer.gabom.domain.exploration.vo;
+package com.explorer.gabom.global.util;
+
+import com.explorer.gabom.domain.exploration.type.RewardRange;
 
 public class RewardCalculator {
 
