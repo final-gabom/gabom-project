@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -22,6 +23,7 @@ public class EmailAuthService {
     private final UserRepository userRepository;
 
     // 인증 코드 전송
+    @Transactional
     public void sendAuthCode(EmailRequest request) {
         String email = request.getEmail();
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -46,6 +48,7 @@ public class EmailAuthService {
     }
 
     // 이메일 인증코드 검증
+    @Transactional
     public void verifyAuthCode(EmailCodeVerifyRequest verifiedRequest) {
         String email = verifiedRequest.getEmail();
         String code = verifiedRequest.getCode();

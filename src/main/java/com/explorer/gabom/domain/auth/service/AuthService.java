@@ -16,6 +16,7 @@ import com.explorer.gabom.global.validator.PasswordValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final EmailCodeStorageService emailCodeStorageService;
 
+    @Transactional
     public SignupResponse signup(SignupRequest request) {
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -57,6 +59,7 @@ public class AuthService {
     }
 
     // 포스트맨 회원가입시 테스트용
+    @Transactional
     public SignupResponse testSignup(SignupRequest request) {
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -83,6 +86,7 @@ public class AuthService {
     }
 
     // 로그인
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         // 이메일로 유저 가져오기
         User user = userRepository.findByEmailAndStatus(request.getEmail(), UserStatus.ACTIVE)
@@ -98,6 +102,7 @@ public class AuthService {
     }
 
     // 닉네임 중복 확인
+    @Transactional
     public CheckNicknameResponse checkNickname(String nickname) {
         boolean exists = userRepository.existsByNickname(nickname);
         if (exists) {
