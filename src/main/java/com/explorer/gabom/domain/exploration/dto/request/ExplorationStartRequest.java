@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.Exploration.dto.request;
+package com.explorer.gabom.domain.exploration.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

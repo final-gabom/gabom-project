@@ -1,15 +1,16 @@
-package com.explorer.gabom.domain.Exploration.service;
+package com.explorer.gabom.domain.exploration.service;
 
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.explorer.gabom.domain.Exploration.dto.request.ExplorationStartRequest;
-import com.explorer.gabom.domain.Exploration.dto.response.ExplorationStartResponse;
-import com.explorer.gabom.domain.Exploration.entity.Exploration;
-import com.explorer.gabom.domain.Exploration.repository.ExplorationRepository;
-import com.explorer.gabom.domain.Exploration.vo.RewardCalculator;
+import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
+import com.explorer.gabom.domain.exploration.entity.Exploration;
+import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
+import com.explorer.gabom.domain.exploration.vo.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
@@ -28,6 +29,7 @@ public class ExplorationService {
 	private final PlaceRepository placeRepository;
 	private final ExplorationRepository explorationRepository;
 
+	// 탐험 시작
 	@Transactional
 	public ExplorationStartResponse startExploration(Long userId, Long placeId, ExplorationStartRequest request) {
 		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(userId, placeId, LocalDateTime.now())) {
@@ -69,5 +71,16 @@ public class ExplorationService {
 									   .startAt(startAt)
 									   .endAt(endAt)
 									   .build();
+	}
+
+	// 탐험 중인 장소 조회
+	public ExplorationCurrentResponse getCurrentExploration(Long userId) {
+		Exploration exploration = explorationRepository
+			.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now())
+			.orElseThrow(() -> new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION));
+
+		Place place = exploration.getPlace();
+
+		return ExplorationCurrentResponse.of(exploration, place);
 	}
 }
