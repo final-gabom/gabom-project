@@ -25,7 +25,7 @@ public enum ErrorCode {
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
 	CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST,"자신을 차단할 수 없습니다."),
 	ALREADY_BLOCKED_USER(HttpStatus.CONFLICT,"이미 차단된 유저입니다."),
-
+	NOT_BLOCKED_USER(HttpStatus.BAD_REQUEST,"차단 목록에 존재하지 않는 유저입니다." ),
 	// Auth
 	INVALID_TOKEN(HttpStatus.BAD_REQUEST, "잘못된 토큰 값입니다."),
 	EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "JWT 토큰이 비어 있습니다."),
