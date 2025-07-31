@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.Exploration.vo;
+package com.explorer.gabom.domain.exploration.vo;
 
 public class RewardCalculator {
 

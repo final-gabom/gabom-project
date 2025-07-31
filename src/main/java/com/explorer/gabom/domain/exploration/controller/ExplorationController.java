@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.Exploration.controller;
+package com.explorer.gabom.domain.exploration.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.explorer.gabom.domain.Exploration.dto.request.ExplorationStartRequest;
-import com.explorer.gabom.domain.Exploration.dto.response.ExplorationStartResponse;
-import com.explorer.gabom.domain.Exploration.service.ExplorationService;
+import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
+import com.explorer.gabom.domain.exploration.service.ExplorationService;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
