@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.Exploration.dto.response;
+package com.explorer.gabom.domain.exploration.dto.response;
 
 import java.time.LocalDateTime;
 

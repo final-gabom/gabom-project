@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.Exploration.entity;
+package com.explorer.gabom.domain.exploration.entity;
 
 import java.time.LocalDateTime;
 
