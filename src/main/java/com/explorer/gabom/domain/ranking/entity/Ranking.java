@@ -23,7 +23,7 @@ public class Ranking {
 	private Long userId;
 
 	@Column(nullable = false)
-	private int rank;
+	private int rankNo;
 
 	@Column(nullable = false)
 	private int level;
@@ -40,10 +40,10 @@ public class Ranking {
 	@Column(nullable = true)
 	private String profileImageUrl;
 
-	public Ranking(Long userId, int rank, int level, int exp, String nickname, String titleName,
+	public Ranking(Long userId, int rankOrder, int level, int exp, String nickname, String titleName,
 				   String profileImageUrl) {
 		this.userId = userId;
-		this.rank = rank;
+		this.rankNo = rankOrder;
 		this.level = level;
 		this.exp = exp;
 		this.nickname = nickname;
