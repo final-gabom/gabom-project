@@ -15,10 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -103,6 +103,7 @@ public class AuthServiceTest {
 
         assertEquals(ErrorCode.EMAIL_NOT_VERIFIED, exception.getErrorCode());
     }
+
     @Test
     void 회원가입_실패_닉네임중복() {
         // given
