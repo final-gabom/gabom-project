@@ -25,7 +25,7 @@ public class PasswordResetService {
     private final JavaMailSender emailSender;
     private final EmailCodeStorageService emailCodeStorageService;
 
-    private static final long PASSWORD_RESET_CODE_EXPIRATION_SECONDS = 600;
+    private static final long PASSWORD_RESET_CODE_EXPIRATION_SECONDS = 300;
     private final PasswordEncoder passwordEncoder;
 
     // 인증코드 전송
