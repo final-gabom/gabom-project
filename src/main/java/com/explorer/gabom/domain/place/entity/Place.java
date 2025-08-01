@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
@@ -35,43 +37,35 @@ import lombok.NoArgsConstructor;
 @SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
 public class Place extends BaseTimeEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
-
-	@Column(nullable = false, length = 100)
-	private String title;
-
-	@Column(nullable = false, length = 255)
-	private String address;
-
-	@Column(nullable = false)
-	private Double lat;
-
-	@Column(nullable = false)
-	private Double lng;
-
-	@Lob
-	@Column(nullable = false)
-	private String content;
-
-	@Column(nullable = false)
-	private String proofMethod;
-
-	@Column(nullable = false)
-	private Integer viewCount;
-
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private PlaceStatus status;
-
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private final List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+	@Column(nullable = false, length = 100)
+	private String title;
+	@Column(nullable = false, length = 255)
+	private String address;
+	@Column(nullable = false)
+	private Double lat;
+	@Column(nullable = false)
+	private Double lng;
+	@Lob
+	@Column(nullable = false)
+	private String content;
+	@Column(nullable = false)
+	private String proofMethod;
+	@Column(nullable = false)
+	private Integer viewCount;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private PlaceStatus status;
+	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
+	private final List<MissionProof> missionProofs = new ArrayList<>();
 
 	public Place(PlaceCreateRequest request, User user) {
 		this.user = user;
@@ -97,5 +91,10 @@ public class Place extends BaseTimeEntity {
 		this.viewCount += 1;
 	}
 
-
+	public AttachmentFile getFirstFile() {
+		return files.stream()
+					.findFirst()
+					.map(PlaceFile::getFile)
+					.orElse(null);
+	}
 }

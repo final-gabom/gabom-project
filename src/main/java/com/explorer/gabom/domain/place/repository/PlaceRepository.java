@@ -13,4 +13,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
 	Optional<Place> findByIdAndStatusInAndDeletedAtIsNull(Long id, List<PlaceStatus> status);
 
 	Optional<Place> findByIdAndStatus(Long placeId, PlaceStatus status);
+
+	List<Place> findByIdIn(List<Long> ids);
 }
