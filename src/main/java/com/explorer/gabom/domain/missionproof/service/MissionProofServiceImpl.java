@@ -15,8 +15,10 @@ import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.file.type.FileType;
+import com.explorer.gabom.domain.missionproof.dto.MissionProofSummary;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 
+import com.explorer.gabom.domain.missionproof.dto.request.ListMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
@@ -27,6 +29,7 @@ import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.dto.OffsetResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -34,7 +37,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
 public class MissionProofServiceImpl implements MissionProofService{
 
 	private final MissionProofRepository missionProofRepository;
@@ -140,6 +142,30 @@ public class MissionProofServiceImpl implements MissionProofService{
 		}
 
 		missionProof.delete();
+	}
+
+	@Override
+	public OffsetResponse<MissionProofSummary> getMissionProofs(ListMissionProofRequest request) {
+		int size = request.getSize() != null ? request.getSize() : 10;
+
+		List<MissionProof> results = missionProofRepository.searchMissionProofs(request, size + 1); // next 여부 확인 위해 +1
+
+		boolean hasNext = results.size() > size;
+		if (hasNext) results.remove(size); // 다음 페이지 존재하므로 마지막 항목 제거
+
+		List<MissionProofSummary> contents = results.stream()
+													.map(MissionProofSummary::toDto)
+													.collect(Collectors.toList());
+
+		Long lastId = contents.isEmpty() ? null : contents.get(contents.size() - 1).getId();
+
+		return OffsetResponse.<MissionProofSummary>builder()
+							 .content(contents)
+							 .size(size)
+							 .lastId(lastId)
+							 .totalElements(0L)
+							 .build();
+
 	}
 
 	@Override
