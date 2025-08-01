@@ -10,5 +10,9 @@ import com.explorer.gabom.domain.file.type.FileType;
 public interface AttachmentFileRepository extends JpaRepository<AttachmentFile, String> {
 	List<AttachmentFile> findByFileTypeAndRefIdAndDeletedFalse(FileType fileType, Long refId);
 
+	List<AttachmentFile> findAllByFileIdIn(List<String> fileIds);
+
+	List<AttachmentFile> findAllByRefIdAndFileType(Long refId, FileType fileType);
+
 
 }
