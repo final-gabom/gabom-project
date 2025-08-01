@@ -1,7 +1,11 @@
 package com.explorer.gabom.domain.missionproof.controller;
 
 import static com.explorer.gabom.domain.place.entity.QPlace.*;
+import static org.springframework.data.domain.Sort.Direction.*;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +28,7 @@ import com.explorer.gabom.domain.missionproof.service.MissionProofService;
 import com.explorer.gabom.domain.place.entity.QPlace;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.OffsetResponse;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
@@ -79,10 +84,11 @@ public class MissionProofController {
 
 	// 미션 인증글 리스트 조회
 	@GetMapping
-	public ResponseEntity<OffsetResponse<MissionProofSummary>> getMissionProofs(
-		@Valid ListMissionProofRequest request
+	public ResponseEntity<ApiResponse<PageResponse<MissionProofSummary>>> getMissionProofs(
+		@Valid ListMissionProofRequest request,
+		@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	) {
-		OffsetResponse<MissionProofSummary> response = missionProofService.getMissionProofs(request);
-		return ResponseEntity.ok(response);
+		PageResponse<MissionProofSummary> response = missionProofService.getMissionProofs(request, pageable);
+		return ResponseEntity.ok(ApiResponse.success("미션 인증글 리스트 조회 성공", response));
 	}
 }

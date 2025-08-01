@@ -2,6 +2,10 @@ package com.explorer.gabom.domain.missionproof.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import com.explorer.gabom.domain.missionproof.dto.request.ListMissionProofRequest;
@@ -9,8 +13,11 @@ import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.entity.QMissionProof;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -22,47 +29,47 @@ public class MissionProofRepositoryImpl implements MissionProofRepositoryCustom 
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<MissionProof> searchMissionProofs(ListMissionProofRequest request, int size) {
+	public Page<MissionProof> searchMissionProofs(ListMissionProofRequest request, Pageable pageable) {
 		QMissionProof missionProof = QMissionProof.missionProof;
 		BooleanBuilder builder = new BooleanBuilder();
 
-		// 인증 대상 (type: PLACE or QUEST)
 		if (request.getType() != null) {
-			builder.and(
-				missionProof.fieldType.eq(request.getType())
-			);
+			builder.and(missionProof.fieldType.eq(request.getType()));
 		}
-
-		// 대상 ID
 		if (request.getTargetId() != null) {
 			builder.and(missionProof.targetId.eq(request.getTargetId()));
 		}
-
-		// 작성자 ID
 		if (request.getUserId() != null) {
 			builder.and(missionProof.user.id.eq(request.getUserId()));
 		}
-
-		// Soft Delete
 		builder.and(missionProof.deletedAt.isNull());
 
-		// 무한 스크롤 (Offset 방식)
-		if (request.getLastId() != null) {
-			builder.and(missionProof.id.lt(request.getLastId()));
-		}
-
-		// 정렬 (기본 최신순)
-		OrderSpecifier<?> order = switch (request.getSort()) {
-			case "oldest" -> missionProof.id.asc();
-			default -> missionProof.id.desc(); // 최신순
-		};
-
-		return queryFactory
+		JPAQuery<MissionProof> query = queryFactory
 			.selectFrom(missionProof)
 			.leftJoin(missionProof.user).fetchJoin()
-			.where(builder)
-			.orderBy(order)
-			.limit(size)
+			.where(builder);
+
+		// 정렬 처리
+		for (Sort.Order order : pageable.getSort()) {
+			PathBuilder<MissionProof> pathBuilder = new PathBuilder<>(MissionProof.class, "missionProof");
+			query.orderBy(new OrderSpecifier<>(
+				order.isAscending() ? Order.ASC : Order.DESC,
+				pathBuilder.getComparable(order.getProperty(), Comparable.class)
+			));
+		}
+
+		// 페이징 처리
+		List<MissionProof> content = query
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
 			.fetch();
+
+		long total = queryFactory
+			.select(missionProof.count())
+			.from(missionProof)
+			.where(builder)
+			.fetchOne();
+
+		return new PageImpl<>(content, pageable, total);
 	}
 }

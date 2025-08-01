@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,7 @@ import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequ
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
+import com.explorer.gabom.domain.missionproof.entity.QMissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -30,8 +35,15 @@ import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.OffsetResponse;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +54,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 	private final MissionProofRepository missionProofRepository;
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
+	private final JPAQueryFactory queryFactory;
 
 
 	// 생성
@@ -144,28 +157,13 @@ public class MissionProofServiceImpl implements MissionProofService{
 		missionProof.delete();
 	}
 
+
 	@Override
-	public OffsetResponse<MissionProofSummary> getMissionProofs(ListMissionProofRequest request) {
-		int size = request.getSize() != null ? request.getSize() : 10;
-
-		List<MissionProof> results = missionProofRepository.searchMissionProofs(request, size + 1); // next 여부 확인 위해 +1
-
-		boolean hasNext = results.size() > size;
-		if (hasNext) results.remove(size); // 다음 페이지 존재하므로 마지막 항목 제거
-
-		List<MissionProofSummary> contents = results.stream()
-													.map(MissionProofSummary::toDto)
-													.collect(Collectors.toList());
-
-		Long lastId = contents.isEmpty() ? null : contents.get(contents.size() - 1).getId();
-
-		return OffsetResponse.<MissionProofSummary>builder()
-							 .content(contents)
-							 .size(size)
-							 .lastId(lastId)
-							 .totalElements(0L)
-							 .build();
-
+	@Transactional(readOnly = true)
+	public PageResponse<MissionProofSummary> getMissionProofs(ListMissionProofRequest request, Pageable pageable) {
+		Page<MissionProof> page = missionProofRepository.searchMissionProofs(request, pageable);
+		Page<MissionProofSummary> mapped = page.map(MissionProofSummary::toDto);
+		return PageResponse.toDto(mapped);
 	}
 
 	@Override
