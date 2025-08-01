@@ -1,6 +1,8 @@
 package com.explorer.gabom.domain.auth.controller;
 
+import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.domain.user.type.UserRole;
@@ -55,5 +57,22 @@ public class AuthControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(1));
+    }
+    @Test
+    void 로그인_성공() throws Exception {
+        // given
+        LoginRequest request = new LoginRequest("test@example.com", "Password123!");
+        LoginResponse response = LoginResponse.toDto("access-token", "refresh-token");
+
+        when(authService.login(any(LoginRequest.class))).thenReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"));
     }
 }
