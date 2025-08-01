@@ -18,7 +18,7 @@ public class RankingDto {
 
 	public static RankingDto toDto(Ranking ranking) {
 		return RankingDto.builder()
-						 .rank(ranking.getRank())
+						 .rank(ranking.getRankNo())
 						 .userId(ranking.getUserId())
 						 .nickname(ranking.getNickname())
 						 .profileImageUrl(ranking.getProfileImageUrl())
