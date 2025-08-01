@@ -1,23 +1,38 @@
 package com.explorer.gabom.domain.auth.service;
 
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
+import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.security.jwt.JwtProvider;
+import com.explorer.gabom.global.validator.PasswordValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +49,13 @@ public class AuthServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private PasswordValidator passwordValidator;
+
+    @Mock
+    private JwtProvider jwtProvider;
+
 
     @Test
     void 회원가입_성공() {
@@ -121,5 +143,47 @@ public class AuthServiceTest {
         });
 
         assertEquals(ErrorCode.NICKNAME_ALREADY_EXISTS, exception.getErrorCode());
+    }
+
+    @Test
+    void 로그인_성공() {
+        // given
+        LoginRequest request = new LoginRequest("test@example.com", "Password123!");
+
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("encoded-password")
+                .nickname("nickname")
+                .userRole(UserRole.USER)
+                .build();
+
+        given(userRepository.findByEmailAndStatus(eq("test@example.com"), eq(UserStatus.ACTIVE)))
+                .willReturn(Optional.of(user));
+
+        // 비밀번호 검증은 내부에서 예외 던지지 않으면 성공으로 간주
+        willDoNothing().given(passwordValidator).verifyMatch("Password123!", "encoded-password");
+
+        given(jwtProvider.createAccessToken(1L, UserRole.USER)).willReturn("access-token");
+        given(jwtProvider.createRefreshToken(1L, UserRole.USER)).willReturn("refresh-token");
+
+        // when
+        LoginResponse response = authService.login(request);
+
+        // then
+        assertThat(response.getAccessToken()).isEqualTo("access-token");
+        assertThat(response.getRefreshToken()).isEqualTo("refresh-token");
+    }
+
+    @Test
+    void 로그인_실패_유저없음() {
+        // given
+        LoginRequest request = new LoginRequest("nonexistent@example.com", "password123!");
+
+        given(userRepository.findByEmailAndStatus(any(), any()))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThrows(CustomException.class, () -> authService.login(request));
     }
 }
