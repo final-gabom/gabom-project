@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.explorer.gabom.domain.quest.entity.Quest;
 
-public interface QuestRepository extends JpaRepository<Quest, Long> {
+public interface QuestRepository extends JpaRepository<Quest, Long>, QuestRepositoryCustom {
 
 	Optional<Quest> findByIdAndDeletedFalse(Long id);
 
