@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.exploration.controller;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
 import com.explorer.gabom.domain.user.type.UserRole;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -62,6 +64,7 @@ public class ExplorationControllerTest {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 
+	// 탐험 시작
 	@Test
 	@DisplayName("탐험 시작 - 성공")
 	void startExploration_success() throws Exception {
@@ -97,5 +100,23 @@ public class ExplorationControllerTest {
 			   .andExpect(jsonPath("$.data.rewardExp").value(30))
 			   .andExpect(jsonPath("$.data.startAt").exists())
 			   .andExpect(jsonPath("$.data.endAt").exists());
+	}
+
+	// 탐험 제한 시간 연장
+	@Test
+	@DisplayName("탐험 제한 시간 연장 - 성공")
+	void extendExplorationTime_success() throws Exception {
+		LocalDateTime newDeadline = LocalDateTime.now().plusHours(3);
+		ExplorationExtendTimeResponse response = new ExplorationExtendTimeResponse(1L, newDeadline);
+
+		when(explorationService.extendExplorationTime(anyLong(), anyLong())).thenReturn(response);
+
+		mockMvc.perform(patch("/api/exploration/1/extend-time")
+							.contentType(MediaType.APPLICATION_JSON))
+			   .andExpect(status().isOk())
+			   .andExpect(jsonPath("$.success").value(true))
+			   .andExpect(jsonPath("$.message").value("탐험 제한 시간이 연장되었습니다."))
+			   .andExpect(jsonPath("$.data.explorationId").value(1))
+			   .andExpect(jsonPath("$.data.newDeadline").exists());
 	}
 }

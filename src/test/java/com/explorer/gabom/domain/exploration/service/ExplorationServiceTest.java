@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.exploration.service;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
@@ -44,6 +45,7 @@ public class ExplorationServiceTest {
 
 	private User mockUser;
 	private Place mockPlace;
+	private Exploration exploration;
 
 	@BeforeEach
 	void setUp() {
@@ -56,8 +58,14 @@ public class ExplorationServiceTest {
 						 .lat(37.123456)
 						 .lng(127.123456)
 						 .build();
+
+		exploration = new Exploration();
+		exploration.setId(1L);
+		exploration.setUser(mockUser);
+		exploration.setEndAt(LocalDateTime.now().plusMinutes(30));
 	}
 
+	// 탐험 시작
 	@Test
 	@DisplayName("탐험 시작 - 성공")
 	void startExploration_success() throws Exception {
@@ -153,5 +161,57 @@ public class ExplorationServiceTest {
 		});
 
 		assertEquals(ErrorCode.PLACE_NOT_FOUND, exception.getErrorCode());
+	}
+
+
+	// 탐험 제한 시간 연장
+	@Test
+	@DisplayName("탐험 제한 시간 연장 - 성공")
+	void extendExplorationTime_success() {
+		when(explorationRepository.findById(1L)).thenReturn(Optional.of(exploration));
+
+		ExplorationExtendTimeResponse response = explorationService.extendExplorationTime(1L, 1L);
+
+		assertEquals(1L, response.getExplorationId());
+		assertTrue(response.getNewDeadline().isAfter(LocalDateTime.now()));
+
+		verify(explorationRepository).findById(1L);
+	}
+
+	@Test
+	@DisplayName("탐험 제한 시간 연장 - 탐험 없음 예외")
+	void extendExplorationTime_explorationNotFound() {
+		when(explorationRepository.findById(1L)).thenReturn(Optional.empty());
+
+		CustomException exception = assertThrows(CustomException.class,
+												 () -> explorationService.extendExplorationTime(1L, 1L));
+
+		assertEquals(ErrorCode.EXPLORATION_NOT_FOUND, exception.getErrorCode());
+	}
+
+	@Test
+	@DisplayName("탐험 제한 시간 연장 - 권한 없음 예외")
+	void extendExplorationTime_noPermission() {
+		User otherUser = User.builder().id(2L).build();
+		exploration.setUser(otherUser);
+
+		when(explorationRepository.findById(1L)).thenReturn(Optional.of(exploration));
+
+		CustomException exception = assertThrows(CustomException.class,
+												 () -> explorationService.extendExplorationTime(1L, 1L));
+
+		assertEquals(ErrorCode.EXPLORATION_NO_PERMISSION, exception.getErrorCode());
+	}
+
+	@Test
+	@DisplayName("탐험 제한 시간 연장 - 이미 종료된 탐험 예외")
+	void extendExplorationTime_alreadyEnded() {
+		exploration.setEndAt(LocalDateTime.now().minusMinutes(1));
+		when(explorationRepository.findById(1L)).thenReturn(Optional.of(exploration));
+
+		CustomException exception = assertThrows(CustomException.class,
+												 () -> explorationService.extendExplorationTime(1L, 1L));
+
+		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
 	}
 }
