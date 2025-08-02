@@ -1,9 +1,12 @@
 package com.explorer.gabom.domain.exploration.controller;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
+import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
+import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,17 +24,21 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
+import static com.amazonaws.auth.internal.SignerConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -118,5 +125,46 @@ public class ExplorationControllerTest {
 			   .andExpect(jsonPath("$.message").value("탐험 제한 시간이 연장되었습니다."))
 			   .andExpect(jsonPath("$.data.explorationId").value(1))
 			   .andExpect(jsonPath("$.data.newDeadline").exists());
+	}
+
+
+	// 탐험 중인 장소 조회
+	@Test
+	@DisplayName("탐험 중인 장소 조회 - 성공")
+	void getCurrentExploration_success() throws Exception {
+		// given
+		ExplorationCurrentResponse response = ExplorationCurrentResponse.of(
+			Exploration.builder()
+					   .id(100L)
+					   .build(),
+			Place.builder()
+				 .id(1L)
+				 .title("멋진 장소")
+				 .build()
+		);
+
+		// 서비스가 호출되면 위 응답을 반환하도록 mocking
+		when(explorationService.getCurrentExploration(anyLong()))
+			.thenReturn(ExplorationCurrentResponse.builder()
+												  .explorationId(100L)
+												  .placeId(1L)
+												  .placeTitle("멋진 장소")
+												  .startedAt(LocalDateTime.now().minusHours(1))
+												  .deadline(LocalDateTime.now().plusHours(2))
+												  .rewardPoint(300)
+												  .build());
+
+		// when & then
+		mockMvc.perform(get("/api/exploration/current")
+							.contentType(MediaType.APPLICATION_JSON))
+			   .andExpect(status().isOk())
+			   .andExpect(jsonPath("$.success").value(true))
+			   .andExpect(jsonPath("$.message").value("현재 탐험 중인 장소 조회에 성공했습니다."))
+			   .andExpect(jsonPath("$.data.explorationId").value(100))
+			   .andExpect(jsonPath("$.data.placeId").value(1))
+			   .andExpect(jsonPath("$.data.placeTitle").value("멋진 장소"))
+			   .andExpect(jsonPath("$.data.startedAt").exists())
+			   .andExpect(jsonPath("$.data.deadline").exists())
+			   .andExpect(jsonPath("$.data.rewardPoint").value(300));
 	}
 }

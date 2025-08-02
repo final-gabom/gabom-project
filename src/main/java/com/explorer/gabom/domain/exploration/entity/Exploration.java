@@ -40,8 +40,9 @@ public class Exploration extends BaseTimeEntity {
 	private LocalDateTime endAt;
 
 	@Builder
-	public Exploration(User user, Place place, int rewardPoint, int rewardExp,
+	public Exploration(Long id, User user, Place place, int rewardPoint, int rewardExp,
 					   LocalDateTime startAt, LocalDateTime endAt) {
+		this.id = id;
 		this.user = user;
 		this.place = place;
 		this.rewardPoint = rewardPoint;

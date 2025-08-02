@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.exploration.service;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
@@ -213,5 +214,52 @@ public class ExplorationServiceTest {
 												 () -> explorationService.extendExplorationTime(1L, 1L));
 
 		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
+	}
+
+
+	// 탐험 중인 장소 조회
+	@Test
+	@DisplayName("탐험 중인 장소 조회 - 성공")
+	void getCurrentExploration_success() {
+		// given
+		User user = User.builder().id(1L).build();
+		Place place = Place.builder().id(1L).title("멋진 장소").build();
+
+		Exploration exploration = Exploration.builder()
+											 .id(100L)
+											 .user(user)
+											 .place(place)
+											 .startAt(LocalDateTime.now().minusHours(1))
+											 .endAt(LocalDateTime.now().plusHours(2))
+											 .rewardPoint(300)
+											 .build();
+
+		when(explorationRepository.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L), any(LocalDateTime.class)))
+			.thenReturn(Optional.of(exploration));
+
+		// when
+		ExplorationCurrentResponse response = explorationService.getCurrentExploration(1L);
+
+		// then
+		assertNotNull(response);
+		assertEquals(100L, response.getExplorationId());
+		assertEquals(1L, response.getPlaceId());
+		assertEquals("멋진 장소", response.getPlaceTitle());
+		assertTrue(response.getDeadline().isAfter(LocalDateTime.now()));
+		assertEquals(300, response.getRewardPoint());
+
+		verify(explorationRepository).findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L), any(LocalDateTime.class));
+	}
+
+	@Test
+	@DisplayName("탐험 중인 장소 조회 - 진행 중인 탐험 없음 예외")
+	void getCurrentExploration_notFound_throwsException() {
+		when(explorationRepository.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L), any(LocalDateTime.class)))
+			.thenReturn(Optional.empty());
+
+		CustomException exception = assertThrows(CustomException.class,
+												 () -> explorationService.getCurrentExploration(1L));
+
+		assertEquals(ErrorCode.NO_ACTIVE_EXPLORATION, exception.getErrorCode());
 	}
 }
