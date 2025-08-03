@@ -268,5 +268,55 @@ public class MissionProofServiceTest {
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
 	}
+
+	@Test
+	@DisplayName("미션 인증글 삭제 성공")
+	void deleteMissionProof_success() {
+		Long id = 1L;
+		Long userId = mockUser.getId();
+
+		MissionProof mockProof = MissionProof.builder()
+											 .id(id)
+											 .user(mockUser)
+											 .build();
+
+		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(mockProof));
+
+		// when
+		missionProofService.deleteMissionProof(id, userId);
+
+		// then
+		verify(missionProofRepository).findByIdAndDeletedAtIsNull(id);
+	}
+
+	@Test
+	@DisplayName("미션 인증글 삭제 실패 - 인증글 없음")
+	void deleteMissionProof_fail_notFound() {
+		Long id = 999L;
+
+		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> missionProofService.deleteMissionProof(id, mockUser.getId()))
+			.isInstanceOf(CustomException.class)
+			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
+	}
+
+	@Test
+	@DisplayName("미션 인증글 삭제 실패 - 작성자 불일치")
+	void deleteMissionProof_fail_forbidden() {
+		Long id = 1L;
+		User 다른유저 = User.builder().id(999L).nickname("다른놈").build();
+
+		MissionProof mockProof = MissionProof.builder()
+											 .id(id)
+											 .user(다른유저)
+											 .build();
+
+		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(mockProof));
+
+		assertThatThrownBy(() -> missionProofService.deleteMissionProof(id, mockUser.getId()))
+			.isInstanceOf(CustomException.class)
+			.hasMessageContaining(ErrorCode.FORBIDDEN_DELETE_MISSION_PROOF.getMessage());
+	}
 }
 
