@@ -15,7 +15,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class EmailAuthService{
+class EmailAuthServiceTest {
 
     @InjectMocks
     private EmailAuthService emailAuthService;
