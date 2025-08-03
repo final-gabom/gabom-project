@@ -3,7 +3,9 @@ package com.explorer.gabom.domain.missionproof;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,13 +15,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import com.explorer.gabom.domain.file.dto.FileResponseDto;
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
+import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
-import com.explorer.gabom.domain.missionproof.service.MissionProofService;
+
 import com.explorer.gabom.domain.missionproof.service.MissionProofServiceImpl;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -124,5 +130,95 @@ public class MissionProofServiceTest {
 			CustomException.class).hasMessageContaining(ErrorCode.PLACE_NOT_FOUND.getMessage());
 	}
 
+
+	@Test
+	@DisplayName("미션 인증글 수정 성공")
+	void updateMissionProof_success() {
+		// given
+		Long missionProofId = 1L;
+		Long userId = 1L;
+
+		MissionProof existing = MissionProof.builder()
+											.id(missionProofId)
+											.user(mockUser)
+											.title("Old Title")
+											.content("Old Content")
+											.imageFiles(new ArrayList<>())
+											.fieldType(MissionProofType.PLACE)
+											.targetId(100L)
+											.place(mockPlace)
+											.starRating(4)
+											.build();
+
+		UpdateMissionProofRequest request = UpdateMissionProofRequest.builder()
+																	 .title("New Title")
+																	 .content("New Content")
+																	 .imgFileIds(List.of("file1", "file2"))
+																	 .build();
+
+		List<AttachmentFile> mockFiles = List.of(
+			AttachmentFile.builder().filePath("path1")
+						  .fileType(FileType.MISSION_PROOF)
+						  .build(),
+			AttachmentFile.builder().filePath("path2")
+						  .fileType(FileType.MISSION_PROOF)
+						  .build()
+		);
+
+		when(missionProofRepository.findById(missionProofId)).thenReturn(Optional.of(existing));
+		when(attachmentFileRepository.findAllByFileIdIn(request.getImgFileIds())).thenReturn(mockFiles);
+
+		// when
+		CreateMissionProofResponse response = missionProofService.updateMissionProof(missionProofId, request, userId);
+
+		// then
+		assertThat(response.getTitle()).isEqualTo("New Title");
+		assertThat(response.getContent()).isEqualTo("New Content");
+		List<FileResponseDto> files = response.getProfileImages();
+		assertThat(files).hasSize(2);
+		verify(missionProofRepository).findById(missionProofId);
+		verify(attachmentFileRepository).findAllByFileIdIn(request.getImgFileIds());
+	}
+
+	@Test
+	@DisplayName("미션 인증글 수정 실패 - 인증글 없음")
+	void updateMissionProof_fail_notFound() {
+		Long id = 99L;
+		when(missionProofRepository.findById(id)).thenReturn(Optional.empty());
+
+		UpdateMissionProofRequest request = UpdateMissionProofRequest.builder()
+																	 .title("제목")
+																	 .content("내용")
+																	 .imgFileIds(List.of())
+																	 .build();
+
+		assertThatThrownBy(() -> missionProofService.updateMissionProof(id, request, 1L))
+			.isInstanceOf(CustomException.class)
+			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
+	}
+
+	@Test
+	@DisplayName("미션 인증글 수정 실패 - 작성자 불일치")
+	void updateMissionProof_fail_forbidden() {
+		Long id = 1L;
+		Long 다른유저ID = 2L;
+
+		MissionProof existing = MissionProof.builder()
+											.id(id)
+											.user(mockUser) // userId = 1
+											.build();
+
+		when(missionProofRepository.findById(id)).thenReturn(Optional.of(existing));
+
+		UpdateMissionProofRequest request = UpdateMissionProofRequest.builder()
+																	 .title("제목")
+																	 .content("내용")
+																	 .imgFileIds(List.of())
+																	 .build();
+
+		assertThatThrownBy(() -> missionProofService.updateMissionProof(id, request, 2L))
+			.isInstanceOf(CustomException.class)
+			.hasMessageContaining(ErrorCode.FORBIDDEN_UPDATE_MISSION_PROOF.getMessage());
+	}
 }
 
