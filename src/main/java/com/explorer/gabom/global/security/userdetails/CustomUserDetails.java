@@ -25,7 +25,7 @@ public class CustomUserDetails implements UserDetails {
 	private User user;
 
 	@Builder
-	private CustomUserDetails(Long userId, String email, String password, UserRole role, User user) {
+    public CustomUserDetails(Long userId, String email, String password, UserRole role, User user) {
 		this.userId = userId;
 		this.email = email;
 		this.password = password;
