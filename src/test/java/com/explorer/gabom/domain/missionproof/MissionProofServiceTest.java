@@ -23,6 +23,7 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 
@@ -219,6 +220,53 @@ public class MissionProofServiceTest {
 		assertThatThrownBy(() -> missionProofService.updateMissionProof(id, request, 2L))
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.FORBIDDEN_UPDATE_MISSION_PROOF.getMessage());
+	}
+
+	@Test
+	@DisplayName("미션 인증글 상세 조회 성공")
+	void getMissionProofDetail_success() {
+		Long id = 1L;
+
+		MissionProof missionProof = MissionProof.builder()
+												.id(id)
+												.user(mockUser)
+												.place(mockPlace)
+												.title("상세 제목")
+												.content("상세 내용")
+												.imageFiles(new ArrayList<>())
+												.fieldType(MissionProofType.PLACE)
+												.targetId(100L)
+												.starRating(5)
+												.build();
+
+		List<AttachmentFile> mockFiles = List.of(
+			AttachmentFile.builder().filePath("file1.png")
+						  .fileType(FileType.MISSION_PROOF)
+						  .build(),
+			AttachmentFile.builder().filePath("file2.png")
+						  .fileType(FileType.MISSION_PROOF)
+						  .build()
+		);
+
+		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(missionProof));
+		when(attachmentFileRepository.findAllByRefIdAndFileType(id, FileType.MISSION_PROOF)).thenReturn(mockFiles);
+
+		MissionProofDetailResponse response = missionProofService.getMissionProofDetail(id);
+
+		assertThat(response.getTitle()).isEqualTo("상세 제목");
+		assertThat(response.getContent()).isEqualTo("상세 내용");
+		assertThat(response.getProfileImages()).hasSize(2);
+	}
+
+	@Test
+	@DisplayName("미션 인증글 상세 조회 실패 - 없음")
+	void getMissionProofDetail_fail_notFound() {
+		Long id = 123L;
+		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> missionProofService.getMissionProofDetail(id))
+			.isInstanceOf(CustomException.class)
+			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
 	}
 }
 
