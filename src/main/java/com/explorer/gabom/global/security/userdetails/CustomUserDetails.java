@@ -61,4 +61,8 @@ public class CustomUserDetails implements UserDetails {
 	public User getUser() {
 		return this.user;
 	}
+
+	public static CustomUserDetails fromUser(User user) {
+		return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(), user.getUserRole(), user);
+	}
 }
