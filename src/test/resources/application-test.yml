@@ -1,21 +1,29 @@
 server:
-  port: ${SERVER_PORT}
+  port: 8080
+  error:
+    include-stacktrace: always
+
+logging:
+  level:
+    com.explorer.gabom: debug
 
 spring:
-  config:
-    import: optional:file:.env[.properties]
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${RDS_URL}:${MYSQL_PORT}/${MYSQL_DBNAME}?serverTimezone=Asia/Seoul
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:h2:mem:testdb;MODE=MYSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: always
 
   # 이메일 인증 시 필요
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: na
+    password: na
     properties:
       mail:
         smtp:
@@ -25,10 +33,33 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
         show_sql: true
         format_sql: true
         use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect
+
+  cloud:
+    aws:
+      credentials:
+        access-key: na
+        secret-key: na
+      region:
+        static: us-east-2
+      s3:
+        bucket: na
+        key:
+          prefix: test/
+
+jwt:
+  secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
+  access-expiration: 3600000  # 1시간
+  refresh-expiration: 1209600000  # 14일
+
+
+  # redis 설정
+  redis:
+    host: localhost
+    port: 6379
