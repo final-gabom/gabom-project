@@ -14,7 +14,6 @@ import com.explorer.gabom.domain.auth.service.EmailAuthService;
 import com.explorer.gabom.domain.auth.service.PasswordResetService;
 import com.explorer.gabom.global.dto.ApiResponse;
 
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +38,6 @@ public class EmailAuthController implements EmailAuthControllerDocs{
     }
     // 비밀번호 재설정을 위한 인증코드 이메일로 전송
     @PostMapping("password-reset/request")
-    @Operation(summary = "비밀번호 재설정 인증코드 전송")
     public ResponseEntity<ApiResponse<Void>> passwordResetRequestEmail(@RequestBody PasswordResetRequest request) {
         passwordResetService.sendResetCode(request);
         return ResponseEntity.ok(ApiResponse.success("비밀번호 재설정 인증 코드를 이메일로 전송했습니다."));
