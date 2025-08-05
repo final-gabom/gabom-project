@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/mission-proof")
-public class MissionProofController {
+public class MissionProofController implements MissionProofControllerDocs {
 
 	private final MissionProofService missionProofService;
 
