@@ -1,6 +1,9 @@
 package com.explorer.gabom.domain.missionproof;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowableOfType;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -15,7 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.assertj.core.api.Assertions.assertThat;
+
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
@@ -26,7 +29,6 @@ import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofRes
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
-
 import com.explorer.gabom.domain.missionproof.service.MissionProofServiceImpl;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -101,6 +103,7 @@ public class MissionProofServiceTest {
 		// then
 		assertThat(response.getTitle()).isEqualTo("인증 제목");
 		assertThat(response.getContent()).isEqualTo("인증 내용");
+		assertThat(response.getProfileImages()).isNotNull(); // 최소 null 체크
 		verify(missionProofRepository).save(any(MissionProof.class));
 	}
 
@@ -132,7 +135,6 @@ public class MissionProofServiceTest {
 		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PLACE_NOT_FOUND);
 		assertThat(e.getMessage()).contains(ErrorCode.PLACE_NOT_FOUND.getMessage());
 	}
-
 
 	@Test
 	@DisplayName("미션 인증글 수정 성공")
@@ -195,9 +197,14 @@ public class MissionProofServiceTest {
 																	 .imgFileIds(List.of())
 																	 .build();
 
-		assertThatThrownBy(() -> missionProofService.updateMissionProof(id, request, 1L))
-			.isInstanceOf(CustomException.class)
-			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
+		// when & then
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.updateMissionProof(id, request, mockUser.getId()),
+			CustomException.class
+		);
+
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_MISSION_PROOF);
+		assertThat(e.getMessage()).contains(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
 	}
 
 	@Test
@@ -218,10 +225,15 @@ public class MissionProofServiceTest {
 																	 .content("내용")
 																	 .imgFileIds(List.of())
 																	 .build();
+		// when & then
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.updateMissionProof(id, request, 다른유저ID),
+			CustomException.class
+		);
 
-		assertThatThrownBy(() -> missionProofService.updateMissionProof(id, request, 2L))
-			.isInstanceOf(CustomException.class)
-			.hasMessageContaining(ErrorCode.FORBIDDEN_UPDATE_MISSION_PROOF.getMessage());
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN_UPDATE_MISSION_PROOF);
+		assertThat(e.getMessage()).contains(ErrorCode.FORBIDDEN_UPDATE_MISSION_PROOF.getMessage());
+
 	}
 
 	@Test
@@ -264,11 +276,14 @@ public class MissionProofServiceTest {
 	@DisplayName("미션 인증글 상세 조회 실패 - 없음")
 	void getMissionProofDetail_fail_notFound() {
 		Long id = 123L;
-		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.empty());
+		// when & then
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.getMissionProofDetail(id),
+			CustomException.class
+		);
 
-		assertThatThrownBy(() -> missionProofService.getMissionProofDetail(id))
-			.isInstanceOf(CustomException.class)
-			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_MISSION_PROOF);
+		assertThat(e.getMessage()).contains(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
 	}
 
 	@Test
@@ -296,11 +311,14 @@ public class MissionProofServiceTest {
 	void deleteMissionProof_fail_notFound() {
 		Long id = 999L;
 
-		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.empty());
+		// when & then
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.deleteMissionProof(id, mockUser.getId()),
+			CustomException.class
+		);
 
-		assertThatThrownBy(() -> missionProofService.deleteMissionProof(id, mockUser.getId()))
-			.isInstanceOf(CustomException.class)
-			.hasMessageContaining(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_MISSION_PROOF);
+		assertThat(e.getMessage()).contains(ErrorCode.NOT_FOUND_MISSION_PROOF.getMessage());
 	}
 
 	@Test
@@ -313,12 +331,16 @@ public class MissionProofServiceTest {
 											 .id(id)
 											 .user(다른유저)
 											 .build();
-
 		when(missionProofRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(mockProof));
 
-		assertThatThrownBy(() -> missionProofService.deleteMissionProof(id, mockUser.getId()))
-			.isInstanceOf(CustomException.class)
-			.hasMessageContaining(ErrorCode.FORBIDDEN_DELETE_MISSION_PROOF.getMessage());
+		// when & then
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.deleteMissionProof(id, mockUser.getId()),
+			CustomException.class
+		);
+
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN_DELETE_MISSION_PROOF);
+		assertThat(e.getMessage()).contains(ErrorCode.FORBIDDEN_DELETE_MISSION_PROOF.getMessage());
 	}
 }
 
