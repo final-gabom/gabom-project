@@ -130,6 +130,82 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
+    @DisplayName("회원가입 실패 - 잘못된 이메일 형식")
+    @Test
+    void signupFail_invalidEmailFormat() throws Exception {
+        SignupRequest request = new SignupRequest(
+                "invalid-email-format",  // 잘못된 이메일
+                "validNickname",
+                "Password123!",
+                UserRole.USER
+        );
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @DisplayName("회원가입 실패 - 비밀번호 형식 불일치")
+    @Test
+    void signupFail_invalidPassword() throws Exception {
+        SignupRequest request = new SignupRequest(
+                EMAIL,
+                "validNickname",
+                "abc",  // 너무 짧고 형식 불일치
+                UserRole.USER
+        );
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @DisplayName("회원가입 실패 - 닉네임 너무 짧음")
+    @Test
+    void signupFail_shortNickname() throws Exception {
+        SignupRequest request = new SignupRequest(
+                EMAIL,
+                "a",  // 닉네임이 너무 짧음
+                "Password123!",
+                UserRole.USER
+        );
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @DisplayName("회원가입 실패 - 권한 누락(null)")
+    @Test
+    void signupFail_missingRole() throws Exception {
+        SignupRequest request = new SignupRequest(
+                EMAIL,
+                "validNickname",
+                "Password123!",
+                null  // 권한 없음
+        );
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
     @TestConfiguration
     static class DisableJpaAuditingConfig {
         @Bean
