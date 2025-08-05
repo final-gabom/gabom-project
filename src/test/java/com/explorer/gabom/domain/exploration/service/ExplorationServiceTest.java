@@ -30,6 +30,7 @@ import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("ExplorationService 단위 테스트")
 public class ExplorationServiceTest {
 
 	@Mock

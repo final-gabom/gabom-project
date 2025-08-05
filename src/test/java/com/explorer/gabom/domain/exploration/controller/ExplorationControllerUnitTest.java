@@ -28,6 +28,7 @@ import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("ExplorationController 단위 테스트")
 class ExplorationControllerUnitTest {
 
 	@InjectMocks
