@@ -2,136 +2,139 @@ package com.explorer.gabom.domain.auth.controller;
 
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.type.UserRole;
-import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
-
+    private static final String ACCESS_TOKEN = "mock-access-token";
+    private static final String REFRESH_TOKEN = "mock-refresh-token";
     private static final String EMAIL = "test@example.com";
     private static final String NICKNAME = "nickname";
     private static final String PASSWORD = "Password123!";
     private static final Long USER_ID = 1L;
-    private static final String ACCESS_TOKEN = "access-token";
-    private static final String REFRESH_TOKEN = "refresh-token";
-
-    @InjectMocks
-    private AuthController authController;
-
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private JwtProvider jwtProvider;
+    @MockBean
     private AuthService authService;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockBean
+    private org.springframework.data.mapping.context.MappingContext<?, ?> jpaMappingContext;
 
-    private SignupRequest signupRequest;
-    private LoginRequest loginRequest;
+    @DisplayName("로그인 성공")
+    @Test
+    void signupSuccess() throws Exception {
+        SignupRequest signupRequest = new SignupRequest(
+                "test@example.com",
+                "nickname",
+                "Password123!",
+                UserRole.USER // null이 아닌 값으로 변경
+        );
+        UserSummaryDto userSummary = new UserSummaryDto(1L, "nickname", 0, "칭호");
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        signupRequest = createSignupRequest();
-        loginRequest = createLoginRequest();
+        when(authService.signup(any(SignupRequest.class))).thenReturn(userSummary);
+
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(signupRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("회원가입을 성공했습니다."))
+                .andExpect(jsonPath("$.data.id").value(1L));
     }
 
+    @DisplayName("잘못된 값일때 실패")
     @Test
-    void 회원가입_성공() {
-        // given
-        UserSummaryDto userSummaryDto = new UserSummaryDto(USER_ID,"닉네임",0,"칭호");
-        when(authService.signup(any(SignupRequest.class))).thenReturn(userSummaryDto);
+    void signupFail_validationError() throws Exception {
+        // role이 null → validation 실패 예상
+        SignupRequest invalidRequest = new SignupRequest(
+                "invalid-email",  // 이메일 형식 오류
+                "a",              // 닉네임 길이 2 미만 오류
+                "pwd",            // 비밀번호 패턴 오류
+                null              // role null → NotNull validation 실패
+        );
 
-        // when
-        ResponseEntity<ApiResponse<UserSummaryDto>> responseEntity = authController.signup(signupRequest);
-
-        // then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().isSuccess()).isTrue();
-        assertThat(responseEntity.getBody().getMessage()).isEqualTo("회원가입을 성공했습니다.");
-        assertThat(responseEntity.getBody().getData().getId()).isEqualTo(USER_ID);
-
-        // ArgumentCaptor 사용
-        ArgumentCaptor<SignupRequest> captor = ArgumentCaptor.forClass(SignupRequest.class);
-        verify(authService).signup(captor.capture());
-        SignupRequest captured = captor.getValue();
-        assertThat(captured.getEmail()).isEqualTo(EMAIL);
-        assertThat(captured.getNickname()).isEqualTo(NICKNAME);
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
+    @DisplayName("로그인 성공")
     @Test
-    void 회원가입_실패_예외() {
-        // given
-        when(authService.signup(any(SignupRequest.class)))
-                .thenThrow(new IllegalArgumentException("이미 존재하는 이메일입니다."));
+    void loginSuccess() throws Exception {
+        LoginRequest loginRequest = new LoginRequest(EMAIL, PASSWORD);
 
-        // when & then
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> authController.signup(signupRequest));
-
-        assertThat(thrown.getMessage()).isEqualTo("이미 존재하는 이메일입니다.");
-    }
-
-    @Test
-    void 로그인_성공() {
-        // given
+        // 로그인 성공 시 AuthService에서 반환할 DTO
         LoginResponse loginResponse = LoginResponse.toDto(ACCESS_TOKEN, REFRESH_TOKEN);
+
         when(authService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
-        // when
-        ResponseEntity<ApiResponse<LoginResponse>> responseEntity = authController.login(loginRequest);
-
-        // then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().isSuccess()).isTrue();
-        assertThat(responseEntity.getBody().getMessage()).isEqualTo("로그인을 성공했습니다.");
-        assertThat(responseEntity.getBody().getData().getAccessToken()).isEqualTo(ACCESS_TOKEN);
-        assertThat(responseEntity.getBody().getData().getRefreshToken()).isEqualTo(REFRESH_TOKEN);
-
-        // ArgumentCaptor 사용
-        ArgumentCaptor<LoginRequest> captor = ArgumentCaptor.forClass(LoginRequest.class);
-        verify(authService).login(captor.capture());
-        LoginRequest captured = captor.getValue();
-        assertThat(captured.getEmail()).isEqualTo(EMAIL);
-        assertThat(captured.getPassword()).isEqualTo(PASSWORD);
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk()) // 200 OK 기대
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("로그인을 성공했습니다."))
+                .andExpect(jsonPath("$.data.accessToken").value(ACCESS_TOKEN))
+                .andExpect(jsonPath("$.data.refreshToken").value(REFRESH_TOKEN));
     }
 
+    @DisplayName("로그인 실패 - 잘못된 비밀번호")
     @Test
-    void 로그인_실패_예외() {
-        // given
+    void loginFail_invalidPassword() throws Exception {
+        LoginRequest loginRequest = new LoginRequest(EMAIL, PASSWORD);
+
+        // 로그인 실패 시 AuthService에서 예외 발생 시뮬레이션
         when(authService.login(any(LoginRequest.class)))
-                .thenThrow(new IllegalArgumentException("비밀번호가 일치하지 않습니다."));
+                .thenThrow(new CustomException(ErrorCode.INCORRECT_PASSWORD));
 
-        // when & then
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> authController.login(loginRequest));
-
-        assertThat(thrown.getMessage()).isEqualTo("비밀번호가 일치하지 않습니다.");
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isForbidden())//
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("비밀번호가 일치하지 않습니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
-    private SignupRequest createSignupRequest() {
-        return new SignupRequest(EMAIL, NICKNAME, PASSWORD, null); // ROLE=null로 전달
-    }
-
-    private LoginRequest createLoginRequest() {
-        return new LoginRequest(EMAIL, PASSWORD);
+    @TestConfiguration
+    static class DisableJpaAuditingConfig {
+        @Bean
+        public AuditorAware<String> auditorAware() {
+            return () -> Optional.of("test-user");
+        }
     }
 }
