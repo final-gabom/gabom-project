@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/titles")
-public class UserTitleController {
+public class UserTitleController implements UserTitleControllerDocs{
 	private final TitleService titleService;
 
 	@GetMapping("/users/{userId}")
