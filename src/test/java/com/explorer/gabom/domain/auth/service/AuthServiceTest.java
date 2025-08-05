@@ -59,7 +59,7 @@ public class AuthServiceTest {
     }
     @DisplayName("회원가입 성공")
     @Test
-    void 회원가입_성공() {
+    void signupSucces() {
         // given
         SignupRequest request = createSignupRequest();
 
@@ -95,7 +95,7 @@ public class AuthServiceTest {
     }
     @DisplayName("회원가입 실패 이메일 중복")
     @Test
-    void 회원가입_실패_이메일중복() {
+    void signupFail_emailAlreadyExists() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(true);
@@ -106,7 +106,7 @@ public class AuthServiceTest {
     }
     @DisplayName("회원가입 실패 이메일 미인증")
     @Test
-    void 회원가입_실패_이메일_미인증() {
+    void signupFail_emailNotVerified() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(false);
@@ -118,7 +118,7 @@ public class AuthServiceTest {
     }
     @DisplayName("회원가입 실패 닉네임 중복")
     @Test
-    void 회원가입_실패_닉네임중복() {
+    void signupFail_nicknameAlreadyExists() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(false);
@@ -156,7 +156,7 @@ public class AuthServiceTest {
     }
     @DisplayName("로그인 실패 유저없음")
     @Test
-    void 로그인_실패_유저없음() {
+    void loginFail_userNotFound() {
         // given
         LoginRequest request = new LoginRequest("wrong@example.com", "pw");
         given(userRepository.findByEmailAndStatus(any(), any())).willReturn(Optional.empty());
