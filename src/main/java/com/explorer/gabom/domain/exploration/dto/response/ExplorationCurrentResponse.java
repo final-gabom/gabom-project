@@ -6,11 +6,15 @@ import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.place.entity.Place;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "현재 진행 중인 탐험 응답 정보")
 public class ExplorationCurrentResponse {
 
