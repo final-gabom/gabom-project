@@ -33,7 +33,6 @@ public interface AuthControllerDocs {
 		@ApiResponse(responseCode = "409", description = "이미 등록된 닉네임으로 가입 시도")
 	})
 	ResponseEntity<?> signup(
-		@Parameter(description = "회원가입 요청 정보", required = true)
 		@RequestBody SignupRequest requestDto
 	);
 
@@ -51,7 +50,6 @@ public interface AuthControllerDocs {
 		@ApiResponse(responseCode = "409", description = "이미 등록된 닉네임으로 가입 시도")
 	})
 	ResponseEntity<?> testSignup(
-		@Parameter(description = "회원가입 요청 정보", required = true)
 		@RequestBody SignupRequest requestDto
 	);
 
@@ -68,7 +66,6 @@ public interface AuthControllerDocs {
 		@ApiResponse(responseCode = "403", description = "비밀번호가 불일치")
 	})
 	ResponseEntity<?> login(
-		@Parameter(description = "로그인 요청 정보", required = true)
 		@RequestBody LoginRequest request
 	);
 

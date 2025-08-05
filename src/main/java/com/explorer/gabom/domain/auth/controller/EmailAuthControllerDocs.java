@@ -9,7 +9,6 @@ import com.explorer.gabom.domain.auth.dto.request.PasswordResetRequest;
 import com.explorer.gabom.domain.auth.dto.request.PasswordResetVerifyRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,6 @@ public interface EmailAuthControllerDocs {
 		@ApiResponse(responseCode = "500", description = "이메일 전송 실패")
 	})
 	ResponseEntity<?> requestEmail(
-		@Parameter(description = "이메일 인증 코드 요청 정보", required = true)
 		@RequestBody EmailRequest request
 	);
 
@@ -44,7 +42,6 @@ public interface EmailAuthControllerDocs {
 		@ApiResponse(responseCode = "400", description = "인증요청이 없는 이메일")
 	})
 	ResponseEntity<?> verifiedEmail(
-		@Parameter(description = "이메일 인증 코드 검증 요청 정보", required = true)
 		@RequestBody EmailCodeVerifyRequest request
 	);
 
@@ -58,7 +55,6 @@ public interface EmailAuthControllerDocs {
 		@ApiResponse(responseCode = "500", description = "이메일 전송 실패")
 	})
 	ResponseEntity<?> passwordResetRequestEmail(
-		@Parameter(description = "비밀번호 재설정 인증 코드 검증 요청 정보", required = true)
 		@RequestBody PasswordResetRequest request);
 
 	@Operation(summary = "비밀번호 재설정",
@@ -74,7 +70,6 @@ public interface EmailAuthControllerDocs {
 
 	})
 	ResponseEntity<?> passwordResetVerifiedEmail(
-		@Parameter(description = "비밀번호 재설정 요청 정보", required = true)
 		@RequestBody PasswordResetVerifyRequest resetVerifyRequest);
 
 	}

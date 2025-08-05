@@ -8,6 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Schema(description = "이메일 인증 코드 검증 요청 정보")
 public class EmailCodeVerifyRequest {
     @Email
     @NotBlank(message = "이메일을 입력해주세요.")
