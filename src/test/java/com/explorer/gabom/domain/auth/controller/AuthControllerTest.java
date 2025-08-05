@@ -3,13 +3,17 @@ package com.explorer.gabom.domain.auth.controller;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
+import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -51,11 +55,11 @@ class AuthControllerTest {
     @Test
     void 회원가입_성공() {
         // given
-        SignupResponse signupResponse = new SignupResponse(USER_ID);
-        when(authService.signup(any(SignupRequest.class))).thenReturn(signupResponse);
+        UserSummaryDto userSummaryDto = new UserSummaryDto(USER_ID,"닉네임",0,"칭호");
+        when(authService.signup(any(SignupRequest.class))).thenReturn(userSummaryDto);
 
         // when
-        ResponseEntity<ApiResponse<SignupResponse>> responseEntity = authController.signup(signupRequest);
+        ResponseEntity<ApiResponse<UserSummaryDto>> responseEntity = authController.signup(signupRequest);
 
         // then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
