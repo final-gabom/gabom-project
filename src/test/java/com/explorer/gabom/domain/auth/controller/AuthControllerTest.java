@@ -1,8 +1,8 @@
 package com.explorer.gabom.domain.auth.controller;
 
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,7 @@ public class AuthControllerTest {
                 "Password123!",
                 UserRole.USER
         );
-        SignupResponse response = new SignupResponse(1L);
+        UserSummaryDto response = new UserSummaryDto(1L, "닉네임", 0, "칭호");
 
         when(authService.signup(any(SignupRequest.class))).thenReturn(response);
 

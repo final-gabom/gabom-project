@@ -6,6 +6,7 @@ import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
@@ -28,7 +29,7 @@ public class AuthService {
     private final EmailCodeStorageService emailCodeStorageService;
 
     @Transactional
-    public SignupResponse signup(SignupRequest request) {
+    public UserSummaryDto signup(SignupRequest request) {
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
@@ -55,12 +56,12 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        return SignupResponse.toDto(savedUser);
+        return UserSummaryDto.toDto(savedUser);
     }
 
     // 포스트맨 회원가입시 테스트용
     @Transactional
-    public SignupResponse testSignup(SignupRequest request) {
+    public UserSummaryDto testSignup(SignupRequest request) {
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
@@ -82,7 +83,7 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        return SignupResponse.toDto(savedUser);
+        return UserSummaryDto.toDto(savedUser);
     }
 
     // 로그인

@@ -2,7 +2,7 @@ package com.explorer.gabom.domain.auth.service;
 
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserRole;
@@ -63,7 +63,7 @@ public class AuthServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(fakeUser);
 
         // when
-        SignupResponse response = authService.signup(request);
+        UserSummaryDto response = authService.signup(request);
 
         // then
         assertEquals(1L, response.getId()); // id만 있으니 id 값으로 체크
