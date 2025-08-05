@@ -46,6 +46,6 @@ public class EmailAuthController implements EmailAuthControllerDocs{
     @PostMapping("password-reset/verify")
     public ResponseEntity<ApiResponse<Void>> passwordResetVerifiedEmail(@RequestBody PasswordResetVerifyRequest resetVerifyRequest) {
         passwordResetService.verifiedResetCode(resetVerifyRequest);
-        return ResponseEntity.ok(ApiResponse.success("비밀번호 재설정이 완료 되었습니다. "));
+        return ResponseEntity.ok(ApiResponse.success("비밀번호 재설정이 완료 되었습니다."));
     }
 }
