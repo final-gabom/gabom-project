@@ -22,12 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Tag(name = "UserAPI Document", description = "유저 정보 조회 및 수정 관련 API")
 @RequestMapping("/api/users")
 public interface UserControllerDocs {
-    @Operation(summary = "내 프로필 조회")
+    @Operation(
+            summary = "내 프로필 조회",
+            description = "현재 로그인된 사용자의 프로필 정보를 조회합니다."
+    )
     @ApiResponse(responseCode = "200", description = "내 프로필을 성공적으로 조회했습니다.")
+    @ApiResponse(responseCode = "403", description = "비밀번호가 일치하지 않습니다.")
     ResponseEntity<?> getMyProfile(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @Operation(summary = "회원 정보 조회")
+    @Operation(
+            summary = "회원 정보 조회")
     @ApiResponse(responseCode = "200", description = "회원 정보를 성공적으로 조회했습니다.")
     ResponseEntity<?> getUser(@Parameter(description = "회원 ID", example = "1") @PathVariable Long userId);
 
