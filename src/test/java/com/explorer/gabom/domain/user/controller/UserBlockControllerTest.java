@@ -6,6 +6,7 @@ import com.explorer.gabom.domain.user.service.UserBlockService;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,7 @@ class UserBlockControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
-
+    @DisplayName("유저 차단 성공")
     @Test
     void blockUser_Success() throws Exception {
         // given
@@ -90,7 +91,7 @@ class UserBlockControllerTest {
 
         verify(userBlockService).blockUser(BLOCKER_ID, BLOCKED_ID);
     }
-
+    @DisplayName("유저 차단 해제 성공")
     @Test
     void unblockUser_Success() throws Exception {
         // given
