@@ -41,7 +41,7 @@ public class UserQuest {
 	private Quest quest;
 
 	@Enumerated(EnumType.STRING)
-	private ProgressStatus progressStatus = ProgressStatus.IN_PROGRESS;
+	private ProgressStatus progressStatus = ProgressStatus.NOT_STARTED;
 
 	private int progressCount = 0;
 
@@ -61,18 +61,17 @@ public class UserQuest {
 	public UserQuest(User user, Quest quest) {
 		this.user = user;
 		this.quest = quest;
-		this.progressCount = 0;
-		this.rewardClaimed = false;
 	}
 
 	public void increaseProgress(int step) {
-		if (!isCompleted()) {
-			this.progressCount += step;
-			if (this.progressCount >= quest.getAcquireCondition()) {
-				this.progressStatus = ProgressStatus.COMPLETED;
-				this.completedAt = LocalDateTime.now();
-			}
+		if (isCompleted())
+			return;
+
+		this.progressCount += step;
+		if (this.progressCount >= quest.getAcquireCondition()) {
+			markCompleted();
 		}
+
 	}
 
 	public boolean isCompleted() {
@@ -84,6 +83,9 @@ public class UserQuest {
 	}
 
 	public void markCompleted() {
+		if (isCompleted())
+			return;
+
 		this.progressStatus = ProgressStatus.COMPLETED;
 		this.completedAt = LocalDateTime.now();
 	}
