@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponseDto;
+import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponse;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/places")
-public class PlaceController {
+public class PlaceController implements PlaceControllerDocs {
 
 	private final PlaceService placeService;
 
@@ -59,10 +59,10 @@ public class PlaceController {
 
 	// 탐험 장소 상세 조회
 	@GetMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<PlaceDetailResponseDto>> getPlaceDetail(
+	public ResponseEntity<ApiResponse<PlaceDetailResponse>> getPlaceDetail(
 		@PathVariable Long placeId
 	) {
-		PlaceDetailResponseDto response = placeService.getPlaceDetail(placeId);
+		PlaceDetailResponse response = placeService.getPlaceDetail(placeId);
 		return ResponseEntity.ok(ApiResponse.success("탐험 장소 상세 조회 성공", response));
 	}
 
