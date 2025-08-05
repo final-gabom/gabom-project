@@ -77,9 +77,10 @@ class UserServiceImpl_TitleTest {
         ReflectionTestUtils.setField(t, "id", id);
         return t;
     }
+
     @DisplayName("칭호변경 성공")
     @Test
-    void updateMainTitle_성공() {
+    void updateMainTitle_Success() {
         Title title = createTitle(TITLE_ID, TITLE_NAME, TITLE_DESCRIPTION);
 
         when(titleRepository.findById(TITLE_ID)).thenReturn(Optional.of(title));
@@ -92,7 +93,7 @@ class UserServiceImpl_TitleTest {
 
     @Test
     @DisplayName("존재하지 않는 칭호 ID")
-    void updateMainTitle_실패_존재하지않는칭호() {
+    void titleNotFound_throwsException() {
         Long invalidTitleId = 999L;
         when(titleRepository.findById(invalidTitleId)).thenReturn(Optional.empty());
 
@@ -104,7 +105,7 @@ class UserServiceImpl_TitleTest {
 
     @Test
     @DisplayName("비활성화된 유저는 칭호 변경 불가")
-    void updateMainTitle_실패_비활성유저() {
+    void inactiveUser_cannotChangeTitle() {
         Title title = createTitle(TITLE_ID, TITLE_NAME, TITLE_DESCRIPTION);
         ReflectionTestUtils.setField(user, "status", UserStatus.INACTIVE);
 

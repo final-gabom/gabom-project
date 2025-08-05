@@ -6,6 +6,7 @@ import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -45,6 +46,7 @@ public class UserControllerTest_Title {
         authToken = createAuthToken(testUser);
     }
 
+    @DisplayName("칭호 변경 성공")
     @Test
     void updateTitle_Success() throws Exception {
         UpdateMainTitleRequest request = new UpdateMainTitleRequest(NEW_TITLE_ID);

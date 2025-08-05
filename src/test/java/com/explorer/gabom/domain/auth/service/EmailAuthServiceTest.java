@@ -36,9 +36,10 @@ class EmailAuthServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     @DisplayName("이미 가입된 이메일 전송시 예외발생")
     @Test
-    void 이미_가입된_이메일_전송시_예외발생() {
+    void sendAuthCode_fail_emailAlreadyExists() {
         // given
         EmailRequest request = createEmailRequest();
         when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
@@ -49,9 +50,10 @@ class EmailAuthServiceTest {
 
         verify(emailSender, never()).send(any(SimpleMailMessage.class));
     }
+
     @DisplayName("정성적으로 인증코드 전송 성공")
     @Test
-    void 정상적으로_인증코드_전송_성공() {
+    void sendAuthCode_success() {
         // given
         EmailRequest request = createEmailRequest();
         when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
@@ -69,18 +71,20 @@ class EmailAuthServiceTest {
         assertEquals("이메일 인증 코드", message.getSubject());
         assertTrue(message.getText().contains("인증 코드: "));
     }
+
     @DisplayName("인증코드 검증 이미 인증된 이메일")
     @Test
-    void 인증코드_검증_이미_인증된_이메일() {
+    void verifyAuthCode_fail_emailAlreadyVerified() {
         EmailCodeVerifyRequest request = createVerifyRequest(CODE);
         when(emailCodeStorageService.isEmailVerified(request)).thenReturn(true);
 
         CustomException ex = assertThrows(CustomException.class, () -> emailAuthService.verifyAuthCode(request));
         assertEquals(ErrorCode.EMAIL_ALREADY_VERIFIED, ex.getErrorCode());
     }
+
     @DisplayName("인증코드 검증 만료된 코드")
     @Test
-    void 인증코드_검증_만료된_코드() {
+    void verifyAuthCode_fail_expiredCode() {
         EmailCodeVerifyRequest request = createVerifyRequest(CODE);
         when(emailCodeStorageService.isEmailVerified(request)).thenReturn(false);
         when(emailCodeStorageService.getEmailAuthCode(any())).thenReturn(null);
@@ -88,9 +92,10 @@ class EmailAuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> emailAuthService.verifyAuthCode(request));
         assertEquals(ErrorCode.EXPIRED_CODE, ex.getErrorCode());
     }
+
     @DisplayName("인증코드 검증 코드 불일치")
     @Test
-    void 인증코드_검증_코드_불일치() {
+    void verifyAuthCode_fail_codeMismatch() {
         EmailCodeVerifyRequest request = createVerifyRequest(CODE);
         when(emailCodeStorageService.isEmailVerified(request)).thenReturn(false);
         when(emailCodeStorageService.getEmailAuthCode(any())).thenReturn(WRONG_CODE);
@@ -98,9 +103,10 @@ class EmailAuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> emailAuthService.verifyAuthCode(request));
         assertEquals(ErrorCode.CODE_NOT_MATCH, ex.getErrorCode());
     }
+
     @DisplayName("인증코드 검증 성공")
     @Test
-    void 인증코드_검증_성공() {
+    void verifyAuthCode_success() {
         EmailCodeVerifyRequest request = createVerifyRequest(CODE);
         when(emailCodeStorageService.isEmailVerified(request)).thenReturn(false);
         when(emailCodeStorageService.getEmailAuthCode(any())).thenReturn(CODE);

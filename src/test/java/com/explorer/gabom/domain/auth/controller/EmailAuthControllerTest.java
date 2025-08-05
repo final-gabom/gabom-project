@@ -8,6 +8,7 @@ import com.explorer.gabom.domain.auth.service.EmailAuthService;
 import com.explorer.gabom.domain.auth.service.PasswordResetService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,9 +46,9 @@ class EmailAuthControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(emailAuthController).build();
         objectMapper = new ObjectMapper();
     }
-
+    @DisplayName("이메일 인증코드 전송 성공")
     @Test
-    void 이메일_인증코드_전송_성공() throws Exception {
+    void sendEmailAuthCodeSuccess() throws Exception {
         // given
         EmailRequest request = new EmailRequest(EMAIL);
         doNothing().when(emailAuthService).sendAuthCode(any(EmailRequest.class));
@@ -63,9 +64,9 @@ class EmailAuthControllerTest {
 
         verify(emailAuthService).sendAuthCode(any(EmailRequest.class));
     }
-
+    @DisplayName("이메일 인증코드 검증 성공")
     @Test
-    void 이메일_인증코드_검증_성공() throws Exception {
+    void verifyEmailAuthCodeSuccess() throws Exception {
         EmailCodeVerifyRequest request = new EmailCodeVerifyRequest(EMAIL, CODE);
         doNothing().when(emailAuthService).verifyAuthCode(any(EmailCodeVerifyRequest.class));
 
@@ -79,9 +80,9 @@ class EmailAuthControllerTest {
 
         verify(emailAuthService).verifyAuthCode(any(EmailCodeVerifyRequest.class));
     }
-
+@DisplayName("비밀번호재설정 인증코드 전송 성공")
     @Test
-    void 비밀번호_재설정_인증코드_전송_성공() throws Exception {
+    void sendPasswordResetCodeSuccess() throws Exception {
         PasswordResetRequest request = new PasswordResetRequest(EMAIL);
         doNothing().when(passwordResetService).sendResetCode(any(PasswordResetRequest.class));
 
@@ -95,9 +96,9 @@ class EmailAuthControllerTest {
 
         verify(passwordResetService).sendResetCode(any(PasswordResetRequest.class));
     }
-
+    @DisplayName("비밀번호 재설정 검증 및 비밀번호변경 성공")
     @Test
-    void 비밀번호_재설정_검증_및_비밀번호변경_성공() throws Exception {
+    void verifyPasswordResetAndChangePasswordSuccess() throws Exception {
         PasswordResetVerifyRequest request = new PasswordResetVerifyRequest(EMAIL, CODE, PASSWORD);
         doNothing().when(passwordResetService).verifiedResetCode(any(PasswordResetVerifyRequest.class));
 

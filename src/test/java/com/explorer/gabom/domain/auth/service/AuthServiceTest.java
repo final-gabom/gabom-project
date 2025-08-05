@@ -3,6 +3,7 @@ package com.explorer.gabom.domain.auth.service;
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -55,9 +56,10 @@ public class AuthServiceTest {
     void setup() {
         // 공통 mock 초기화는 필요 시 여기에
     }
+
     @DisplayName("회원가입 성공")
     @Test
-    void 회원가입_성공() {
+    void signupSucces() {
         // given
         SignupRequest request = createSignupRequest();
 
@@ -91,9 +93,10 @@ public class AuthServiceTest {
         assertThat(captured.getNickname()).isEqualTo(NICKNAME);
         assertThat(captured.getUserRole()).isEqualTo(UserRole.USER);
     }
+
     @DisplayName("회원가입 실패 이메일 중복")
     @Test
-    void 회원가입_실패_이메일중복() {
+    void signupFail_emailAlreadyExists() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(true);
@@ -102,9 +105,10 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
+
     @DisplayName("회원가입 실패 이메일 미인증")
     @Test
-    void 회원가입_실패_이메일_미인증() {
+    void signupFail_emailNotVerified() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(false);
@@ -114,9 +118,10 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_NOT_VERIFIED);
     }
+
     @DisplayName("회원가입 실패 닉네임 중복")
     @Test
-    void 회원가입_실패_닉네임중복() {
+    void signupFail_nicknameAlreadyExists() {
         // given
         SignupRequest request = createSignupRequest();
         given(userRepository.existsByEmail(EMAIL)).willReturn(false);
@@ -127,9 +132,10 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NICKNAME_ALREADY_EXISTS);
     }
+
     @DisplayName("로그인 성공")
     @Test
-    void 로그인_성공() {
+    void LoginSuccess() {
         // given
         LoginRequest request = new LoginRequest(EMAIL, RAW_PASSWORD);
         User user = User.builder()
@@ -152,9 +158,10 @@ public class AuthServiceTest {
         assertThat(response.getAccessToken()).isEqualTo(ACCESS_TOKEN);
         assertThat(response.getRefreshToken()).isEqualTo(REFRESH_TOKEN);
     }
+
     @DisplayName("로그인 실패 유저없음")
     @Test
-    void 로그인_실패_유저없음() {
+    void loginFail_userNotFound() {
         // given
         LoginRequest request = new LoginRequest("wrong@example.com", "pw");
         given(userRepository.findByEmailAndStatus(any(), any())).willReturn(Optional.empty());

@@ -6,6 +6,7 @@ import com.explorer.gabom.domain.user.service.UserBlockService;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -72,6 +74,7 @@ class UserBlockControllerTest {
         );
     }
 
+    @DisplayName("유저 차단 성공")
     @Test
     void blockUser_Success() throws Exception {
         // given
@@ -91,6 +94,7 @@ class UserBlockControllerTest {
         verify(userBlockService).blockUser(BLOCKER_ID, BLOCKED_ID);
     }
 
+    @DisplayName("유저 차단 해제 성공")
     @Test
     void unblockUser_Success() throws Exception {
         // given

@@ -47,7 +47,7 @@ class PasswordResetServiceTest {
 
     @DisplayName("인증코드 검증 성공")
     @Test
-    void 인증코드_전송_성공() {
+    void sendResetCode_success() {
         // given
         PasswordResetRequest request = createResetRequest();
 
@@ -71,7 +71,7 @@ class PasswordResetServiceTest {
 
     @DisplayName("인증코드 전송 가입안된 이메일 예외")
     @Test
-    void 인증코드_전송_가입안된_이메일_예외() {
+    void sendResetCode_fail_emailNotRegistered() {
         PasswordResetRequest request = createResetRequest();
 
         when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
@@ -85,20 +85,20 @@ class PasswordResetServiceTest {
 
     @DisplayName("비밀번호 재설정 성공")
     @Test
-    void 비밀번호_재설정_성공() {
-        PasswordResetVerifyRequest request = createVerifyRequest(CODE);
-
+    void verifyResetCode_Success() {
+        // given
+        PasswordResetVerifyRequest request = new PasswordResetVerifyRequest(EMAIL, CODE, NEW_PASSWORD);
         User user = mock(User.class);
 
-        when(emailCodeStorageService.getPasswordResetCode(request)).thenReturn(CODE);
+        when(emailCodeStorageService.getPasswordResetCode(EMAIL)).thenReturn(CODE);
         when(userRepository.findByEmailAndStatus(EMAIL, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn("encodedPassword");
-        doNothing().when(user).changePassword("encodedPassword");
-        when(userRepository.save(user)).thenReturn(user);
 
+        // when
         passwordResetService.verifiedResetCode(request);
 
-        verify(emailCodeStorageService).getPasswordResetCode(request);
+        // then
+        verify(emailCodeStorageService).getPasswordResetCode(EMAIL);
         verify(userRepository).findByEmailAndStatus(EMAIL, UserStatus.ACTIVE);
         verify(passwordEncoder).encode(NEW_PASSWORD);
         verify(user).changePassword("encodedPassword");
@@ -107,10 +107,10 @@ class PasswordResetServiceTest {
 
     @DisplayName("비밀번호 재설정 인증코드 없응 예외")
     @Test
-    void 비밀번호_재설정_인증코드_없음_예외() {
+    void verifyResetCode_fail_codeNotFound() {
         PasswordResetVerifyRequest request = createVerifyRequest(CODE);
 
-        when(emailCodeStorageService.getPasswordResetCode(request)).thenReturn(null);
+        when(emailCodeStorageService.getPasswordResetCode(String.valueOf(request))).thenReturn(null);
 
         CustomException ex = assertThrows(CustomException.class, () -> passwordResetService.verifiedResetCode(request));
         assertEquals(ErrorCode.EXPIRED_CODE, ex.getErrorCode());
@@ -118,24 +118,37 @@ class PasswordResetServiceTest {
 
     @DisplayName("비밀번호 재설정 인증코드 불일치 예외")
     @Test
-    void 비밀번호_재설정_인증코드_불일치_예외() {
+    void verifyResetCode_CodeMismatch_Exception() {
+        // given
         PasswordResetVerifyRequest request = createVerifyRequest(CODE);
 
-        when(emailCodeStorageService.getPasswordResetCode(request)).thenReturn(WRONG_CODE);
+        when(emailCodeStorageService.getPasswordResetCode(request.getEmail()))
+                .thenReturn(WRONG_CODE);
 
-        CustomException ex = assertThrows(CustomException.class, () -> passwordResetService.verifiedResetCode(request));
+        // when
+        CustomException ex = assertThrows(CustomException.class,
+                () -> passwordResetService.verifiedResetCode(request));
+
+        // then
         assertEquals(ErrorCode.CODE_NOT_MATCH, ex.getErrorCode());
     }
 
     @DisplayName("비밀번호 재설정 활성 사용자 없음 예외")
     @Test
-    void 비밀번호_재설정_활성_사용자_없음_예외() {
+    void verifyResetCode_UserNotFound_Exception() {
+        // given
         PasswordResetVerifyRequest request = createVerifyRequest(CODE);
 
-        when(emailCodeStorageService.getPasswordResetCode(request)).thenReturn(CODE);
-        when(userRepository.findByEmailAndStatus(EMAIL, UserStatus.ACTIVE)).thenReturn(Optional.empty());
+        when(emailCodeStorageService.getPasswordResetCode(request.getEmail()))
+                .thenReturn(CODE);
+        when(userRepository.findByEmailAndStatus(EMAIL, UserStatus.ACTIVE))
+                .thenReturn(Optional.empty());
 
-        CustomException ex = assertThrows(CustomException.class, () -> passwordResetService.verifiedResetCode(request));
+        // when
+        CustomException ex = assertThrows(CustomException.class,
+                () -> passwordResetService.verifiedResetCode(request));
+
+        // then
         assertEquals(ErrorCode.EMAIL_NOT_FOUND, ex.getErrorCode());
     }
 
