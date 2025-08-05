@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/places")
 @RequiredArgsConstructor
-public class PlaceRecommendationController {
+public class PlaceRecommendationController implements PlaceRecommendationControllerDocs {
 
 	private final PlaceRecommendationService recommendationService;
 
