@@ -77,6 +77,7 @@ class UserServiceImpl_TitleTest {
         ReflectionTestUtils.setField(t, "id", id);
         return t;
     }
+
     @DisplayName("칭호변경 성공")
     @Test
     void updateMainTitle_Success() {

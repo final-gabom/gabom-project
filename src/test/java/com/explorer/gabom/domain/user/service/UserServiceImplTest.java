@@ -121,7 +121,8 @@ class UserServiceImplTest {
             CustomException exception = assertThrows(CustomException.class, () -> userService.getUser(USER_ID));
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
         }
-		@DisplayName("사용자정보 수정 성공")
+
+        @DisplayName("사용자정보 수정 성공")
         @Test
         void updateUserInfo_success() {
             UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, NEW_ADDRESS, NEW_LAT, NEW_LNG, PROFILE_IMG_ID);
@@ -138,7 +139,8 @@ class UserServiceImplTest {
             assertThat(user.getLng()).isEqualTo(NEW_LNG);
             assertThat(user.getProfileImg()).isEqualTo(mockFile);
         }
-		@DisplayName("닉네임 중복 시 예외 발생")
+
+        @DisplayName("닉네임 중복 시 예외 발생")
         @Test
         void duplicateNickname_throwsException() {
             String duplicatedNick = "existingNick";
@@ -150,7 +152,8 @@ class UserServiceImplTest {
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(ErrorCode.NICKNAME_ALREADY_EXISTS.getMessage());
         }
-		@DisplayName("존재하지 않는 파일일떄 예외 발생")
+
+        @DisplayName("존재하지 않는 파일일떄 예외 발생")
         @Test
         void fileNotFound_throwsException() {
             String profileImgId = "not-found-id";

@@ -26,7 +26,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -72,6 +73,7 @@ class UserBlockControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
+
     @DisplayName("유저 차단 성공")
     @Test
     void blockUser_Success() throws Exception {
@@ -91,6 +93,7 @@ class UserBlockControllerTest {
 
         verify(userBlockService).blockUser(BLOCKER_ID, BLOCKED_ID);
     }
+
     @DisplayName("유저 차단 해제 성공")
     @Test
     void unblockUser_Success() throws Exception {

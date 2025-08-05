@@ -52,6 +52,7 @@ public class UserControllerTest {
 
         authToken = createAuthToken(testUser);
     }
+
     @DisplayName("프로필 수정 성공")
     @Test
     void updateProfile_success() throws Exception {

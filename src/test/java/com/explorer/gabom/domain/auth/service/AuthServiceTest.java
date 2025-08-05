@@ -4,7 +4,6 @@ import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -57,6 +56,7 @@ public class AuthServiceTest {
     void setup() {
         // 공통 mock 초기화는 필요 시 여기에
     }
+
     @DisplayName("회원가입 성공")
     @Test
     void signupSucces() {
@@ -93,6 +93,7 @@ public class AuthServiceTest {
         assertThat(captured.getNickname()).isEqualTo(NICKNAME);
         assertThat(captured.getUserRole()).isEqualTo(UserRole.USER);
     }
+
     @DisplayName("회원가입 실패 이메일 중복")
     @Test
     void signupFail_emailAlreadyExists() {
@@ -104,6 +105,7 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
+
     @DisplayName("회원가입 실패 이메일 미인증")
     @Test
     void signupFail_emailNotVerified() {
@@ -116,6 +118,7 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_NOT_VERIFIED);
     }
+
     @DisplayName("회원가입 실패 닉네임 중복")
     @Test
     void signupFail_nicknameAlreadyExists() {
@@ -129,6 +132,7 @@ public class AuthServiceTest {
         CustomException ex = assertThrows(CustomException.class, () -> authService.signup(request));
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.NICKNAME_ALREADY_EXISTS);
     }
+
     @DisplayName("로그인 성공")
     @Test
     void LoginSuccess() {
@@ -154,6 +158,7 @@ public class AuthServiceTest {
         assertThat(response.getAccessToken()).isEqualTo(ACCESS_TOKEN);
         assertThat(response.getRefreshToken()).isEqualTo(REFRESH_TOKEN);
     }
+
     @DisplayName("로그인 실패 유저없음")
     @Test
     void loginFail_userNotFound() {

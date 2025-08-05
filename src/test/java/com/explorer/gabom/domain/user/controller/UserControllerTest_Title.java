@@ -45,6 +45,7 @@ public class UserControllerTest_Title {
         testUser = createTestUser();
         authToken = createAuthToken(testUser);
     }
+
     @DisplayName("칭호 변경 성공")
     @Test
     void updateTitle_Success() throws Exception {
