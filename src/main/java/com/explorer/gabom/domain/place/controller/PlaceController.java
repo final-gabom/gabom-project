@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/places")
-public class PlaceController {
+public class PlaceController implements PlaceControllerDocs {
 
 	private final PlaceService placeService;
 
