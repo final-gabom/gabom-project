@@ -5,13 +5,10 @@ import java.time.LocalDateTime;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.explorer.gabom.domain.activity.dto.response.UserActivityLogResponse;
-import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,12 +42,10 @@ public interface UserActivityLogControllerDocs {
 		@Parameter(name = "from", description = "조회 시작일시"),
 		@Parameter(name = "to", description = "조회 종료일시")
 	})
-	ResponseEntity<com.explorer.gabom.global.dto.ApiResponse<PageResponse<UserActivityLogResponse>>> getMyLogs(
+	ResponseEntity<?> getMyLogs(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
-		@RequestParam(required = false)
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-		@RequestParam(required = false)
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+		@RequestParam(required = false) LocalDateTime from,
+		@RequestParam(required = false) LocalDateTime to,
 		@PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
 	);
 }
