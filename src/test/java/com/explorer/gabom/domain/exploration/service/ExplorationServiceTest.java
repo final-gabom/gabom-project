@@ -66,6 +66,8 @@ public class ExplorationServiceTest {
 		exploration.setEndAt(LocalDateTime.now().plusMinutes(30));
 	}
 
+
+	// 탐험 시작
 	@Test
 	@DisplayName("탐험 시작 - 성공")
 	void startExploration_success() throws Exception {
@@ -113,7 +115,7 @@ public class ExplorationServiceTest {
 
 	@Test
 	@DisplayName("탐험 시작 - 이미 진행 중인 탐험 있음 예외 발생")
-	void startExploration_alreadyStartedExploration_throwException() {
+	void startExploration_alreadyStartedException() {
 		when(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
 			.thenReturn(true);
 
@@ -126,7 +128,7 @@ public class ExplorationServiceTest {
 
 	@Test
 	@DisplayName("탐험 시작 - 유저 없음 예외 발생")
-	void startExploration_userNotFound_throwException() {
+	void startExploration_userNotFoundException() {
 		when(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
 			.thenReturn(false);
 
@@ -141,7 +143,7 @@ public class ExplorationServiceTest {
 
 	@Test
 	@DisplayName("탐험 시작 - 장소 없음 예외 발생")
-	void startExploration_placeNotFound_throwException() {
+	void startExploration_placeNotFoundException() {
 		when(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
 			.thenReturn(false);
 
@@ -155,6 +157,8 @@ public class ExplorationServiceTest {
 		assertEquals(ErrorCode.PLACE_NOT_FOUND, exception.getErrorCode());
 	}
 
+
+	// 탐험 제한 시간 연장
 	@Test
 	@DisplayName("탐험 제한 시간 연장 - 성공")
 	void extendExplorationTime_success() {
@@ -169,8 +173,8 @@ public class ExplorationServiceTest {
 	}
 
 	@Test
-	@DisplayName("탐험 제한 시간 연장 - 탐험 없음 예외")
-	void extendExplorationTime_explorationNotFound() {
+	@DisplayName("탐험 제한 시간 연장 - 탐험 없음 예외 발생")
+	void extendExplorationTime_explorationNotFoundException() {
 		when(explorationRepository.findById(1L)).thenReturn(Optional.empty());
 
 		CustomException exception = assertThrows(CustomException.class,
@@ -180,8 +184,8 @@ public class ExplorationServiceTest {
 	}
 
 	@Test
-	@DisplayName("탐험 제한 시간 연장 - 권한 없음 예외")
-	void extendExplorationTime_noPermission() {
+	@DisplayName("탐험 제한 시간 연장 - 권한 없음 예외 발생")
+	void extendExplorationTime_noPermissionException() {
 		User otherUser = User.builder().id(2L).build();
 		exploration.setUser(otherUser);
 
@@ -194,8 +198,8 @@ public class ExplorationServiceTest {
 	}
 
 	@Test
-	@DisplayName("탐험 제한 시간 연장 - 이미 종료된 탐험 예외")
-	void extendExplorationTime_alreadyEnded() {
+	@DisplayName("탐험 제한 시간 연장 - 이미 종료된 탐험 예외 발생")
+	void extendExplorationTime_alreadyEndedException() {
 		exploration.setEndAt(LocalDateTime.now().minusMinutes(1));
 		when(explorationRepository.findById(1L)).thenReturn(Optional.of(exploration));
 
@@ -205,6 +209,8 @@ public class ExplorationServiceTest {
 		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
 	}
 
+
+	// 탐험 중인 장소 조회
 	@Test
 	@DisplayName("탐험 중인 장소 조회 - 성공")
 	void getCurrentExploration_success() {
@@ -237,7 +243,7 @@ public class ExplorationServiceTest {
 
 	@Test
 	@DisplayName("탐험 중인 장소 조회 - 진행 중인 탐험 없음 예외")
-	void getCurrentExploration_notFound_throwsException() {
+	void getCurrentExploration_noCurrentExplorationException() {
 		when(explorationRepository.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L), any(LocalDateTime.class)))
 			.thenReturn(Optional.empty());
 
