@@ -47,7 +47,7 @@ class PasswordResetServiceTest {
 
     @DisplayName("인증코드 검증 성공")
     @Test
-    void 인증코드_전송_성공() {
+    void sendResetCode_success() {
         // given
         PasswordResetRequest request = createResetRequest();
 
@@ -71,7 +71,7 @@ class PasswordResetServiceTest {
 
     @DisplayName("인증코드 전송 가입안된 이메일 예외")
     @Test
-    void 인증코드_전송_가입안된_이메일_예외() {
+    void sendResetCode_fail_emailNotRegistered() {
         PasswordResetRequest request = createResetRequest();
 
         when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
@@ -107,7 +107,7 @@ class PasswordResetServiceTest {
 
     @DisplayName("비밀번호 재설정 인증코드 없응 예외")
     @Test
-    void 비밀번호_재설정_인증코드_없음_예외() {
+    void verifyResetCode_fail_codeNotFound() {
         PasswordResetVerifyRequest request = createVerifyRequest(CODE);
 
         when(emailCodeStorageService.getPasswordResetCode(String.valueOf(request))).thenReturn(null);
