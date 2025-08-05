@@ -14,16 +14,17 @@ public class UserTitleResponse {
 	private Long id;
 	private String name;
 	private String description;
-	private boolean isEquipped;
 
 	public static UserTitleResponse toDto(UserTitle userTitle) {
 		Title title = userTitle.getTitle();
+		if (title == null) {
+			return null;
+		}
 
 		return new UserTitleResponse(
 			title.getId(),
 			title.getName(),
-			title.getDescription(),
-			userTitle.isEquipped()
+			title.getDescription()
 		);
 	}
 
