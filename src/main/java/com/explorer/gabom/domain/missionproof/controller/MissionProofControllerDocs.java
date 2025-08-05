@@ -12,6 +12,7 @@ import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailRes
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,19 +31,30 @@ public interface MissionProofControllerDocs {
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
 
-	@Operation(summary = "미션 인증글 수정", description = "작성한 인증글을 수정합니다.")
+	@Operation(
+		summary = "미션 인증글 수정",
+		description = "기존 작성한 미션 인증글의 제목, 내용, 이미지 등을 수정합니다.\n\n"
+			+ "- 본인만 수정할 수 있습니다.\n"
+			+ "- 이미지 리스트를 새로 전달하면 기존 이미지가 대체됩니다."
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "수정 성공"),
 		@ApiResponse(responseCode = "403", description = "작성자 불일치"),
 		@ApiResponse(responseCode = "404", description = "해당 인증글 없음")
 	})
 	ResponseEntity<?> updateMissionProof(
+		@Parameter(description = "수정할 인증글 ID", required = true)
 		@PathVariable Long id,
 		@RequestBody @Valid UpdateMissionProofRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
 
-	@Operation(summary = "미션 인증글 삭제", description = "작성한 인증글을 삭제합니다.")
+	@Operation(
+		summary = "미션 인증글 삭제",
+		description = "작성한 미션 인증글을 삭제합니다. \n\n"
+			+ "- 작성자 본인만 삭제할 수 있습니다.\n"
+			+ "- 실제로는 Soft Delete 방식입니다."
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "204", description = "삭제 성공"),
 		@ApiResponse(responseCode = "403", description = "작성자 불일치"),
