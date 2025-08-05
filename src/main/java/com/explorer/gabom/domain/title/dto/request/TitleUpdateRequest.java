@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Schema(description = "칭호 수정 요청 정보")
 public class TitleUpdateRequest {
 	@NotBlank(message = "칭호 이름은 필수입니다.")
 	@Schema(description = "수정할 칭호 이름")
