@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/quests")
 @RequiredArgsConstructor
-public class AdminQuestController {
+public class AdminQuestController implements AdminQuestControllerDocs {
 
 	private final AdminQuestService adminQuestService;
 

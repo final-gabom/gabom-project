@@ -4,22 +4,46 @@ import com.explorer.gabom.domain.file.dto.ThumbnailDto;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
+@Schema(description = "장소 요약 정보")
 public class PlaceSummary {
+
+	@Schema(description = "장소 ID", example = "1")
 	private final Long placeId;
+
+	@Schema(description = "장소 제목", example = "한강공원 반포지구")
 	private final String title;
+
+	@Schema(description = "장소 주소", example = "서울특별시 서초구 반포동 115-5")
 	private final String address;
+
+	@Schema(description = "위도", example = "37.508987")
 	private final Double latitude;
+
+	@Schema(description = "경도", example = "126.995751")
 	private final Double longitude;
+
+	@Schema(description = "해당 장소에서 수행된 인증 미션 수", example = "3")
 	private final Integer missionProofCount;
+
+	@Schema(description = "평균 별점", example = "4.5")
 	private final Double avgRating;
+
+	@Schema(description = "장소 조회수", example = "123")
 	private final Integer viewCount;
+
+	@Schema(description = "작성자 요약 정보")
 	private final UserSummaryDto writer;
+
+	@Schema(description = "대표 썸네일 이미지 정보")
 	private final ThumbnailDto thumbnail;
+
+	@Schema(description = "사용자로부터의 거리 (km)", example = "1.23")
 	private final Double distance;
 
 	public static PlaceSummary toDto(Place place, Double distance) {
@@ -36,7 +60,7 @@ public class PlaceSummary {
 						   .latitude(place.getLat())
 						   .longitude(place.getLng())
 						   .missionProofCount(place.getMissionProofs().size())
-						   .avgRating(0.0)   // TODO: 엔티티에 getAvgRating() 구현 필요
+						   .avgRating(0.0) // TODO: 엔티티에 getAvgRating() 구현 필요
 						   .viewCount(place.getViewCount())
 						   .writer(UserSummaryDto.toDto(place.getUser()))
 						   .thumbnail(thumb)

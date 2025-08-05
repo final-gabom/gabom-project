@@ -10,6 +10,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "attachment_file")
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class AttachmentFile {
 
 	@Id

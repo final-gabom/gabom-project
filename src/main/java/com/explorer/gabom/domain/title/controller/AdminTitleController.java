@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/titles")
 @RequiredArgsConstructor
-public class AdminTitleController {
+public class AdminTitleController implements AdminTitleControllerDocs{
 	private final TitleService titleService;
 
 	@PostMapping

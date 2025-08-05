@@ -15,9 +15,11 @@ import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 public class Exploration extends BaseTimeEntity {
 
@@ -38,8 +40,9 @@ public class Exploration extends BaseTimeEntity {
 	private LocalDateTime endAt;
 
 	@Builder
-	public Exploration(User user, Place place, int rewardPoint, int rewardExp,
+	public Exploration(Long id, User user, Place place, int rewardPoint, int rewardExp,
 					   LocalDateTime startAt, LocalDateTime endAt) {
+		this.id = id;
 		this.user = user;
 		this.place = place;
 		this.rewardPoint = rewardPoint;

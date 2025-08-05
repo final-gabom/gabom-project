@@ -1,41 +1,34 @@
 package com.explorer.gabom.domain.auth.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.global.dto.ApiResponse;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
-public class AuthController implements AuthControllerDocs{
+public class AuthController implements AuthControllerDocs {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<SignupResponse>> signup(@RequestBody @Valid SignupRequest requestDto) {
-        SignupResponse response = authService.signup(requestDto);
+    public ResponseEntity<ApiResponse<UserSummaryDto>> signup(@RequestBody @Valid SignupRequest requestDto) {
+        UserSummaryDto response = authService.signup(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("회원가입을 성공했습니다.", response));
     }
 
     // 포스트맨 회원가입시 테스트용
     @PostMapping("/test/signup")
-    public ResponseEntity<ApiResponse<SignupResponse>> testSignup(@RequestBody @Valid SignupRequest requestDto) {
-        SignupResponse response = authService.testSignup(requestDto);
+    public ResponseEntity<ApiResponse<UserSummaryDto>> testSignup(@RequestBody @Valid SignupRequest requestDto) {
+        UserSummaryDto response = authService.testSignup(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("회원가입을 성공했습니다.", response));
     }
 

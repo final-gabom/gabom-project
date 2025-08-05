@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequestDto;
+import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
@@ -24,7 +24,7 @@ public class PlaceRecommendationService {
 	private final PlaceRepository placeRepository;
 
 	@Transactional(readOnly = true)
-	public List<PlaceSummary> getRecommendedPlaces(PlaceRecommendationRequestDto request) {
+	public List<PlaceSummary> getRecommendedPlaces(PlaceRecommendationRequest request) {
 		List<Tuple> tuples = placeRepository.findWithinRadius(
 			request.getLat(), request.getLng(),
 			request.getRadius().getMinKm(), request.getRadius().getMaxKm()
