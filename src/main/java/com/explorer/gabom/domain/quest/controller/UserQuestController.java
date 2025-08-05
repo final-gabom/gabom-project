@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/user-quests")
 @RequiredArgsConstructor
-public class UserQuestController {
+public class UserQuestController implements UserQuestControllerDocs {
 
 	private final UserQuestService userQuestService;
 
@@ -43,7 +43,7 @@ public class UserQuestController {
 	@GetMapping
 	public ResponseEntity<ApiResponse<PageResponse<UserQuestDto>>> getProgress(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+		@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
 		@RequestParam(value = "status", required = false) ProgressStatus progressStatus
 	) {
 		PageResponse<UserQuestDto> response = userQuestService.getProgress(
