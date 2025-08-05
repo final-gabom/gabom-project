@@ -7,7 +7,6 @@ import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,19 +18,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserBlockControllerTest {
+class UserBlockControllerTest {
 
     private static final Long BLOCKER_ID = 1L;
     private static final Long BLOCKED_ID = 2L;
@@ -45,13 +43,37 @@ public class UserBlockControllerTest {
     private UsernamePasswordAuthenticationToken authToken;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        authToken = createAuthToken(BLOCKER_ID, "user@example.com");
+
+        // User 생성 및 ID 설정
+        User user = new User();
+        ReflectionTestUtils.setField(user, "id", BLOCKER_ID);
+
+        // CustomUserDetails 생성자 강제 접근
+        Constructor<CustomUserDetails> constructor = CustomUserDetails.class.getDeclaredConstructor(
+                Long.class, String.class, String.class, UserRole.class, User.class
+        );
+        constructor.setAccessible(true); // private 생성자 열기
+
+        CustomUserDetails userDetails = constructor.newInstance(
+                BLOCKER_ID,
+                "user@example.com",
+                "password123!",
+                UserRole.USER,
+                user
+        );
+
+        // 인증 토큰 설정
+        authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
     }
 
     @Test
-    public void blockUser_Success() throws Exception {
+    void blockUser_Success() throws Exception {
         // given
         UserBlockResponse response = new UserBlockResponse(BLOCKER_ID, BLOCKED_ID);
         when(userBlockService.blockUser(BLOCKER_ID, BLOCKED_ID)).thenReturn(response);
@@ -66,17 +88,11 @@ public class UserBlockControllerTest {
                 .andExpect(jsonPath("$.data.blockerId").value(BLOCKER_ID))
                 .andExpect(jsonPath("$.data.blockedId").value(BLOCKED_ID));
 
-        // ArgumentCaptor로 검증
-        ArgumentCaptor<Long> captor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Long> captor2 = ArgumentCaptor.forClass(Long.class);
-        verify(userBlockService).blockUser(captor1.capture(), captor2.capture());
-
-        assertThat(captor1.getValue()).isEqualTo(BLOCKER_ID);
-        assertThat(captor2.getValue()).isEqualTo(BLOCKED_ID);
+        verify(userBlockService).blockUser(BLOCKER_ID, BLOCKED_ID);
     }
 
     @Test
-    public void unblockUser_Success() throws Exception {
+    void unblockUser_Success() throws Exception {
         // given
         doNothing().when(userBlockService).unblockUser(BLOCKER_ID, BLOCKED_ID);
 
@@ -89,26 +105,6 @@ public class UserBlockControllerTest {
                 .andExpect(jsonPath("$.message").value("유저 차단을 해제했습니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
 
-        verify(userBlockService, times(1)).unblockUser(BLOCKER_ID, BLOCKED_ID);
-    }
-
-    // === 유틸 ===
-    private UsernamePasswordAuthenticationToken createAuthToken(Long id, String email) {
-        User user = new User();
-        ReflectionTestUtils.setField(user, "id", id);
-
-        CustomUserDetails userDetails = new CustomUserDetails(
-                id,
-                email,
-                "password",
-                UserRole.USER,
-                user
-        );
-
-        return new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
-        );
+        verify(userBlockService).unblockUser(BLOCKER_ID, BLOCKED_ID);
     }
 }
