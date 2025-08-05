@@ -30,6 +30,7 @@ import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.global.dto.PageResponse;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("UserActivityLogService - 단위 테스트")
 class UserActivityLogServiceTest {
 
 	private static final Long USER_ID = 1L;

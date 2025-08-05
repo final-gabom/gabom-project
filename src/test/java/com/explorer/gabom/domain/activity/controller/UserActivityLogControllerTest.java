@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,11 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.explorer.gabom.domain.activity.dto.response.UserActivityLogResponse;
 import com.explorer.gabom.domain.activity.service.UserActivityLogService;
+import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.PageResponse;
@@ -53,34 +54,25 @@ class UserActivityLogControllerTest {
 	@Mock
 	private CustomUserDetailsService customUserDetailsService; // 실제 사용 안 되면 제거 가능
 
-	private void setupAuthentication() {
-		CustomUserDetails userDetails = CustomUserDetails.builder()
-														 .userId(USER_ID)
-														 .email("test@example.com")
-														 .password("password")
-														 .role(UserRole.USER)
-														 .build();
+	private CustomUserDetails userDetails;
 
-		UsernamePasswordAuthenticationToken authentication =
-			new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+	@BeforeEach
+	void setUp() {
+		// 테스트용 User → CustomUserDetails 변환
+		User user = User.builder()
+						.id(1L)
+						.email("test@example.com")
+						.password("password")
+						.nickname("user1")
+						.userRole(UserRole.USER)
+						.build();
+		userDetails = CustomUserDetails.from(user);
 	}
 
 	@Test
 	@DisplayName("성공 - 내 활동 로그 조회")
 	void getMyLogs_success() {
 		// given
-		setupAuthentication();
-
-		// 수동으로 인증된 유저 객체 생성
-		CustomUserDetails userDetails = CustomUserDetails.builder()
-														 .userId(USER_ID)
-														 .email("test@example.com")
-														 .password("password")
-														 .role(UserRole.USER)
-														 .build();
-
 		List<UserActivityLogResponse> logList = List.of(createActivityLogResponse());
 		PageResponse<UserActivityLogResponse> pageResponse = createPageResponse(logList);
 
@@ -119,7 +111,7 @@ class UserActivityLogControllerTest {
 		SecurityContextHolder.clearContext(); // 인증 제거
 		assertThatThrownBy(() -> userActivityLogController.getMyLogs(null, FROM, TO, null))
 			.isInstanceOf(CustomException.class)
-			.extracting(e -> ((CustomException) e).getErrorCode())
+			.extracting(e -> ((CustomException)e).getErrorCode())
 			.isEqualTo(ErrorCode.UNAUTHORIZED);
 	}
 
@@ -127,13 +119,6 @@ class UserActivityLogControllerTest {
 	@DisplayName("실패 - 서비스 내부 예외 발생 시 RuntimeException 발생")
 	void getMyLogs_internalError() {
 		// given
-		setupAuthentication();
-		CustomUserDetails userDetails = CustomUserDetails.builder()
-														 .userId(USER_ID)
-														 .email("test@example.com")
-														 .password("password")
-														 .role(UserRole.USER)
-														 .build();
 		given(userActivityLogService.getMyLogs(anyLong(), any(), any(), any()))
 			.willThrow(new RuntimeException("서버 내부 오류"));
 
