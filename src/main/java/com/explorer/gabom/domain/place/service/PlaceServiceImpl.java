@@ -111,7 +111,7 @@ public class PlaceServiceImpl implements PlaceService {
 
 	@Transactional
 	@Override
-	public void deletePlace(Long placeId, Long userId) {
+	public Long deletePlace(Long placeId, Long userId) {
 		Place place = placeRepository.findByIdAndStatusInAndDeletedAtIsNull(
 										 placeId, List.of(PlaceStatus.PENDING, PlaceStatus.APPROVED))
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
@@ -122,5 +122,6 @@ public class PlaceServiceImpl implements PlaceService {
 
 		place.markAsDeleted(); // Soft Delete 처리
 
+		return place.getId();
 	}
 }

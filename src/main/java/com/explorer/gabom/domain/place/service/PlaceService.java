@@ -25,5 +25,5 @@ public interface PlaceService {
 	void updatePlace(Long placeId, Long userId, PlaceUpdateRequest request);
 
 	@Transactional
-	void deletePlace(Long placeId, Long userId);
+	Long deletePlace(Long placeId, Long userId);
 }

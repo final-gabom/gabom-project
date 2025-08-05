@@ -66,9 +66,9 @@ public class PlaceController implements PlaceControllerDocs {
 
 	// 탐험 장소 수정
 	@PatchMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Void>> updatePlace(@PathVariable Long placeId,
-														 @RequestBody PlaceUpdateRequest request,
-														 @AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<ApiResponse<PlaceDetailResponse>> updatePlace(@PathVariable Long placeId,
+																		@RequestBody PlaceUpdateRequest request,
+																		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userDetails.getUserId();
 		placeService.updatePlace(placeId, userId, request);
 		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다."));
@@ -76,10 +76,10 @@ public class PlaceController implements PlaceControllerDocs {
 
 	// 탐험 장소 삭제
 	@DeleteMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Void>> deletePlace(@PathVariable Long placeId,
+	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable Long placeId,
 														 @AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userDetails.getUserId();
-		placeService.deletePlace(placeId, userId);
-		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다."));
+		Long deletePlaceId = placeService.deletePlace(placeId, userId);
+		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다.", deletePlaceId));
 	}
 }
