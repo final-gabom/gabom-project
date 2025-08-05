@@ -34,6 +34,25 @@ import com.explorer.gabom.global.exception.ErrorCode;
 @ExtendWith(MockitoExtension.class)
 class AdminQuestServiceTest {
 
+	private static final Long TITLE_ID = 1L;
+	private static final Long QUEST_ID = 1L;
+	private static final Long NEW_TITLE_ID = 2L;
+
+	private static final String QUEST_TITLE = "테스트 퀘스트";
+	private static final String QUEST_DESCRIPTION = "퀘스트 설명";
+	private static final QuestConditionType QUEST_CONDITION_TYPE = QuestConditionType.PLACE;
+	private static final int QUEST_ACQUIRE_CONDITION = 5;
+	private static final int REWARD_POINT = 100;
+	private static final int REWARD_EXP = 50;
+
+	private static final String UPDATED_TITLE = "수정된 제목";
+	private static final String UPDATED_DESCRIPTION = "수정된 설명";
+	private static final int UPDATED_ACQUIRE_CONDITION = 10;
+	private static final int UPDATED_REWARD_POINT = 300;
+	private static final int UPDATED_REWARD_EXP = 150;
+
+	private Title title;
+
 	@Mock
 	private QuestRepository questRepository;
 
@@ -46,62 +65,51 @@ class AdminQuestServiceTest {
 	@InjectMocks
 	private AdminQuestServiceImpl adminQuestService;
 
-	private Title title;
-	private static final Long TITLE_ID = 1L;
-	private static final Long QUEST_ID = 1L;
-
 	@BeforeEach
 	void setup() {
-		title = new Title("테스트 칭호", "칭호 설명");
-		ReflectionTestUtils.setField(title, "id", TITLE_ID);
+		title = createTitle(TITLE_ID, "테스트 칭호", "칭호 설명");
 	}
 
 	@Test
 	@DisplayName("퀘스트 생성 - 성공")
 	void createQuest_success() {
-		// given
-		QuestCreateRequest request = createQuestCreateRequest();
-		Quest savedQuest = createQuestFromRequest(request);
+		QuestCreateRequest request = createQuestCreateRequest(TITLE_ID);
+		Quest savedQuest = createQuestFromRequest(request, QUEST_ID, title);
 
 		given(titleRepository.findById(TITLE_ID)).willReturn(Optional.of(title));
 		given(questRepository.save(any())).willReturn(savedQuest);
 
-		// when
 		QuestCreateResponse response = adminQuestService.createQuest(request);
 
-		// then
 		assertThat(response.getQuestId()).isEqualTo(QUEST_ID);
-		assertThat(response.getTitle()).isEqualTo("테스트 퀘스트");
-		assertThat(response.getDescription()).isEqualTo("퀘스트 설명");
-		assertThat(response.getQuestConditionType()).isEqualTo(QuestConditionType.PLACE);
-		assertThat(response.getAcquireCondition()).isEqualTo(5);
-		assertThat(response.getRewardPoint()).isEqualTo(100);
-		assertThat(response.getRewardExp()).isEqualTo(50);
+		assertThat(response.getTitle()).isEqualTo(QUEST_TITLE);
+		assertThat(response.getDescription()).isEqualTo(QUEST_DESCRIPTION);
+		assertThat(response.getQuestConditionType()).isEqualTo(QUEST_CONDITION_TYPE);
+		assertThat(response.getAcquireCondition()).isEqualTo(QUEST_ACQUIRE_CONDITION);
+		assertThat(response.getRewardPoint()).isEqualTo(REWARD_POINT);
+		assertThat(response.getRewardExp()).isEqualTo(REWARD_EXP);
 		assertThat(response.getRewardTitleId()).isEqualTo(TITLE_ID);
 
 		ArgumentCaptor<Quest> captor = ArgumentCaptor.forClass(Quest.class);
 		verify(questRepository).save(captor.capture());
 
 		Quest captured = captor.getValue();
-		assertThat(captured.getTitle()).isEqualTo("테스트 퀘스트");
-		assertThat(captured.getDescription()).isEqualTo("퀘스트 설명");
-		assertThat(captured.getQuestConditionType()).isEqualTo(QuestConditionType.PLACE);
-		assertThat(captured.getAcquireCondition()).isEqualTo(5);
-		assertThat(captured.getRewardPoint()).isEqualTo(100);
-		assertThat(captured.getRewardExp()).isEqualTo(50);
+		assertThat(captured.getTitle()).isEqualTo(QUEST_TITLE);
+		assertThat(captured.getDescription()).isEqualTo(QUEST_DESCRIPTION);
+		assertThat(captured.getQuestConditionType()).isEqualTo(QUEST_CONDITION_TYPE);
+		assertThat(captured.getAcquireCondition()).isEqualTo(QUEST_ACQUIRE_CONDITION);
+		assertThat(captured.getRewardPoint()).isEqualTo(REWARD_POINT);
+		assertThat(captured.getRewardExp()).isEqualTo(REWARD_EXP);
 		assertThat(captured.getRewardTitle().getId()).isEqualTo(TITLE_ID);
 	}
 
 	@Test
 	@DisplayName("퀘스트 생성 - 실패 (존재하지 않는 칭호 ID)")
 	void createQuest_titleNotFound_fail() {
-		// given
-		QuestCreateRequest request = createQuestCreateRequest();
-		ReflectionTestUtils.setField(request, "rewardTitleId", 999L);
+		QuestCreateRequest request = createQuestCreateRequest(999L);
 
 		given(titleRepository.findById(999L)).willReturn(Optional.empty());
 
-		// when & then
 		assertThatThrownBy(() -> adminQuestService.createQuest(request))
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.TITLE_NOT_FOUND.getMessage());
@@ -110,39 +118,34 @@ class AdminQuestServiceTest {
 	@Test
 	@DisplayName("퀘스트 수정 - 성공")
 	void updateQuest_success() {
-		// given
 		Quest existingQuest = createQuest(QUEST_ID, title);
-		Title newTitle = new Title("새 칭호", "새 설명");
-		ReflectionTestUtils.setField(newTitle, "id", 2L);
+		Title newTitle = createTitle(NEW_TITLE_ID, "새 칭호", "새 설명");
 
 		QuestUpdateRequest request = createQuestUpdateRequest();
 
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.of(existingQuest));
-		given(titleRepository.findById(2L)).willReturn(Optional.of(newTitle));
+		given(titleRepository.findById(NEW_TITLE_ID)).willReturn(Optional.of(newTitle));
 		given(userQuestRepository.findAllByQuestAndQuest_DeletedFalse(any())).willReturn(List.of());
 
-		// when
 		QuestUpdateResponse response = adminQuestService.updateQuest(QUEST_ID, request);
 
-		// then
 		assertThat(response.getQuestId()).isEqualTo(QUEST_ID);
-		assertThat(response.getTitle()).isEqualTo("수정된 제목");
-		assertThat(response.getDescription()).isEqualTo("수정된 설명");
-		assertThat(response.getQuestConditionType()).isEqualTo(QuestConditionType.PLACE);
-		assertThat(response.getAcquireCondition()).isEqualTo(10);
-		assertThat(response.getRewardPoint()).isEqualTo(300);
-		assertThat(response.getRewardExp()).isEqualTo(150);
-		assertThat(response.getRewardTitleId()).isEqualTo(2L);
+		assertThat(response.getTitle()).isEqualTo(UPDATED_TITLE);
+		assertThat(response.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+		assertThat(response.getQuestConditionType()).isEqualTo(QUEST_CONDITION_TYPE);
+		assertThat(response.getAcquireCondition()).isEqualTo(UPDATED_ACQUIRE_CONDITION);
+		assertThat(response.getRewardPoint()).isEqualTo(UPDATED_REWARD_POINT);
+		assertThat(response.getRewardExp()).isEqualTo(UPDATED_REWARD_EXP);
+		assertThat(response.getRewardTitleId()).isEqualTo(NEW_TITLE_ID);
 	}
 
 	@Test
 	@DisplayName("퀘스트 수정 - 실패 (퀘스트 없음)")
 	void updateQuest_notFound_fail() {
-		// given
 		QuestUpdateRequest request = createQuestUpdateRequest();
+
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.empty());
 
-		// when & then
 		assertThatThrownBy(() -> adminQuestService.updateQuest(QUEST_ID, request))
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.QUEST_NOT_FOUND.getMessage());
@@ -151,17 +154,14 @@ class AdminQuestServiceTest {
 	@Test
 	@DisplayName("퀘스트 삭제 - 성공")
 	void deleteQuest_success() {
-		// given
 		Quest quest = createQuest(QUEST_ID, title);
 		UserQuest userQuest = mock(UserQuest.class);
 
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.of(quest));
 		given(userQuestRepository.findAllByQuest(quest)).willReturn(List.of(userQuest));
 
-		// when
 		QuestDeleteResponse response = adminQuestService.deleteQuest(QUEST_ID);
 
-		// then
 		assertThat(response.getQuestId()).isEqualTo(QUEST_ID);
 		verify(userQuest).markAsDeleted();
 	}
@@ -169,50 +169,68 @@ class AdminQuestServiceTest {
 	@Test
 	@DisplayName("퀘스트 삭제 - 실패 (퀘스트 없음)")
 	void deleteQuest_notFound_fail() {
-		// given
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.empty());
 
-		// when & then
 		assertThatThrownBy(() -> adminQuestService.deleteQuest(QUEST_ID))
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.QUEST_NOT_FOUND.getMessage());
 	}
 
-	private QuestCreateRequest createQuestCreateRequest() {
+	private QuestCreateRequest createQuestCreateRequest(Long rewardTitleId) {
 		QuestCreateRequest request = new QuestCreateRequest();
-		ReflectionTestUtils.setField(request, "title", "테스트 퀘스트");
-		ReflectionTestUtils.setField(request, "description", "퀘스트 설명");
-		ReflectionTestUtils.setField(request, "questConditionType", QuestConditionType.PLACE);
-		ReflectionTestUtils.setField(request, "acquireCondition", 5);
-		ReflectionTestUtils.setField(request, "rewardPoint", 100);
-		ReflectionTestUtils.setField(request, "rewardExp", 50);
-		ReflectionTestUtils.setField(request, "rewardTitleId", TITLE_ID);
+		ReflectionTestUtils.setField(request, "title", QUEST_TITLE);
+		ReflectionTestUtils.setField(request, "description", QUEST_DESCRIPTION);
+		ReflectionTestUtils.setField(request, "questConditionType", QUEST_CONDITION_TYPE);
+		ReflectionTestUtils.setField(request, "acquireCondition", QUEST_ACQUIRE_CONDITION);
+		ReflectionTestUtils.setField(request, "rewardPoint", REWARD_POINT);
+		ReflectionTestUtils.setField(request, "rewardExp", REWARD_EXP);
+		ReflectionTestUtils.setField(request, "rewardTitleId", rewardTitleId);
 		return request;
 	}
 
 	private QuestUpdateRequest createQuestUpdateRequest() {
 		QuestUpdateRequest request = new QuestUpdateRequest();
-		ReflectionTestUtils.setField(request, "title", "수정된 제목");
-		ReflectionTestUtils.setField(request, "description", "수정된 설명");
-		ReflectionTestUtils.setField(request, "questConditionType", QuestConditionType.PLACE);
-		ReflectionTestUtils.setField(request, "acquireCondition", 10);
-		ReflectionTestUtils.setField(request, "rewardPoint", 300);
-		ReflectionTestUtils.setField(request, "rewardExp", 150);
-		ReflectionTestUtils.setField(request, "rewardTitleId", 2L);
+		ReflectionTestUtils.setField(request, "title", UPDATED_TITLE);
+		ReflectionTestUtils.setField(request, "description", UPDATED_DESCRIPTION);
+		ReflectionTestUtils.setField(request, "questConditionType", QUEST_CONDITION_TYPE);
+		ReflectionTestUtils.setField(request, "acquireCondition", UPDATED_ACQUIRE_CONDITION);
+		ReflectionTestUtils.setField(request, "rewardPoint", UPDATED_REWARD_POINT);
+		ReflectionTestUtils.setField(request, "rewardExp", UPDATED_REWARD_EXP);
+		ReflectionTestUtils.setField(request, "rewardTitleId", NEW_TITLE_ID);
 		return request;
 	}
 
-	private Quest createQuest(Long id, Title title) {
-		Quest quest = new Quest("테스트 퀘스트", "퀘스트 설명", QuestConditionType.PLACE, 5, 100, 50, title);
+	private Quest createQuestFromRequest(QuestCreateRequest request, Long id, Title title) {
+		Quest quest = new Quest(
+			request.getTitle(),
+			request.getDescription(),
+			request.getQuestConditionType(),
+			request.getAcquireCondition(),
+			request.getRewardPoint(),
+			request.getRewardExp(),
+			title
+		);
 		ReflectionTestUtils.setField(quest, "id", id);
 		return quest;
 	}
 
-	private Quest createQuestFromRequest(QuestCreateRequest request) {
-		Quest quest = new Quest(request.getTitle(), request.getDescription(), request.getQuestConditionType(),
-								request.getAcquireCondition(), request.getRewardPoint(), request.getRewardExp(),
-								title);
-		ReflectionTestUtils.setField(quest, "id", QUEST_ID);
+	private Quest createQuest(Long id, Title title) {
+		Quest quest = new Quest(
+			QUEST_TITLE,
+			QUEST_DESCRIPTION,
+			QUEST_CONDITION_TYPE,
+			QUEST_ACQUIRE_CONDITION,
+			REWARD_POINT,
+			REWARD_EXP,
+			title
+		);
+		ReflectionTestUtils.setField(quest, "id", id);
 		return quest;
+	}
+
+	private Title createTitle(Long id, String name, String description) {
+		Title title = new Title(name, description);
+		ReflectionTestUtils.setField(title, "id", id);
+		return title;
 	}
 }
