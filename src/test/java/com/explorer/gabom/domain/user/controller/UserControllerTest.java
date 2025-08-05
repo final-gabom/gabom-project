@@ -7,6 +7,7 @@ import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -51,9 +52,9 @@ public class UserControllerTest {
 
         authToken = createAuthToken(testUser);
     }
-
+    @DisplayName("프로필 수정 성공")
     @Test
-    void 프로필_수정_성공() throws Exception {
+    void updateProfile_success() throws Exception {
         UserUpdateRequest updateRequest = new UserUpdateRequest(
                 NEW_NICKNAME,
                 NEW_ADDRESS,
