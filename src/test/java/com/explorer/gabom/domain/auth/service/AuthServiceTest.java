@@ -3,6 +3,8 @@ package com.explorer.gabom.domain.auth.service;
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
+import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -129,7 +131,7 @@ public class AuthServiceTest {
     }
     @DisplayName("로그인 성공")
     @Test
-    void 로그인_성공() {
+    void LoginSuccess() {
         // given
         LoginRequest request = new LoginRequest(EMAIL, RAW_PASSWORD);
         User user = User.builder()
