@@ -84,4 +84,9 @@ public class MissionProof extends BaseTimeEntity {
 
 	public void delete() {
 	}
+
+	// 테스트에서 ID 설정용 (DB save() mocking 시 사용)
+	public void setId(Long id) {
+		this.id = id;
+	}
 }
