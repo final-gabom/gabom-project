@@ -2,11 +2,14 @@ package com.explorer.gabom.domain.auth.controller;
 
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
-import com.explorer.gabom.domain.auth.dto.response.SignupResponse;
+
 import com.explorer.gabom.domain.auth.service.AuthService;
-import com.explorer.gabom.global.dto.ApiResponse;
-import org.junit.jupiter.api.BeforeEach;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
+import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.global.security.jwt.JwtProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
