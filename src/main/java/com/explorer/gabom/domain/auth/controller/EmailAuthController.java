@@ -1,5 +1,11 @@
 package com.explorer.gabom.domain.auth.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.EmailRequest;
 import com.explorer.gabom.domain.auth.dto.request.PasswordResetRequest;
@@ -7,19 +13,15 @@ import com.explorer.gabom.domain.auth.dto.request.PasswordResetVerifyRequest;
 import com.explorer.gabom.domain.auth.service.EmailAuthService;
 import com.explorer.gabom.domain.auth.service.PasswordResetService;
 import com.explorer.gabom.global.dto.ApiResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
-public class EmailAuthController {
+public class EmailAuthController implements EmailAuthControllerDocs{
     private final EmailAuthService emailAuthService;
     private final PasswordResetService passwordResetService;
     // 이메일 인증 코드 전송
