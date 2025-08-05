@@ -8,6 +8,8 @@ logging:
     com.explorer.gabom: debug
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:h2:mem:testdb;MODE=MYSQL
     driver-class-name: org.h2.Driver
@@ -22,8 +24,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: na
-    password: na
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
