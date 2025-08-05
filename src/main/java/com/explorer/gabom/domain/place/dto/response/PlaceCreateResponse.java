@@ -7,10 +7,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Schema(description = "장소 등록 응답 정보")
