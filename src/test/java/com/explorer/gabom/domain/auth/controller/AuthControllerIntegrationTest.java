@@ -1,26 +1,27 @@
 package com.explorer.gabom.domain.auth.controller;
 
-import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
-import com.explorer.gabom.domain.auth.dto.request.EmailRequest;
-import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
-import com.explorer.gabom.domain.auth.service.EmailCodeStorageService;
-import com.explorer.gabom.domain.user.type.UserRole;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
+import com.explorer.gabom.domain.auth.dto.request.EmailRequest;
+import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
+import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.service.EmailCodeStorageService;
+import com.explorer.gabom.domain.user.type.UserRole;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,6 +36,7 @@ class AuthControllerIntegrationTest {
 	private static final String EMAIL_VERIFY_URL = "/api/auth/email/verify";
 	private static final String LOGIN_URL = "/api/auth/login";
 	private static final String CHECK_NICKNAME_URL = "/api/auth/check-nickname";
+	private static final String PROFILE_URL = "/api/users/me";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -44,6 +46,17 @@ class AuthControllerIntegrationTest {
 
 	@Autowired
 	private EmailCodeStorageService emailCodeStorageService;
+
+	@Autowired
+	private StringRedisTemplate redisTemplate;
+
+	@BeforeEach
+	void flushRedis() {
+		// Redis 모든 키 삭제
+		redisTemplate.getConnectionFactory()
+					 .getConnection()
+					 .flushDb();
+	}
 
 	@Test
 	@DisplayName("이메일 인증 플로우 후 회원가입 성공")
@@ -145,5 +158,32 @@ class AuthControllerIntegrationTest {
 			   .andExpect(status().isOk())
 			   .andExpect(jsonPath("$.message").value("닉네임 중복확인을 완료하였습니다."))
 			   .andExpect(jsonPath("$.data.available").value(true));
+	}
+
+	@Test
+	@DisplayName("보호된 리소스 접근 성공 (Bearer 토큰)")
+	void accessProtectedEndpoint() throws Exception {
+		// given: 로그인하여 토큰 획득
+		SignupRequest signup = new SignupRequest(
+			"secure@example.com",
+			"secureuser",
+			"SecureP@ss1",
+			UserRole.USER
+		);
+		mockMvc.perform(post(TEST_SIGNUP_URL)
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(signup)))
+			   .andExpect(status().isCreated());
+		String loginJson = mockMvc.perform(post(LOGIN_URL)
+											   .contentType(MediaType.APPLICATION_JSON)
+											   .content(objectMapper.writeValueAsString(
+												   new LoginRequest(signup.getEmail(), signup.getPassword()))))
+								  .andExpect(status().isOk())
+								  .andReturn().getResponse().getContentAsString();
+		String token = objectMapper.readTree(loginJson).path("data").path("accessToken").asText();
+		// when & then: 보호된 API 호출
+		mockMvc.perform(get(PROFILE_URL)
+							.header("Authorization", token))
+			   .andExpect(status().isOk());
 	}
 }
