@@ -27,12 +27,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "place")
 @SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
 public class Place extends BaseTimeEntity {
@@ -40,30 +46,41 @@ public class Place extends BaseTimeEntity {
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private final List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
+
 	@Column(nullable = false, length = 100)
 	private String title;
+
 	@Column(nullable = false, length = 255)
 	private String address;
+
 	@Column(nullable = false)
 	private Double lat;
+
 	@Column(nullable = false)
 	private Double lng;
+
 	@Lob
 	@Column(nullable = false)
 	private String content;
+
 	@Column(nullable = false)
 	private String proofMethod;
+
 	@Column(nullable = false)
 	private Integer viewCount;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private PlaceStatus status;
+
 	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
 	private final List<MissionProof> missionProofs = new ArrayList<>();
 

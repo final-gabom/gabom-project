@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/quests")
 @RequiredArgsConstructor
-public class QuestController {
+public class QuestController implements QuestControllerDocs {
 
 	private final QuestService questService;
 

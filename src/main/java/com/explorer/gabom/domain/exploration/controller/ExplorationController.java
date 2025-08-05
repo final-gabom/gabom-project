@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/exploration")
 @RequiredArgsConstructor
-public class ExplorationController {
+public class ExplorationController implements ExplorationControllerDocs {
 
 	private final ExplorationService explorationService;
 
