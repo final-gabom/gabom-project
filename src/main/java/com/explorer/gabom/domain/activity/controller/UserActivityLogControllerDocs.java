@@ -41,9 +41,9 @@ public interface UserActivityLogControllerDocs {
 	@Parameters({
 		@Parameter(name = "page", description = "조회할 페이지 번호 (0부터 시작)"),
 		@Parameter(name = "size", description = "한 페이지에 표시할 데이터 개수"),
-		@Parameter(name = "sort", description = "정렬 기준 (ex: createdAt,desc)"),
-		@Parameter(name = "from", description = "조회 시작일시 (ex: 2025-08-01T00:00:00)"),
-		@Parameter(name = "to", description = "조회 종료일시 (ex: 2025-08-02T23:59:59)")
+		@Parameter(name = "sort", description = "정렬 기준"),
+		@Parameter(name = "from", description = "조회 시작일시"),
+		@Parameter(name = "to", description = "조회 종료일시")
 	})
 	ResponseEntity<com.explorer.gabom.global.dto.ApiResponse<PageResponse<UserActivityLogResponse>>> getMyLogs(
 		@AuthenticationPrincipal CustomUserDetails customUserDetails,
