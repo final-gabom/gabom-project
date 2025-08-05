@@ -21,7 +21,7 @@ public interface AuthControllerDocs {
 
 	// 회원가입
 	@Operation(
-		summary     = "회원가입",
+		summary = "회원가입",
 		description = "신규 유저 또는 관리자 계정을 생성합니다.  \n"
 			+ "- 이메일 인증 및 닉네임 중복 검사를 수행하고 비밀번호는 안전하게 해시 처리하여 저장합니다.  \n"
 			+ "- 요청이 성공하면 HTTP 201 상태 코드를 반환합니다."
@@ -38,7 +38,7 @@ public interface AuthControllerDocs {
 
 	// 테스트용 회원가입
 	@Operation(
-		summary     = "회원가입(테스트용)",
+		summary = "회원가입(테스트용)",
 		description = "개발/테스트 환경에서 빠르게 회원을 생성하기 위한 엔드포인트입니다.  \n"
 			+ "- 이메일 인증 검사를 생략합니다.  \n"
 			+ "- 실제 운영 환경에서는 사용을 지양합니다.  \n"
@@ -55,7 +55,7 @@ public interface AuthControllerDocs {
 
 	// 로그인
 	@Operation(
-		summary     = "로그인",
+		summary = "로그인",
 		description = "등록된 계정의 이메일과 비밀번호를 검증하여 인증을 수행합니다.  \n"
 			+ "- 검증 성공 시 JWT 액세스/리프레시 토큰을 발급합니다.  \n"
 			+ "- 잘못된 자격 증명이면 HTTP 401 또는 403을 반환합니다."
@@ -71,7 +71,7 @@ public interface AuthControllerDocs {
 
 	// 닉네임 중복 확인
 	@Operation(
-		summary     = "닉네임 중복 확인",
+		summary = "닉네임 중복 확인",
 		description = "회원가입 시 입력된 닉네임이 이미 사용 중인지 확인합니다.  \n"
 			+ "- 사용 가능 시 HTTP 200, 중복 시 HTTP 409을 반환합니다."
 	)
@@ -79,12 +79,12 @@ public interface AuthControllerDocs {
 		@ApiResponse(responseCode = "200", description = "닉네임 사용 가능"),
 		@ApiResponse(responseCode = "409", description = "이미 등록된 닉네임")
 	})
-	@Parameter(
-		name        = "nickname",
-		description = "중복 검사를 수행할 닉네임",
-		required    = true
-	)
 	ResponseEntity<?> checkNickname(
+		@Parameter(
+			name = "nickname",
+			description = "중복 검사를 수행할 닉네임",
+			required = true
+		)
 		@RequestParam("nickname") String nickname
 	);
 }
