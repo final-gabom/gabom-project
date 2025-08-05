@@ -1,22 +1,23 @@
 package com.explorer.gabom.domain.title.controller;
 
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.explorer.gabom.domain.title.dto.request.TitleCreateRequest;
@@ -27,13 +28,19 @@ import com.explorer.gabom.domain.title.service.TitleService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @DisplayName("AdminTitleController - 통합 테스트")
-@ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 class AdminTitleControllerTest {
+
+	private static final Long VALID_ID = 1L;
+	private static final Long INVALID_ID = 999L;
+
+	private static final String TITLE_NAME = "차도남/녀";
+	private static final String TITLE_DESCRIPTION = "서울 10곳 이상 탐험";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -47,6 +54,19 @@ class AdminTitleControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	private TitleCreateRequest validCreateRequest;
+	private TitleUpdateRequest validUpdateRequest;
+
+	@BeforeEach
+	void setUp() {
+		validCreateRequest = new TitleCreateRequest(TITLE_NAME, TITLE_DESCRIPTION);
+		validUpdateRequest = new TitleUpdateRequest("응애 탐험가", "누적 탐험 10km");
+	}
+
+	private String toJson(Object obj) throws JsonProcessingException {
+		return objectMapper.writeValueAsString(obj);
+	}
+
 	@Nested
 	@DisplayName("칭호 등록 API [POST /api/admin/titles]")
 	class CreateTitle {
@@ -55,34 +75,32 @@ class AdminTitleControllerTest {
 		@DisplayName("성공 - 올바른 요청 시 201 상태코드와 데이터 반환")
 		@WithMockUser(roles = "ADMIN")
 		void createTitle_success() throws Exception {
-			// Given
-			TitleCreateRequest request = new TitleCreateRequest("차도남/녀", "서울 10곳 이상 탐험");
-			TitleCreateResponse response = new TitleCreateResponse(1L, "차도남/녀", "서울 10곳 이상 탐험", LocalDateTime.now());
+			// given
+			TitleCreateResponse response = new TitleCreateResponse(
+				VALID_ID, TITLE_NAME, TITLE_DESCRIPTION, LocalDateTime.now());
 
 			given(titleService.createTitle(any(TitleCreateRequest.class)))
 				.willReturn(response);
 
-			// When & Then
+			// when & then
 			mockMvc.perform(post("/api/admin/titles")
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
+								.content(toJson(validCreateRequest)))
 				   .andExpect(status().isCreated())
 				   .andExpect(jsonPath("$.success").value(true))
 				   .andExpect(jsonPath("$.message").value("칭호가 성공적으로 등록되었습니다."))
-				   .andExpect(jsonPath("$.data.name").value("차도남/녀"));
+				   .andExpect(jsonPath("$.data.name").value(TITLE_NAME));
 		}
 
 		@Test
 		@DisplayName("실패 - 이름이 비어 있을 경우 400 반환")
 		@WithMockUser(roles = "ADMIN")
 		void createTitle_fail_validation() throws Exception {
-			// Given
-			TitleCreateRequest request = new TitleCreateRequest("", "없음");
+			TitleCreateRequest invalidRequest = new TitleCreateRequest("", "없음");
 
-			// When & Then
 			mockMvc.perform(post("/api/admin/titles")
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
+								.content(toJson(invalidRequest)))
 				   .andExpect(status().isBadRequest())
 				   .andExpect(jsonPath("$.success").value(false))
 				   .andExpect(jsonPath("$.message").exists());
@@ -97,34 +115,32 @@ class AdminTitleControllerTest {
 		@DisplayName("성공 - 칭호가 정상적으로 수정됨")
 		@WithMockUser(roles = "ADMIN")
 		void updateTitle_success() throws Exception {
-			// Given
-			TitleUpdateRequest request = new TitleUpdateRequest("응애 탐험가", "누적 탐험 10km");
-
-			// When & Then
-			mockMvc.perform(patch("/api/admin/titles/{id}", 1L)
+			mockMvc.perform(patch("/api/admin/titles/{id}", VALID_ID)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
+								.content(toJson(validUpdateRequest)))
 				   .andExpect(status().isOk())
 				   .andExpect(jsonPath("$.success").value(true))
 				   .andExpect(jsonPath("$.message").value("칭호가 성공적으로 수정되었습니다."));
 
-			then(titleService).should().updateTitle(eq(1L), any(TitleUpdateRequest.class));
+			ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+			ArgumentCaptor<TitleUpdateRequest> reqCaptor = ArgumentCaptor.forClass(TitleUpdateRequest.class);
+
+			then(titleService).should().updateTitle(idCaptor.capture(), reqCaptor.capture());
+
+			assertThat(idCaptor.getValue()).isEqualTo(VALID_ID);
+			assertThat(reqCaptor.getValue().getName()).isEqualTo("응애 탐험가");
 		}
 
 		@Test
 		@DisplayName("실패 - 존재하지 않는 ID일 경우 404 예외")
 		@WithMockUser(roles = "ADMIN")
 		void updateTitle_fail_notFound() throws Exception {
-			// Given
-			TitleUpdateRequest request = new TitleUpdateRequest("전설", "전설적인 자");
-
 			doThrow(new CustomException(ErrorCode.TITLE_NOT_FOUND))
-				.when(titleService).updateTitle(eq(999L), any());
+				.when(titleService).updateTitle(eq(INVALID_ID), any());
 
-			// When & Then
-			mockMvc.perform(patch("/api/admin/titles/{id}", 999L)
+			mockMvc.perform(patch("/api/admin/titles/{id}", INVALID_ID)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
+								.content(toJson(validUpdateRequest)))
 				   .andExpect(status().isNotFound())
 				   .andExpect(jsonPath("$.success").value(false))
 				   .andExpect(jsonPath("$.message").value("해당 칭호를 찾을 수 없습니다."));
@@ -139,29 +155,25 @@ class AdminTitleControllerTest {
 		@DisplayName("성공 - 칭호가 정상적으로 삭제됨")
 		@WithMockUser(roles = "ADMIN")
 		void deleteTitle_success() throws Exception {
-			// Given
-			TitleDeleteResponse response = new TitleDeleteResponse(1L);
+			given(titleService.deleteTitle(VALID_ID)).willReturn(new TitleDeleteResponse(VALID_ID));
 
-			given(titleService.deleteTitle(1L)).willReturn(response);
-
-			// When & Then
-			mockMvc.perform(delete("/api/admin/titles/{id}", 1L))
+			mockMvc.perform(delete("/api/admin/titles/{id}", VALID_ID))
 				   .andExpect(status().isOk())
 				   .andExpect(jsonPath("$.success").value(true))
 				   .andExpect(jsonPath("$.message").value("칭호가 성공적으로 삭제되었습니다."))
-				   .andExpect(jsonPath("$.data.id").value(1L));
+				   .andExpect(jsonPath("$.data.id").value(VALID_ID));
+
+			then(titleService).should().deleteTitle(VALID_ID);
 		}
 
 		@Test
 		@DisplayName("실패 - 존재하지 않는 ID일 경우 404 예외")
 		@WithMockUser(roles = "ADMIN")
 		void deleteTitle_fail_notFound() throws Exception {
-			// Given
-			given(titleService.deleteTitle(999L))
+			given(titleService.deleteTitle(INVALID_ID))
 				.willThrow(new CustomException(ErrorCode.TITLE_NOT_FOUND));
 
-			// When & Then
-			mockMvc.perform(delete("/api/admin/titles/{id}", 999L))
+			mockMvc.perform(delete("/api/admin/titles/{id}", INVALID_ID))
 				   .andExpect(status().isNotFound())
 				   .andExpect(jsonPath("$.success").value(false))
 				   .andExpect(jsonPath("$.message").value("해당 칭호를 찾을 수 없습니다."));

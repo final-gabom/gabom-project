@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,7 +30,13 @@ import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("TitleService 단위 테스트")
 class TitleServiceTest {
+
+	private static final Long VALID_ID = 1L;
+	private static final Long INVALID_ID = 404L;
+	private static final String TITLE_NAME = "탐험가";
+	private static final String TITLE_DESC = "누적 10km 이동";
 
 	@InjectMocks
 	private TitleService titleService;
@@ -43,31 +50,25 @@ class TitleServiceTest {
 	@Test
 	@DisplayName("createTitle - 성공")
 	void createTitle_success() {
-		// Given
-		TitleCreateRequest request = new TitleCreateRequest("모험가", "첫 퀘스트 완료 시 지급");
-		Title saved = new Title("모험가", "첫 퀘스트 완료 시 지급");
-		ReflectionTestUtils.setField(saved, "id", 1L); // id 수동 설정
+		TitleCreateRequest request = new TitleCreateRequest(TITLE_NAME, TITLE_DESC);
+		Title saved = createTitle(TITLE_NAME, TITLE_DESC, VALID_ID);
 
-		given(titleRepository.existsByName("모험가")).willReturn(false);
+		given(titleRepository.existsByName(TITLE_NAME)).willReturn(false);
 		given(titleRepository.save(any(Title.class))).willReturn(saved);
 
-		// When
 		TitleCreateResponse response = titleService.createTitle(request);
 
-		// Then
-		assertEquals(1L, response.getId());
-		assertEquals("모험가", response.getName());
+		assertEquals(VALID_ID, response.getId());
+		assertEquals(TITLE_NAME, response.getName());
 	}
 
 	@Test
-	@DisplayName("createTitle - 실패 (이미 존재하는 이름)")
+	@DisplayName("createTitle - 실패 (이미 존재)")
 	void createTitle_fail_alreadyExists() {
-		// Given
-		TitleCreateRequest request = new TitleCreateRequest("모험가", "중복");
+		TitleCreateRequest request = new TitleCreateRequest(TITLE_NAME, "중복");
 
-		given(titleRepository.existsByName("모험가")).willReturn(true);
+		given(titleRepository.existsByName(TITLE_NAME)).willReturn(true);
 
-		// When & Then
 		CustomException e = assertThrows(CustomException.class,
 										 () -> titleService.createTitle(request));
 		assertEquals(ErrorCode.TITLE_ALREADY_EXISTS, e.getErrorCode());
@@ -76,90 +77,107 @@ class TitleServiceTest {
 	@Test
 	@DisplayName("updateTitle - 성공")
 	void updateTitle_success() {
-		// Given
 		TitleUpdateRequest request = new TitleUpdateRequest("수정된 이름", "수정된 설명");
-		Title existing = new Title("기존", "기존 설명");
-		ReflectionTestUtils.setField(existing, "id", 1L);
+		Title existing = createTitle("기존 이름", "기존 설명", VALID_ID);
 
-		given(titleRepository.findById(1L)).willReturn(Optional.of(existing));
+		given(titleRepository.findById(VALID_ID)).willReturn(Optional.of(existing));
 
-		// When
-		titleService.updateTitle(1L, request);
+		titleService.updateTitle(VALID_ID, request);
 
-		// Then
-		verify(titleRepository).updateTitle(1L, "수정된 이름", "수정된 설명");
+		ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+		ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String> descCaptor = ArgumentCaptor.forClass(String.class);
+
+		verify(titleRepository).updateTitle(idCaptor.capture(), nameCaptor.capture(), descCaptor.capture());
+
+		assertEquals(VALID_ID, idCaptor.getValue());
+		assertEquals("수정된 이름", nameCaptor.getValue());
+		assertEquals("수정된 설명", descCaptor.getValue());
 	}
 
 	@Test
 	@DisplayName("updateTitle - 실패 (존재하지 않음)")
 	void updateTitle_fail_notFound() {
-		// Given
 		TitleUpdateRequest request = new TitleUpdateRequest("수정", "수정 설명");
-		given(titleRepository.findById(99L)).willReturn(Optional.empty());
 
-		// When & Then
+		given(titleRepository.findById(INVALID_ID)).willReturn(Optional.empty());
+
 		CustomException e = assertThrows(CustomException.class,
-										 () -> titleService.updateTitle(99L, request));
+										 () -> titleService.updateTitle(INVALID_ID, request));
 		assertEquals(ErrorCode.TITLE_NOT_FOUND, e.getErrorCode());
 	}
 
 	@Test
 	@DisplayName("deleteTitle - 성공")
 	void deleteTitle_success() {
-		// Given
-		Title title = new Title("삭제할 제목", "설명");
-		ReflectionTestUtils.setField(title, "id", 1L);
+		Title title = createTitle("삭제할 제목", "설명", VALID_ID);
 
-		given(titleRepository.findById(1L)).willReturn(Optional.of(title));
+		given(titleRepository.findById(VALID_ID)).willReturn(Optional.of(title));
 
-		// When
-		TitleDeleteResponse response = titleService.deleteTitle(1L);
+		TitleDeleteResponse response = titleService.deleteTitle(VALID_ID);
 
-		// Then
-		verify(titleRepository).delete(title);
-		assertEquals(1L, response.getId());
+		ArgumentCaptor<Title> captor = ArgumentCaptor.forClass(Title.class);
+		verify(titleRepository).delete(captor.capture());
+
+		assertEquals(VALID_ID, response.getId());
+		assertEquals(VALID_ID, captor.getValue().getId());
 	}
 
 	@Test
 	@DisplayName("deleteTitle - 실패 (존재하지 않음)")
 	void deleteTitle_fail_notFound() {
-		// Given
-		given(titleRepository.findById(404L)).willReturn(Optional.empty());
+		given(titleRepository.findById(INVALID_ID)).willReturn(Optional.empty());
 
-		// When & Then
 		CustomException e = assertThrows(CustomException.class,
-										 () -> titleService.deleteTitle(404L));
+										 () -> titleService.deleteTitle(INVALID_ID));
 		assertEquals(ErrorCode.TITLE_NOT_FOUND, e.getErrorCode());
 	}
 
 	@Test
 	@DisplayName("getUserTitles - 성공")
 	void getUserTitles_success() {
-		// Given
-		User user = new User();
-		ReflectionTestUtils.setField(user, "id", 1L);
-		UserTitle userTitle = new UserTitle(); // 생성자 필요에 따라 수정
+		User user = createUser(VALID_ID);
+
+		UserTitle userTitle = new UserTitle();
 		ReflectionTestUtils.setField(userTitle, "id", 10L);
+
+		Title title = createTitle("탐험가", "누적 10km 이동", 10L);
+		ReflectionTestUtils.setField(userTitle, "title", title);
+
 		ReflectionTestUtils.setField(user, "userTitles", List.of(userTitle));
 
-		given(userRepository.findByIdAndStatus(1L, UserStatus.ACTIVE)).willReturn(Optional.of(user));
+		given(userRepository.findByIdAndStatus(VALID_ID, UserStatus.ACTIVE))
+			.willReturn(Optional.of(user));
 
-		// When
-		List<UserTitleResponse> responses = titleService.getUserTitles(1L);
+		// when
+		List<UserTitleResponse> responses = titleService.getUserTitles(VALID_ID);
 
-		// Then
+		// then
 		assertEquals(1, responses.size());
+		assertEquals(10L, responses.get(0).getId());
+		assertEquals("탐험가", responses.get(0).getName());
 	}
+
 
 	@Test
 	@DisplayName("getUserTitles - 실패 (존재하지 않는 유저)")
 	void getUserTitles_fail_userNotFound() {
-		// Given
-		given(userRepository.findByIdAndStatus(100L, UserStatus.ACTIVE)).willReturn(Optional.empty());
+		given(userRepository.findByIdAndStatus(INVALID_ID, UserStatus.ACTIVE)).willReturn(Optional.empty());
 
-		// When & Then
 		CustomException e = assertThrows(CustomException.class,
-										 () -> titleService.getUserTitles(100L));
+										 () -> titleService.getUserTitles(INVALID_ID));
 		assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
+	}
+
+	private Title createTitle(String name, String description, Long id) {
+		Title title = new Title(name, description);
+		ReflectionTestUtils.setField(title, "id", id);
+		return title;
+	}
+
+	private User createUser(Long id) {
+		User user = new User();
+		ReflectionTestUtils.setField(user, "id", id);
+		return user;
 	}
 }
