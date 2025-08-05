@@ -3,36 +3,20 @@ package com.explorer.gabom.domain.quest.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
-import com.explorer.gabom.domain.quest.type.ProgressStatus;
-import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.user.entity.User;
 
-public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
+public interface UserQuestRepository extends JpaRepository<UserQuest, Long>, UserQuestRepositoryCustom {
 
-	List<UserQuest> findByUserAndQuest_QuestConditionTypeAndProgressStatusAndQuest_DeletedFalse(
-		User user,
-		QuestConditionType questConditionType,
-		ProgressStatus progressStatus
-	);
+	Optional<UserQuest> findByUserAndQuest(User user, Quest quest);
 
 	List<UserQuest> findAllByQuestAndQuest_DeletedFalse(Quest quest);
 
 	List<UserQuest> findAllByQuest(Quest quest);
 
 	Optional<UserQuest> findByUser_IdAndIdAndQuest_DeletedFalse(Long userId, Long id);
-
-	Page<UserQuest> findByUser_IdAndQuest_DeletedFalse(Long userId, Pageable pageable);
-
-	Page<UserQuest> findByUser_IdAndProgressStatusAndQuest_DeletedFalse(
-		Long userId,
-		ProgressStatus progressStatus,
-		Pageable pageable
-	);
 
 }

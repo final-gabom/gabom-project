@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
+import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
+import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
@@ -27,19 +29,37 @@ public class UserQuestServiceImpl implements UserQuestService {
 
 	private final UserQuestRepository userQuestRepository;
 	private final UserRepository userRepository;
+	private final QuestRepository questRepository;
 
 	@Override
 	@Transactional
 	public void updateProgress(User user, QuestConditionType type, int step) {
-		List<UserQuest> userQuests = userQuestRepository
-			.findByUserAndQuest_QuestConditionTypeAndProgressStatusAndQuest_DeletedFalse(user, type,
-																						 ProgressStatus.IN_PROGRESS);
+		List<Quest> quests = questRepository.findByQuestConditionTypeAndDeletedFalse(type);
 
-		for (UserQuest userQuest : userQuests) {
+		for (Quest quest : quests) {
+			UserQuest userQuest = userQuestRepository.findByUserAndQuest(user, quest)
+													 .orElseGet(() -> {
+														 return createUserQuest(user, type, quest);
+													 });
+
+			if (userQuest.isCompleted())
+				continue;
+
+			if (userQuest.getProgressStatus() == ProgressStatus.NOT_STARTED) {
+				userQuest.markInProgress();
+			}
+
 			userQuest.increaseProgress(step);
 		}
+	}
 
-		userQuestRepository.saveAll(userQuests);
+	private UserQuest createUserQuest(User user, QuestConditionType type, Quest quest) {
+		int baseProgress = userQuestRepository.findMaxProgressByUserAndQuestType(
+												  user.getId(), type)
+											  .orElse(0);
+		UserQuest newUserQuest = new UserQuest(user, quest);
+		newUserQuest.increaseProgress(baseProgress);
+		return userQuestRepository.save(newUserQuest);
 	}
 
 	@Override
@@ -69,16 +89,16 @@ public class UserQuestServiceImpl implements UserQuestService {
 
 	@Override
 	public PageResponse<UserQuestDto> getProgress(Long userId, ProgressStatus progressStatus, Pageable pageable) {
-		Page<UserQuest> userQuestPage;
+		Page<UserQuestDto> userQuestDtoPage;
 
-		if (progressStatus != null) {
-			userQuestPage = userQuestRepository.findByUser_IdAndProgressStatusAndQuest_DeletedFalse(
-				userId, progressStatus, pageable);
+		if (progressStatus == ProgressStatus.NOT_STARTED) {
+			Page<Quest> notStartedQuests = questRepository.findQuestsNotJoinedByUser(userId, pageable);
+			userQuestDtoPage = notStartedQuests.map(UserQuestDto::toDto);
 		} else {
-			userQuestPage = userQuestRepository.findByUser_IdAndQuest_DeletedFalse(userId, pageable);
+			Page<UserQuest> userQuests = userQuestRepository.findUserQuests(userId, progressStatus, pageable);
+			userQuestDtoPage = userQuests.map(UserQuestDto::toDto);
 		}
 
-		Page<UserQuestDto> userQuestDtoPage = userQuestPage.map(UserQuestDto::toDto);
 		return PageResponse.toDto(userQuestDtoPage);
 	}
 }

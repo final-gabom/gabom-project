@@ -17,8 +17,6 @@ import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.repository.TitleRepository;
-import com.explorer.gabom.domain.user.entity.User;
-import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
@@ -33,7 +31,6 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 
 	private final QuestRepository questRepository;
 	private final TitleRepository titleRepository;
-	private final UserRepository userRepository;
 	private final UserQuestRepository userQuestRepository;
 
 	@Override
@@ -53,11 +50,6 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 			rewardTitle
 		);
 		Quest saved = questRepository.save(quest);
-		List<User> users = userRepository.findAll();
-		List<UserQuest> userQuests = users.stream()
-										  .map(user -> new UserQuest(user, saved))
-										  .toList();
-		userQuestRepository.saveAll(userQuests);
 
 		return QuestCreateResponse.toDto(saved);
 	}

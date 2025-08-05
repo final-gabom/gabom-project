@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.quest.dto;
 
 import java.time.LocalDateTime;
 
+import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 
@@ -30,4 +31,17 @@ public class UserQuestDto {
 						   .completedAt(userQuest.getCompletedAt())
 						   .build();
 	}
+
+	public static UserQuestDto toDto(Quest quest) {
+		return UserQuestDto.builder()
+						   .userQuestId(null)
+						   .questTitle(quest.getTitle())
+						   .progressStatus(ProgressStatus.NOT_STARTED)
+						   .progressCount(0)
+						   .acquireCondition(quest.getAcquireCondition())
+						   .rewardClaimed(false)
+						   .completedAt(null)
+						   .build();
+	}
+
 }
