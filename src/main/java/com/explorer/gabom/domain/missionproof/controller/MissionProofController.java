@@ -1,5 +1,9 @@
 package com.explorer.gabom.domain.missionproof.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,8 +20,10 @@ import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequ
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummaryResponse;
 import com.explorer.gabom.domain.missionproof.service.MissionProofService;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
@@ -65,5 +71,16 @@ public class MissionProofController {
 	) {
 		MissionProofDetailResponse response = missionProofService.getMissionProofDetail(missionProofId);
 		return ResponseEntity.ok(ApiResponse.success("조회 성공", response));
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<PageResponse<MissionProofSummaryResponse>>> getMissionProofList(
+		@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
+		Page<MissionProofSummaryResponse> page = missionProofService.getMissionProofList(pageable);
+
+		PageResponse<MissionProofSummaryResponse> response = PageResponse.toDto(page);
+
+		return ResponseEntity.ok(ApiResponse.success("미션 인증글 목록 조회 성공", response));
 	}
 }

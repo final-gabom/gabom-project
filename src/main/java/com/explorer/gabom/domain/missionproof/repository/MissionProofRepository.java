@@ -8,5 +8,4 @@ import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 
 public interface MissionProofRepository extends JpaRepository<MissionProof, Long> {
 	Optional<MissionProof> findByIdAndDeletedAtIsNull(Long id);
-
 }

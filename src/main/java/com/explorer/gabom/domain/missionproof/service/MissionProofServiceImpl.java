@@ -1,13 +1,13 @@
 package com.explorer.gabom.domain.missionproof.service;
 
-
-
 import static com.explorer.gabom.global.exception.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +16,10 @@ import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
-
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummaryResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
@@ -155,5 +155,12 @@ public class MissionProofServiceImpl implements MissionProofService{
 														.collect(Collectors.toList());
 
 		return MissionProofDetailResponse.toDto(missionProof, profileImages);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<MissionProofSummaryResponse> getMissionProofList(Pageable pageable) {
+		Page<MissionProof> missionProofPage = missionProofRepository.findAll(pageable);
+		return missionProofPage.map(MissionProofSummaryResponse::toDto);
 	}
 }
