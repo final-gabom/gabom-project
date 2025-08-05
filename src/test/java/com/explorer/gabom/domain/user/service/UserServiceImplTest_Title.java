@@ -24,6 +24,14 @@ import static org.mockito.Mockito.when;
 
 class UserServiceImpl_TitleTest {
 
+    private static final Long USER_ID = 1L;
+    private static final String USER_EMAIL = "test@example.com";
+    private static final String USER_NICKNAME = "testUser";
+
+    private static final Long TITLE_ID = 1L;
+    private static final String TITLE_NAME = "야호";
+    private static final String TITLE_DESCRIPTION = "열정의 모험가";
+
     private UserServiceImpl userService;
 
     @Mock
@@ -48,44 +56,46 @@ class UserServiceImpl_TitleTest {
         MockitoAnnotations.openMocks(this);
         userService = new UserServiceImpl(userRepository, fileRepository, titleRepository, passwordValidator, passwordEncoder);
 
-        user = User.builder()
-                .email("test@example.com")
-                .nickname("testUser")
+        user = createActiveUser(USER_ID, USER_EMAIL, USER_NICKNAME);
+    }
+
+    private User createActiveUser(Long id, String email, String nickname) {
+        User u = User.builder()
+                .email(email)
+                .nickname(nickname)
                 .userRole(UserRole.USER)
                 .build();
 
-        ReflectionTestUtils.setField(user, "id", 1L);
-        ReflectionTestUtils.setField(user, "status", UserStatus.ACTIVE);  // 여기 있어야 안전함
+        ReflectionTestUtils.setField(u, "id", id);
+        ReflectionTestUtils.setField(u, "status", UserStatus.ACTIVE);
+
+        return u;
+    }
+
+    private Title createTitle(Long id, String name, String description) {
+        Title t = new Title(name, description);
+        ReflectionTestUtils.setField(t, "id", id);
+        return t;
     }
 
     @Test
     void updateMainTitle_성공() {
-        // 준비
-        Long titleId = 1L;
-        Title title = new Title("야호","열정의 모험가");
-        ReflectionTestUtils.setField(title, "id", titleId);
+        Title title = createTitle(TITLE_ID, TITLE_NAME, TITLE_DESCRIPTION);
 
-        ReflectionTestUtils.setField(user, "status", UserStatus.ACTIVE);
+        when(titleRepository.findById(TITLE_ID)).thenReturn(Optional.of(title));
 
-        when(titleRepository.findById(titleId)).thenReturn(Optional.of(title));
+        UpdateMainTitleResponse response = userService.updateMainTitle(user, TITLE_ID);
 
-        // 실행
-        UpdateMainTitleResponse response = userService.updateMainTitle(user, titleId);
-
-        // 검증
-        assertThat(response.getTitleId()).isEqualTo(titleId);
-        assertThat(response.getTitleName()).isEqualTo("야호");
+        assertThat(response.getTitleId()).isEqualTo(TITLE_ID);
+        assertThat(response.getTitleName()).isEqualTo(TITLE_NAME);
     }
-
 
     @Test
     @DisplayName("존재하지 않는 칭호 ID")
     void updateMainTitle_실패_존재하지않는칭호() {
-        // given
         Long invalidTitleId = 999L;
         when(titleRepository.findById(invalidTitleId)).thenReturn(Optional.empty());
 
-        // when & then
         CustomException exception = assertThrows(CustomException.class,
                 () -> userService.updateMainTitle(user, invalidTitleId));
 
@@ -95,17 +105,16 @@ class UserServiceImpl_TitleTest {
     @Test
     @DisplayName("비활성화된 유저는 칭호 변경 불가")
     void updateMainTitle_실패_비활성유저() {
-        // given
-        Long titleId = 1L;
-        Title title = new Title("야호", "열정의 모험가");
+        Title title = createTitle(TITLE_ID, TITLE_NAME, TITLE_DESCRIPTION);
         ReflectionTestUtils.setField(user, "status", UserStatus.INACTIVE);
-        when(titleRepository.findById(titleId)).thenReturn(Optional.of(title));
 
-        // when & then
+        when(titleRepository.findById(TITLE_ID)).thenReturn(Optional.of(title));
+
         CustomException exception = assertThrows(CustomException.class,
-                () -> userService.updateMainTitle(user, titleId));
+                () -> userService.updateMainTitle(user, TITLE_ID));
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
     }
 }
+
 

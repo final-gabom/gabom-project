@@ -1,6 +1,5 @@
 package com.explorer.gabom.domain.user.controller;
 
-import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -27,6 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class UserControllerTest {
 
+    private static final String OLD_NICKNAME_PREFIX = "oldNick";
+    private static final String EMAIL_DOMAIN = "@example.com";
+    private static final String NEW_NICKNAME = "newNick";
+    private static final String NEW_ADDRESS = "서울시 강남구";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -37,45 +41,51 @@ public class UserControllerTest {
     private ObjectMapper objectMapper;
 
     private User testUser;
+    private UsernamePasswordAuthenticationToken authToken;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-
-        String uniqueSuffix = String.valueOf(System.nanoTime());
-
-        testUser = User.builder()
-                .nickname("oldNick" + uniqueSuffix)
-                .email("test" + uniqueSuffix + "@example.com")
-                .password("{noop}password")
-                .userRole(UserRole.USER)
-                .build();
-
+        testUser = createTestUser();
         userRepository.save(testUser);
+
+        authToken = createAuthToken(testUser);
     }
 
     @Test
     void 프로필_수정_성공() throws Exception {
         UserUpdateRequest updateRequest = new UserUpdateRequest(
-                "newNick",
-                "서울시 강남구",
+                NEW_NICKNAME,
+                NEW_ADDRESS,
                 null,
                 null,
                 null
         );
 
-        CustomUserDetails principal = CustomUserDetails.fromUser(testUser);
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-
-        mockMvc.perform(patch("/api/users/me")  // 실제 컨트롤러 매핑 경로 맞추세요
-                        .with(authentication(authToken))  // 인증 정보 직접 주입
+        mockMvc.perform(patch("/api/users/me")
+                        .with(authentication(authToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("프로필 수정을 완료하였습니다."))
-                .andExpect(jsonPath("$.data.nickname").value("newNick"))
-                .andExpect(jsonPath("$.data.address").value("서울시 강남구"));
+                .andExpect(jsonPath("$.data.nickname").value(NEW_NICKNAME))
+                .andExpect(jsonPath("$.data.address").value(NEW_ADDRESS));
+    }
+
+    // === 유틸 메서드 ===
+    private User createTestUser() {
+        String uniqueSuffix = String.valueOf(System.nanoTime());
+        return User.builder()
+                .nickname(OLD_NICKNAME_PREFIX + uniqueSuffix)
+                .email("test" + uniqueSuffix + EMAIL_DOMAIN)
+                .password("{noop}password")
+                .userRole(UserRole.USER)
+                .build();
+    }
+
+    private UsernamePasswordAuthenticationToken createAuthToken(User user) {
+        CustomUserDetails principal = CustomUserDetails.fromUser(user);
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }

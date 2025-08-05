@@ -25,6 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class UserControllerTest_Title {
 
+    private static final Long TEST_USER_ID = 1L;
+    private static final Long NEW_TITLE_ID = 1L;
+    private static final String TEST_USER_EMAIL = "testuser@example.com";
+    private static final String TEST_USER_NICKNAME = "oldNick";
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,31 +37,17 @@ public class UserControllerTest_Title {
     private ObjectMapper objectMapper;
 
     private User testUser;
+    private UsernamePasswordAuthenticationToken authToken;
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder()
-                .id(1L)
-                .email("testuser@example.com")
-                .nickname("oldNick")
-                .userRole(UserRole.USER)
-                .build();
+        testUser = createTestUser();
+        authToken = createAuthToken(testUser);
     }
 
     @Test
     void updateTitle_Success() throws Exception {
-        // 변경할 칭호 ID
-        Long newTitleId = 1L;
-
-        // 요청 DTO 생성
-        UpdateMainTitleRequest request = new UpdateMainTitleRequest(newTitleId);
-
-        // UserDetails 생성
-        CustomUserDetails principal = CustomUserDetails.fromUser(testUser);
-
-        // 인증 토큰 생성
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        UpdateMainTitleRequest request = new UpdateMainTitleRequest(NEW_TITLE_ID);
 
         mockMvc.perform(patch("/api/users/me/titles")
                         .with(authentication(authToken))
@@ -66,6 +56,21 @@ public class UserControllerTest_Title {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("칭호를 변경하였습니다."))
-                .andExpect(jsonPath("$.data.titleId").value(newTitleId));
+                .andExpect(jsonPath("$.data.titleId").value(NEW_TITLE_ID));
+    }
+
+    // === 유틸 메서드 ===
+    private User createTestUser() {
+        return User.builder()
+                .id(TEST_USER_ID)
+                .email(TEST_USER_EMAIL)
+                .nickname(TEST_USER_NICKNAME)
+                .userRole(UserRole.USER)
+                .build();
+    }
+
+    private UsernamePasswordAuthenticationToken createAuthToken(User user) {
+        CustomUserDetails principal = CustomUserDetails.fromUser(user);
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }
