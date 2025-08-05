@@ -40,9 +40,7 @@ public class PlaceController implements PlaceControllerDocs {
 	@PostMapping
 	public ResponseEntity<ApiResponse<PlaceCreateResponse>> createPlace(@RequestBody @Valid PlaceCreateRequest request,
 																		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		Long userId = userDetails.getUserId();
-		PlaceCreateResponse response = placeService.createPlace(request, userId);
-
+		PlaceCreateResponse response = placeService.createPlace(request, userDetails.getUserId());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("장소 등록이 완료되었습니다.", response));
 	}
 

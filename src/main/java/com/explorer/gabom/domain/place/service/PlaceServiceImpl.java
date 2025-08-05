@@ -44,10 +44,10 @@ public class PlaceServiceImpl implements PlaceService {
 								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Place place = new Place(request, user);
-		place.approve(); // 기본 승인 처리
+		place.approve(); // 기본 승인 처리, 추후 로직에 따라 변경 필요
 
 		Place savedPlace = placeRepository.save(place);
-		return new PlaceCreateResponse(savedPlace.getId());
+		return PlaceCreateResponse.toDto(savedPlace);
 	}
 
 	// 탐험 장소 상세 조회
