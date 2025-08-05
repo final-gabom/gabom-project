@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "장소 상세 조회 응답 정보")
-public class PlaceDetailResponseDto {
+public class PlaceDetailResponse {
 
 	@Schema(description = "장소 ID", example = "1")
 	private Long id;

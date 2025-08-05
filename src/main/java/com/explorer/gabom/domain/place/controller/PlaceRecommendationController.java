@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequestDto;
+import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.service.PlaceRecommendationService;
 import com.explorer.gabom.domain.place.type.ExploreRadius;
@@ -29,11 +29,11 @@ public class PlaceRecommendationController implements PlaceRecommendationControl
 																				@RequestParam double lng,
 																				@RequestParam ExploreRadius radius) {
 
-		PlaceRecommendationRequestDto requestDto = PlaceRecommendationRequestDto.builder()
-																				.lat(lat)
-																				.lng(lng)
-																				.radius(radius)
-																				.build();
+		PlaceRecommendationRequest requestDto = PlaceRecommendationRequest.builder()
+																		  .lat(lat)
+																		  .lng(lng)
+																		  .radius(radius)
+																		  .build();
 
 		List<PlaceSummary> response = recommendationService.getRecommendedPlaces(requestDto);
 

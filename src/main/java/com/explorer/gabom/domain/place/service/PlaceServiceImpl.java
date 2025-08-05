@@ -14,7 +14,7 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponseDto;
+import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponse;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.PlaceStatus;
@@ -53,7 +53,7 @@ public class PlaceServiceImpl implements PlaceService {
 	// 탐험 장소 상세 조회
 	@Transactional
 	@Override
-	public PlaceDetailResponseDto getPlaceDetail(Long placeId) {
+	public PlaceDetailResponse getPlaceDetail(Long placeId) {
 		Place place = placeRepository.findByIdAndStatus(placeId, PlaceStatus.APPROVED)
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
@@ -77,21 +77,21 @@ public class PlaceServiceImpl implements PlaceService {
 											  .collect(Collectors.toList());
 
 		// TODO: toDto메소드 사용하여 mapping해주기
-		return PlaceDetailResponseDto.builder()
-									 .id(place.getId())
-									 .title(place.getTitle())
-									 .address(place.getAddress())
-									 .lat(place.getLat())
-									 .lng(place.getLng())
-									 .missionProofCount(0) // 추후 구현
-									 .avgScore(null)       // 추후 구현
-									 .content(place.getContent()) // 🔥 본문 내용 추가
-									 .viewCount(place.getViewCount())
-									 .createdAt(place.getCreatedAt())
-									 .updatedAt(place.getUpdatedAt())
-									 .writer(writer)
-									 .files(fileDtos) // 🔥 파일 DTO 포함
-									 .build();
+		return PlaceDetailResponse.builder()
+								  .id(place.getId())
+								  .title(place.getTitle())
+								  .address(place.getAddress())
+								  .lat(place.getLat())
+								  .lng(place.getLng())
+								  .missionProofCount(0) // 추후 구현
+								  .avgScore(null)       // 추후 구현
+								  .content(place.getContent()) // 🔥 본문 내용 추가
+								  .viewCount(place.getViewCount())
+								  .createdAt(place.getCreatedAt())
+								  .updatedAt(place.getUpdatedAt())
+								  .writer(writer)
+								  .files(fileDtos) // 🔥 파일 DTO 포함
+								  .build();
 	}
 
 	@Transactional

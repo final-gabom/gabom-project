@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Builder
 @Getter
 @Schema(description = "탐험 장소 추천 요청 정보")
-public class PlaceRecommendationRequestDto {
+public class PlaceRecommendationRequest {
 
 	@Schema(
 		description = "탐험 반경 (RANGE_0_3, RANGE_3_5, RANGE_5_PLUS 중 하나)",
