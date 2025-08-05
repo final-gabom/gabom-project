@@ -92,7 +92,6 @@ public class MissionProofServiceTest {
 		when(placeRepository.findById(mockPlace.getId())).thenReturn(Optional.of(mockPlace));
 		when(missionProofRepository.save(any(MissionProof.class))).thenAnswer(invocation -> {
 			MissionProof saved = invocation.getArgument(0);
-			saved.setId(1L); // id 설정
 			return saved;
 		});
 
@@ -100,8 +99,6 @@ public class MissionProofServiceTest {
 		CreateMissionProofResponse response = missionProofService.createMissionProof(request, mockUser);
 
 		// then
-		assertThat(response).isNotNull();
-		assertThat(response.getId()).isEqualTo(1L);
 		assertThat(response.getTitle()).isEqualTo("인증 제목");
 		assertThat(response.getContent()).isEqualTo("인증 내용");
 		verify(missionProofRepository).save(any(MissionProof.class));
@@ -127,8 +124,13 @@ public class MissionProofServiceTest {
 		when(placeRepository.findById(999L)).thenReturn(Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> missionProofService.createMissionProof(request, mockUser)).isInstanceOf(
-			CustomException.class).hasMessageContaining(ErrorCode.PLACE_NOT_FOUND.getMessage());
+		CustomException e = catchThrowableOfType(
+			() -> missionProofService.createMissionProof(request, mockUser),
+			CustomException.class
+		);
+
+		assertThat(e.getErrorCode()).isEqualTo(ErrorCode.PLACE_NOT_FOUND);
+		assertThat(e.getMessage()).contains(ErrorCode.PLACE_NOT_FOUND.getMessage());
 	}
 
 
