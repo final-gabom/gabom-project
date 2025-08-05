@@ -63,7 +63,7 @@ public class PasswordResetService {
 
 
         // redis에 저장된 비밀번호 재설정 인증 코드 조회
-        String savedCode = emailCodeStorageService.getPasswordResetCode(request);
+        String savedCode = emailCodeStorageService.getPasswordResetCode(email);
         if (savedCode == null) {
             log.warn("[비밀번호 재설정 실패] 인증 코드 만료 또는 없음: {}", email);
             throw new CustomException(ErrorCode.EXPIRED_CODE);
