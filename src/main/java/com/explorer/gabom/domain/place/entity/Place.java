@@ -114,12 +114,14 @@ public class Place extends BaseTimeEntity {
 					.orElse(null);
 	}
 
-	public void update(PlaceUpdateRequest request) {
+	public Place update(PlaceUpdateRequest request) {
 		this.title = request.getTitle();
 		this.address = request.getAddress();
 		this.lat = request.getLat();
 		this.lng = request.getLng();
 		this.proofMethod = request.getProofMethod();
 		this.content = request.getContent();
+
+		return this;
 	}
 }

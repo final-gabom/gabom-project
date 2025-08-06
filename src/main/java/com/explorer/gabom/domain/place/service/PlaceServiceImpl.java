@@ -30,7 +30,6 @@ public class PlaceServiceImpl implements PlaceService {
 
 	private final PlaceRepository placeRepository;
 	private final UserRepository userRepository;
-	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
 
 	@Override
@@ -77,7 +76,7 @@ public class PlaceServiceImpl implements PlaceService {
 			userId
 		);
 
-		place.update(request);
+		Place updatedPlace = place.update(request);
 		Place savedPlace = placeRepository.save(updatedPlace);
 
 		return PlaceDetail.toDto(savedPlace);
