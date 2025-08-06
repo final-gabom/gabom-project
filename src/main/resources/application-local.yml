@@ -16,6 +16,11 @@ spring:
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
 
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
   # 이메일 인증 시 필요
   mail:
     host: smtp.gmail.com
@@ -55,12 +60,6 @@ jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
   access-expiration: 3600000  # 1시간
   refresh-expiration: 1209600000  # 14일
-
-
-# redis 설정
-  redis:
-    host: localhost
-    port: 6379
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
