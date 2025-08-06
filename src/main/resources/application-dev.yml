@@ -1,5 +1,11 @@
 server:
   port: ${SERVER_PORT}
+  error:
+    include-stacktrace: always
+
+logging:
+  level:
+    com.explorer.gabom: debug
 
 spring:
   config:
