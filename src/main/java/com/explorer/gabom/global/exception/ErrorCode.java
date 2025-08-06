@@ -13,6 +13,7 @@ public enum ErrorCode {
 	METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다."),
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다."),
 	NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 경로를 찾을 수 없습니다."),
+	NOT_RESOURCE_OWNER(HttpStatus.FORBIDDEN, "해당 리소스 소유자가 아닙니다."),
 
 	//Title
 	TITLE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 칭호입니다."),
@@ -50,7 +51,6 @@ public enum ErrorCode {
 
 	// Place
 	PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장소를 찾을 수 없습니다."),
-	PLACE_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 장소에 대한 권한이 없습니다."),
 	NO_FIELDS_TO_UPDATE(HttpStatus.BAD_REQUEST, "수정할 값이 없습니다."),
 
 	// Exploration

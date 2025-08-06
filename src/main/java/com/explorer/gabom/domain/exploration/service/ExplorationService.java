@@ -19,6 +19,7 @@ import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.util.DistanceCalculator;
+import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class ExplorationService {
 	private final UserRepository userRepository;
 	private final PlaceRepository placeRepository;
 	private final ExplorationRepository explorationRepository;
+	private final AuthorValidator authorValidator;
 
 	// 탐험 시작
 	@Transactional
@@ -82,9 +84,11 @@ public class ExplorationService {
 														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
 
 		// 탐험 권한이 없는 경우
-		if (!exploration.getUser().getId().equals(userId)) {
-			throw new CustomException(ErrorCode.EXPLORATION_NO_PERMISSION);
-		}
+		authorValidator.validateOwner(
+			exploration.getUser().getId(),
+			userId
+		);
+
 		// 이미 종료된 탐험인 경우
 		if (exploration.getEndAt().isBefore(LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.EXPLORATION_ALREADY_ENDED);
