@@ -10,6 +10,8 @@ logging:
 spring:
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: ${PROFILE_ACTIVE}
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${RDS_URL}:${MYSQL_PORT}/${MYSQL_DBNAME}?serverTimezone=Asia/Seoul
