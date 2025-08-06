@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
+import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
 
@@ -111,5 +112,14 @@ public class Place extends BaseTimeEntity {
 					.findFirst()
 					.map(PlaceFile::getFile)
 					.orElse(null);
+	}
+
+	public void update(PlaceUpdateRequest request) {
+		this.title = request.getTitle();
+		this.address = request.getAddress();
+		this.lat = request.getLat();
+		this.lng = request.getLng();
+		this.proofMethod = request.getProofMethod();
+		this.content = request.getContent();
 	}
 }

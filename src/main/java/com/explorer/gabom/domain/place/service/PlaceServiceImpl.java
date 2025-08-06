@@ -26,6 +26,7 @@ import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +37,7 @@ public class PlaceServiceImpl implements PlaceService {
 	private final PlaceRepository placeRepository;
 	private final UserRepository userRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
+	private final AuthorValidator authorValidator;
 
 	@Override
 	@Transactional
@@ -103,10 +105,15 @@ public class PlaceServiceImpl implements PlaceService {
 	@Transactional
 	@Override
 	public void updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
-		Place updatedPlace = placeRepository.updatePlace(placeId, userId, request);
-		if (updatedPlace == null) {
-			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
-		}
+		Place place = placeRepository.findById(placeId)
+									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+
+		authorValidator.validateOwner(
+			place.getUser().getId(),
+			userId
+		);
+
+		place.update(request);
 	}
 
 	@Transactional
@@ -116,9 +123,10 @@ public class PlaceServiceImpl implements PlaceService {
 										 placeId, List.of(PlaceStatus.PENDING, PlaceStatus.APPROVED))
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
-		if (!place.getUser().getId().equals(userId)) {
-			throw new CustomException(ErrorCode.PLACE_NO_PERMISSION);
-		}
+		authorValidator.validateOwner(
+			place.getUser().getId(),
+			userId
+		);
 
 		place.markAsDeleted(); // Soft Delete 처리
 
