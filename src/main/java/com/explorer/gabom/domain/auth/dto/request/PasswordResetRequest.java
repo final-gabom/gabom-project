@@ -8,6 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Schema(description = "비밀번호 재설정 인증 코드 검증 요청 정보")
 public class PasswordResetRequest {
     @Email
     @NotBlank(message = "이메일을 입력해 주세요.")

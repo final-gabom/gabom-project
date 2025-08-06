@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Schema(description = "비밀번호 재설정 요청 정보")
 public class PasswordResetVerifyRequest {
     @Email
     @NotBlank(message = "이메일 입력은 필수 입니다.")
