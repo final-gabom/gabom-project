@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetailResponse;
+import com.explorer.gabom.domain.place.dto.response.PlaceDetail;
 import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -40,9 +40,7 @@ public class PlaceController implements PlaceControllerDocs {
 	@PostMapping
 	public ResponseEntity<ApiResponse<PlaceCreateResponse>> createPlace(@RequestBody @Valid PlaceCreateRequest request,
 																		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		Long userId = userDetails.getUserId();
-		PlaceCreateResponse response = placeService.createPlace(request, userId);
-
+		PlaceCreateResponse response = placeService.createPlace(request, userDetails.getUserId());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("장소 등록이 완료되었습니다.", response));
 	}
 
@@ -53,35 +51,34 @@ public class PlaceController implements PlaceControllerDocs {
 		@RequestParam Double lng,
 		@RequestParam(required = false) String keyword,
 		@PageableDefault(page = 0, size = 10, sort = "distance", direction = Sort.Direction.ASC) Pageable pageable) {
-		PageResponse<PlaceSummary> result = placeService.getPlaceList(keyword, lat, lng, pageable);
-		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", result));
+		PageResponse<PlaceSummary> response = placeService.getPlaceList(keyword, lat, lng, pageable);
+		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", response));
 	}
 
 	// 탐험 장소 상세 조회
 	@GetMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<PlaceDetailResponse>> getPlaceDetail(
+	public ResponseEntity<ApiResponse<PlaceDetail>> getPlaceDetail(
 		@PathVariable Long placeId
 	) {
-		PlaceDetailResponse response = placeService.getPlaceDetail(placeId);
+		PlaceDetail response = placeService.getPlaceDetail(placeId);
 		return ResponseEntity.ok(ApiResponse.success("탐험 장소 상세 조회 성공", response));
 	}
 
 	// 탐험 장소 수정
 	@PatchMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Void>> updatePlace(@PathVariable Long placeId,
-														 @RequestBody PlaceUpdateRequest request,
-														 @AuthenticationPrincipal CustomUserDetails userDetails) {
-		Long userId = userDetails.getUserId();
-		placeService.updatePlace(placeId, userId, request);
-		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다."));
+	public ResponseEntity<ApiResponse<PlaceDetail>> updatePlace(@PathVariable Long placeId,
+																@RequestBody PlaceUpdateRequest request,
+																@AuthenticationPrincipal CustomUserDetails userDetails) {
+		PlaceDetail response = placeService.updatePlace(placeId, userDetails.getUserId(), request);
+		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다.", response));
 	}
 
 	// 탐험 장소 삭제
 	@DeleteMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Void>> deletePlace(@PathVariable Long placeId,
+	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable Long placeId,
 														 @AuthenticationPrincipal CustomUserDetails userDetails) {
 		Long userId = userDetails.getUserId();
-		placeService.deletePlace(placeId, userId);
-		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다."));
+		Long deletePlaceId = placeService.deletePlace(placeId, userId);
+		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다.", deletePlaceId));
 	}
 }

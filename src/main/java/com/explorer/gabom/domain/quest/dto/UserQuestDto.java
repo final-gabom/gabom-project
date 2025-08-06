@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.quest.dto;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
@@ -21,18 +22,26 @@ public class UserQuestDto {
 	private LocalDateTime completedAt;
 
 	public static UserQuestDto toDto(UserQuest userQuest) {
+		if (userQuest == null) {
+			return null;
+		}
+		Quest quest = userQuest.getQuest();
+
 		return UserQuestDto.builder()
 						   .userQuestId(userQuest.getId())
-						   .questTitle(userQuest.getQuest().getTitle())
-						   .progressStatus(userQuest.getProgressStatus())
+						   .questTitle(quest != null ? quest.getTitle() : null)
+						   .progressStatus(Optional.ofNullable(userQuest.getProgressStatus()).orElse(ProgressStatus.NOT_STARTED))
 						   .progressCount(userQuest.getProgressCount())
-						   .acquireCondition(userQuest.getQuest().getAcquireCondition())
+						   .acquireCondition(quest != null ? quest.getAcquireCondition() : 0)
 						   .rewardClaimed(userQuest.isRewardClaimed())
 						   .completedAt(userQuest.getCompletedAt())
 						   .build();
 	}
 
 	public static UserQuestDto toDto(Quest quest) {
+		if (quest == null) {
+			return null;
+		}
 		return UserQuestDto.builder()
 						   .userQuestId(null)
 						   .questTitle(quest.getTitle())
