@@ -1,7 +1,5 @@
 package com.explorer.gabom.domain.quest.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
@@ -12,7 +10,6 @@ import com.explorer.gabom.domain.quest.dto.response.QuestCreateResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestDeleteResponse;
 import com.explorer.gabom.domain.quest.dto.response.QuestUpdateResponse;
 import com.explorer.gabom.domain.quest.entity.Quest;
-import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.title.entity.Title;
@@ -71,20 +68,14 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 			dto.getAcquireCondition() != quest.getAcquireCondition();
 
 		quest.update(dto, rewardTitle);
+		questRepository.save(quest);
+		QuestUpdateResponse response = QuestUpdateResponse.toDto(quest);
 
 		if (acquireConditionChanged) {
-			List<UserQuest> userQuests = userQuestRepository.findAllByQuestAndQuest_DeletedFalse(quest);
-			for (UserQuest userQuest : userQuests) {
-				if (userQuest.getProgressCount() >= quest.getAcquireCondition()) {
-					userQuest.markCompleted();
-				} else {
-					userQuest.markInProgress();
-				}
-			}
-			userQuestRepository.saveAll(userQuests);
+			userQuestRepository.bulkUpdateUserQuestStatusByQuest(quest);
 		}
 
-		return QuestUpdateResponse.toDto(quest);
+		return response;
 	}
 
 	@Override
@@ -96,14 +87,11 @@ public class AdminQuestServiceImpl implements AdminQuestService {
 
 		quest.markAsDeleted();
 		questRepository.save(quest);
+		QuestDeleteResponse response = QuestDeleteResponse.toDto(quest);
 
-		List<UserQuest> userQuests = userQuestRepository.findAllByQuest(quest);
-		for (UserQuest userQuest : userQuests) {
-			userQuest.markAsDeleted();
-		}
-		userQuestRepository.saveAll(userQuests);
+		userQuestRepository.bulkDeleteByQuest(quest);
 
-		return QuestDeleteResponse.toDto(quest);
+		return response;
 	}
 
 }
