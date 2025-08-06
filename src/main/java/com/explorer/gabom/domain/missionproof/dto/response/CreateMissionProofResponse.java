@@ -21,7 +21,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreateMissionProofResponse {
 
+	@Schema(description = "장소 ID")
 	private Long id;
+	@Schema(description = "필드 타입")
 	private MissionProofType fieldType;
 
 	@Schema(description = "작성자 정보")
