@@ -164,11 +164,6 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Override
 	public OffsetResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
 
-		if (condition.getFieldType() == MissionProofType.PLACE)
-			if (!placeRepository.existsById(condition.getTypeId())) {
-				throw new CustomException(ErrorCode.PLACE_NOT_FOUND);
-			}
-
 		// 검색 조건에 해당하는 미션 인증 요약 리스트 조회
 		List<MissionProofSummary> results = missionProofQueryRepository.searchByCondition(condition);
 
