@@ -29,6 +29,7 @@ import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 	private final MissionProofRepository missionProofRepository;
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
+	private final AuthorValidator authorValidator;
 
 
 	// 생성
@@ -88,9 +90,10 @@ public class MissionProofServiceImpl implements MissionProofService{
 													  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
 
 		// 2. 작성자 검증
-		if (!existing.getUser().getId().equals(userId)) {
-			throw new CustomException(FORBIDDEN_UPDATE_MISSION_PROOF);
-		}
+		authorValidator.validateOwner(
+			existing.getUser().getId(),
+			userId
+		);
 
 		// 3. 이미지 파일 연관 조회
 		List<AttachmentFile> imageFiles = attachmentFileRepository
@@ -135,9 +138,10 @@ public class MissionProofServiceImpl implements MissionProofService{
 	public void deleteMissionProof(Long id, Long userId) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
 														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
-		if (!missionProof.getUser().getId().equals(userId)) {
-			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
-		}
+		authorValidator.validateOwner(
+			missionProof.getUser().getId(),
+			userId
+		);
 
 		missionProof.delete();
 	}

@@ -8,10 +8,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
+@Schema(description = "로그인 요청 정보")
 public class LoginRequest {
     @Email
     @NotBlank(message = "이메일 입력은 필수입니다.")
-    @Schema(description = "로그인시 사용할 이메일")
+    @Schema(description = "로그인 시 사용할 이메일")
     private final String email;
     @NotBlank(message = "비밀번호 입력은 필수입니다.")
     @Schema(description = "로그인 시 사용할 비밀번호")

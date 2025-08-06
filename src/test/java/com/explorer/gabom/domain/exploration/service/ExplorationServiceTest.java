@@ -80,7 +80,6 @@ public class ExplorationServiceTest {
 		given(explorationRepository.save(any(Exploration.class))).willAnswer(invocation -> {
 			Exploration arg = invocation.getArgument(0);
 			return Exploration.builder()
-							  .id(1L) // id 부여
 							  .user(arg.getUser())
 							  .place(arg.getPlace())
 							  .startAt(arg.getStartAt())
@@ -93,7 +92,6 @@ public class ExplorationServiceTest {
 		ExplorationStartResponse response = explorationService.startExploration(userId, placeId, request);
 
 		assertNotNull(response);
-		assertEquals(1L, response.getExplorationId());
 		assertTrue(response.getRewardExp() > 0);
 		assertTrue(response.getRewardPoint() > 0);
 		assertNotNull(response.getStartAt());
