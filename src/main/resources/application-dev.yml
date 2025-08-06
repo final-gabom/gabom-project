@@ -1,9 +1,17 @@
 server:
   port: ${SERVER_PORT}
+  error:
+    include-stacktrace: always
+
+logging:
+  level:
+    com.explorer.gabom: debug
 
 spring:
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: ${PROFILE_ACTIVE}
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${RDS_URL}:${DEV_MYSQL_PORT}/${DEV_MYSQL_DBNAME}?serverTimezone=Asia/Seoul
@@ -46,17 +54,17 @@ spring:
         key:
           prefix: test/
 
+  # redis 설정
+  data:
+    redis:
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+
 # jwt 설정
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-expiration: 3600000  # 1시간
   refresh-expiration: 1209600000  # 14일
-
-
-# redis 설정
-  redis:
-    host: ${REDIS_HOST}
-    port: ${REDIS_PORT}
 
 # Swagger 설정
 springdoc:
