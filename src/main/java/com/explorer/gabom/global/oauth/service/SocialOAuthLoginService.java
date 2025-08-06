@@ -1,7 +1,9 @@
 package com.explorer.gabom.global.oauth.service;
 
 import com.explorer.gabom.global.oauth.dto.SocialLoginResponse;
+import com.explorer.gabom.global.oauth.type.OAuthProvider;
 
-public interface  OAuthLoginService {
+public interface SocialOAuthLoginService {
+
     SocialLoginResponse login(String accessToken);
 }
