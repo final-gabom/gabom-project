@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/activity-logs")
-public class UserActivityLogController {
+public class UserActivityLogController implements UserActivityLogControllerDocs{
 	private final UserActivityLogService userActivityLogService;
 
 	@GetMapping("/me")
