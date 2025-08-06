@@ -45,7 +45,7 @@ spring:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
       region:
-        static: us-east-2
+        static: ap-southeast-2
       s3:
         bucket: ${AWS_BUCKET_NAME}
         key:
