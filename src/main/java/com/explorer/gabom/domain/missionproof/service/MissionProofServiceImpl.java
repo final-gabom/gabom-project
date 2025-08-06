@@ -6,21 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
-import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummaryResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
+import com.explorer.gabom.domain.missionproof.dto.response.OffsetResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
+import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -34,13 +34,12 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
-public class MissionProofServiceImpl implements MissionProofService{
+public class MissionProofServiceImpl implements MissionProofService {
 
 	private final MissionProofRepository missionProofRepository;
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
-
+	private final MissionProofQueryRepository missionProofQueryRepository;
 
 	// 생성
 	@Override
@@ -77,7 +76,6 @@ public class MissionProofServiceImpl implements MissionProofService{
 
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}
-
 
 	// 미션 인증글 수정
 	@Override
@@ -131,10 +129,29 @@ public class MissionProofServiceImpl implements MissionProofService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public MissionProofDetailResponse getMissionProofDetail(Long missionProofId) {
+		// 인증글 조회
+		MissionProof missionProof = missionProofRepository.findById(missionProofId)
+														  .orElseThrow(
+															  () -> new CustomException(NOT_FOUND_MISSION_PROOF));
+
+		// 이미지 파일 DTO 변환
+		List<FileResponseDto> profileImages = missionProof.getImageFiles()
+														  .stream()
+														  .map(FileResponseDto::toDto) // static factory method 필요
+														  .collect(Collectors.toList());
+
+		// 응답 DTO로 변환
+		return MissionProofDetailResponse.toDto(missionProof, profileImages);
+	}
+
+	@Override
 	@Transactional
 	public void deleteMissionProof(Long id, Long userId) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
+														  .orElseThrow(
+															  () -> new CustomException(NOT_FOUND_MISSION_PROOF));
 		if (!missionProof.getUser().getId().equals(userId)) {
 			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
 		}
@@ -142,25 +159,50 @@ public class MissionProofServiceImpl implements MissionProofService{
 		missionProof.delete();
 	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public MissionProofDetailResponse getMissionProofDetail(Long id) {
-		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MISSION_PROOF));
-
-		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id, FileType.MISSION_PROOF);
-
-		List<FileResponseDto> profileImages = imageFiles.stream()
-														.map(FileResponseDto::toDto)
-														.collect(Collectors.toList());
-
-		return MissionProofDetailResponse.toDto(missionProof, profileImages);
-	}
-
+	// 읽기 전용 트랜잭션으로 설정하여 성능 최적화 (쓰기 연산 없음)
 	@Transactional(readOnly = true)
 	@Override
-	public Page<MissionProofSummaryResponse> getMissionProofList(Pageable pageable) {
-		Page<MissionProof> missionProofPage = missionProofRepository.findAll(pageable);
-		return missionProofPage.map(MissionProofSummaryResponse::toDto);
+	public OffsetResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
+
+		if (condition.getFieldType() == MissionProofType.PLACE)
+			if (!placeRepository.existsById(condition.getTypeId())) {
+				throw new CustomException(ErrorCode.PLACE_NOT_FOUND);
+			}
+
+		// 검색 조건에 해당하는 미션 인증 요약 리스트 조회
+		List<MissionProofSummary> results = missionProofQueryRepository.searchByCondition(condition);
+
+		// 총 데이터 개수 조회 (페이징용 메타데이터)
+		long totalElements = missionProofQueryRepository.countByCondition(condition);
+
+		// 결과 리스트를 한 번 더 가공하여 새로운 MissionProofSummary 객체로 매핑
+		// (필요 시 내부 객체나 필드에 대해 null 처리 등 후처리를 할 수 있음)
+		List<MissionProofSummary> summaries = results.stream()
+													 .map(mp -> new MissionProofSummary(
+														 mp.getId(),                   // 인증 ID
+														 mp.getFieldType(),           // 필드 타입
+														 new UserSummaryDto(          // 작성자 정보 재구성
+																					  mp.getWriter().getId(),
+																					  mp.getWriter().getNickname(),
+																					  mp.getWriter().getLevel(),
+
+																					  // title이 null인 경우 작성자의 title도 null로 처리
+																					  mp.getTitle() != null
+																					  ? mp.getWriter().getTitle()
+																					  : null
+														 ),
+														 mp.getTitle(),               // 인증 제목
+														 mp.getCreatedAt(),           // 생성일
+														 mp.getUpdatedAt(),           // 수정일
+														 mp.getProfileImages()        // 이미지 목록
+													 ))
+													 .collect(Collectors.toList()); // 최종 리스트 생성
+
+		// 커서 페이징용 lastId 추출 (가장 마지막 ID, 다음 페이지 조회에 사용)
+		Long lastId = !results.isEmpty() ? results.get(results.size() - 1).getId() : null;
+
+		// OffsetResponse 객체로 응답 (데이터, 개수, 마지막 ID, 전체 개수 포함)
+		return new OffsetResponse<>(summaries, summaries.size(), lastId, totalElements);
 	}
+
 }

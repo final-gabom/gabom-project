@@ -16,7 +16,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreateMissionProofRequest {
 	@NotNull(message = "필드 타입은 필수입니다.")
-	private MissionProofType fieldType; // PLACE 또는 EVENT
+	private MissionProofType fieldType;
 
 	@NotNull(message = "타겟 ID는 필수입니다.")
 	private Long targetId;

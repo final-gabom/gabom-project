@@ -1,9 +1,5 @@
 package com.explorer.gabom.domain.missionproof.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,16 +10,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummaryResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
+import com.explorer.gabom.domain.missionproof.dto.response.OffsetResponse;
 import com.explorer.gabom.domain.missionproof.service.MissionProofService;
+import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.global.dto.ApiResponse;
-import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
@@ -52,7 +51,8 @@ public class MissionProofController {
 		@RequestBody UpdateMissionProofRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		CreateMissionProofResponse response = missionProofService.updateMissionProof(id, request, userDetails.getUserId());
+		CreateMissionProofResponse response = missionProofService.updateMissionProof(id, request,
+																					 userDetails.getUserId());
 		return ResponseEntity.ok(ApiResponse.success("수정 성공", response));
 	}
 
@@ -74,13 +74,15 @@ public class MissionProofController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<PageResponse<MissionProofSummaryResponse>>> getMissionProofList(
-		@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-
-		Page<MissionProofSummaryResponse> page = missionProofService.getMissionProofList(pageable);
-
-		PageResponse<MissionProofSummaryResponse> response = PageResponse.toDto(page);
-
-		return ResponseEntity.ok(ApiResponse.success("미션 인증글 목록 조회 성공", response));
+	public ResponseEntity<ApiResponse<OffsetResponse<MissionProofSummary>>> getMissionProofList(
+		@RequestParam(value = "type", required = false) MissionProofType type,
+		@RequestParam(value = "id", required = false) Long targetId,
+		@RequestParam(value = "userId", required = false) Long userId,
+		@RequestParam(value = "lastId", required = false) Long lastId,
+		@RequestParam(value = "size", defaultValue = "10") int size
+	) {
+		MissionProofSearchCondition condition = new MissionProofSearchCondition(type, targetId, userId, lastId, size);
+		OffsetResponse<MissionProofSummary> response = missionProofService.getMissionProofs(condition);
+		return ResponseEntity.ok(ApiResponse.success("조회 성공", response));
 	}
 }
