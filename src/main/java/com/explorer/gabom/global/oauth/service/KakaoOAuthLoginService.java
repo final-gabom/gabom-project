@@ -1,9 +1,15 @@
 package com.explorer.gabom.global.oauth.service;
 
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.domain.user.service.UserService;
+import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
 import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +18,16 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import static com.explorer.gabom.global.exception.ErrorCode.USER_NOT_FOUND;
+
 @Slf4j
 @Service("KAKAO")
 @RequiredArgsConstructor
 public class KakaoOAuthLoginService implements SocialOAuthLoginService {
 
     private final RestTemplate restTemplate;
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
     public SocialLoginResponse login(String accessToken) {
@@ -42,17 +52,30 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
             Long providerId = root.path("id").asLong();
             String email = root.path("kakao_account").path("email").asText();
 
-            // ❗ accessToken과 refreshToken은 지금 단계에서는 그대로 반환 (refreshToken은 Kakao 에선 안옴)
+            User user = userRepository.findByEmailAndStatus(email,UserStatus.ACTIVE)
+                    .orElseGet(() -> userRepository.save(
+                            User.builder()
+                                    .email(email)
+                                    .nickname("kakao_" + providerId) // 기본 닉네임 임의 지정
+                                    .password("")  // 소셜 로그인은 비밀번호 필요 없거나 빈 문자열 처리
+                                    .userRole(UserRole.USER)
+                                    .build()
+                    ));
+
+            String issuedAccessToken = jwtProvider.createAccessToken(user.getId(),user.getUserRole());
+            String issuedRefreshToken = jwtProvider.createRefreshToken(user.getId(),user.getUserRole());
+
             return SocialLoginResponse.builder()
                     .providerId(String.valueOf(providerId))
                     .email(email)
-                    .accessToken(accessToken)
-                    .refreshToken(null) // 이 부분은 JWT 발급 시 교체 예정
+                    .accessToken(issuedAccessToken)
+                    .refreshToken(issuedRefreshToken)
                     .build();
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
+
     }
     @Override
     public OAuthProvider getProvider() {
