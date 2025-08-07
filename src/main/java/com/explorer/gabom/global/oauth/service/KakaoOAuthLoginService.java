@@ -2,7 +2,8 @@ package com.explorer.gabom.global.oauth.service;
 
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.oauth.dto.SocialLoginResponse;
+import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
+import com.explorer.gabom.global.oauth.type.OAuthProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,9 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
         } catch (Exception e) {
             throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
+    }
+    @Override
+    public OAuthProvider getProvider() {
+        return OAuthProvider.KAKAO;
     }
 }
