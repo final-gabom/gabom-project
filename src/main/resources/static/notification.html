@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Notification Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>📬 WebSocket 실시간 알림 테스트</h2>
+
+<div>
+    <label>User ID: </label>
+    <input type="number" id="userId" value="1" />
+    <br/><br/>
+    <label>JWT Token: </label>
+    <input type="text" id="jwtToken" placeholder="Bearer 없이 토큰만 입력" style="width: 400px;" />
+    <br/><br/>
+    <button onclick="connect()">🔌 Connect</button>
+</div>
+
+<hr/>
+
+<div id="messages" style="margin-top:20px; padding:10px; border:1px solid #ccc;">
+    <h3>📨 받은 알림:</h3>
+</div>
+
+<script>
+    let stompClient = null;
+    let isConnected = false;
+
+    function connect() {
+        const userId = document.getElementById("userId").value;
+        const token = document.getElementById("jwtToken").value;
+
+        if (!userId || !token) {
+            alert("⚠️ userId 또는 token이 비어있습니다.");
+            return;
+        }
+
+        // ✅ 중복 연결 방지
+        if (stompClient && stompClient.connected) {
+            console.log("⚠️ 이미 연결되어 있습니다. 중복 연결 방지됨.");
+            return;
+        }
+
+        const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect(
+            { userId: userId },
+            function (frame) {
+                console.log('✅ WebSocket 연결 성공:', frame);
+
+                // ✅ 중복 subscribe 방지
+                if (!isConnected) {
+                    stompClient.subscribe('/user/queue/notifications', function (message) {
+                        const msg = JSON.parse(message.body);
+                        console.log("📥 알림 수신:", msg);
+
+                        document.getElementById("messages").innerHTML +=
+                            `<p>
+                  🕒 <b>${msg.createdAt}</b><br/>
+                  💬 <b>${msg.message}</b><br/>
+                  🔗 <a href="${msg.link}" target="_blank">${msg.link}</a>
+                </p><hr/>`;
+                    });
+                    isConnected = true;
+                }
+            },
+            function (error) {
+                console.error("❌ WebSocket 연결 실패:", error);
+                alert("연결 실패. 콘솔 로그를 확인하세요.");
+            }
+        );
+    }
+</script>
+</body>
+</html>

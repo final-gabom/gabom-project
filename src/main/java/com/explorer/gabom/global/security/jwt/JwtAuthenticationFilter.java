@@ -103,7 +103,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 3. 정상적인 Bearer 토큰이면 파싱
 		return bearerToken.substring(7);
+
 	}
+
 
 	private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
 		response.setStatus(errorCode.getHttpStatus().value());
