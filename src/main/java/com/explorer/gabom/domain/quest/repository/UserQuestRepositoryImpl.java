@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.quest.repository;
 
 import static com.explorer.gabom.domain.quest.util.QuestOrderSpecifierUtil.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import com.explorer.gabom.domain.quest.entity.QUserQuest;
+import com.explorer.gabom.domain.quest.entity.Quest;
 import com.explorer.gabom.domain.quest.entity.UserQuest;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
@@ -18,6 +20,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class UserQuestRepositoryImpl implements UserQuestRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
+	private final EntityManager em;
 
 	QUserQuest uq = QUserQuest.userQuest;
 
@@ -67,6 +71,46 @@ public class UserQuestRepositoryImpl implements UserQuestRepositoryCustom {
 												  .fetch()
 												  .size()
 		);
+	}
+
+	@Override
+	public void bulkUpdateUserQuestStatusByQuest(Quest quest) {
+		LocalDateTime now = LocalDateTime.now();
+
+		queryFactory.update(uq)
+					.set(uq.progressStatus, ProgressStatus.COMPLETED)
+					.set(uq.completedAt, now)
+					.where(
+						uq.quest.eq(quest),
+						uq.deleted.isFalse(),
+						uq.progressCount.goe(quest.getAcquireCondition())
+					)
+					.execute();
+
+		queryFactory.update(uq)
+					.set(uq.progressStatus, ProgressStatus.IN_PROGRESS)
+					.set(uq.completedAt, (LocalDateTime)null)
+					.where(
+						uq.quest.eq(quest),
+						uq.deleted.isFalse(),
+						uq.progressCount.lt(quest.getAcquireCondition())
+					)
+					.execute();
+
+		em.clear();
+	}
+
+	@Override
+	public void bulkDeleteByQuest(Quest quest) {
+		LocalDateTime now = LocalDateTime.now();
+
+		queryFactory.update(uq)
+					.set(uq.deleted, true)
+					.set(uq.deletedAt, now)
+					.where(uq.quest.eq(quest))
+					.execute();
+
+		em.clear();
 	}
 
 	private BooleanExpression statusEq(ProgressStatus status) {

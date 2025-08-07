@@ -13,8 +13,13 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
+    username: ${LOCAL_MYSQL_USERNAME}
+    password: ${LOCAL_MYSQL_PASSWORD}
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
 
   # 이메일 인증 시 필요
   mail:
@@ -45,7 +50,7 @@ spring:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
       region:
-        static: us-east-2
+        static: ap-northeast-2
       s3:
         bucket: ${AWS_BUCKET_NAME}
         key:
@@ -55,6 +60,7 @@ jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
   access-expiration: 3600000  # 1시간
   refresh-expiration: 1209600000  # 14일
+
 
 
 # redis 설정
@@ -74,6 +80,7 @@ jwt:
             scope:
               - profile
               - account_email
+
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
