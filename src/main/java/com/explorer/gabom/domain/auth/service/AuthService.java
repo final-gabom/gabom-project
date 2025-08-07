@@ -11,6 +11,8 @@ import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
+import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.explorer.gabom.global.validator.PasswordValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class AuthService {
     private final PasswordValidator passwordValidator;
     private final JwtProvider jwtProvider;
     private final EmailCodeStorageService emailCodeStorageService;
+    private final RedisTokenService redisTokenService;
 
     @Transactional
     public UserSummaryDto signup(SignupRequest request) {
@@ -111,4 +114,38 @@ public class AuthService {
         return new CheckNicknameResponse(true);
     }
 
+    public TokenResponse reissue(String refreshToken) {
+        // 1. Refresh Token 유효성 검사
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 2. userId 추출
+        Long userId = Long.parseLong(jwtProvider.getUserIdFromToken(refreshToken));
+
+        // 3. Redis 저장된 refresh token 확인
+        String storedToken = redisTokenService.getRefreshToken(userId);
+        if (storedToken == null) {
+            throw new CustomException(ErrorCode.EMPTY_TOKEN);
+        }
+        if (!storedToken.equals(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 4. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 5. 새 토큰 생성
+        String newAccessToken = jwtProvider.createAccessToken(userId, user.getUserRole());
+        String newRefreshToken = jwtProvider.createRefreshToken(userId, user.getUserRole());
+
+        // 6. Redis 갱신
+        redisTokenService.saveRefreshToken(userId, newRefreshToken, jwtProvider.getRefreshTokenExpiration());
+
+        return TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+    }
 }
