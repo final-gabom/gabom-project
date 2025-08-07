@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.address.dto.AddressDto;
-import com.explorer.gabom.domain.address.dto.request.CreateAddressRequest;
+import com.explorer.gabom.domain.address.dto.request.AddressRequest;
 import com.explorer.gabom.domain.address.service.AddressService;
+import com.explorer.gabom.domain.address.type.AddressType;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.title.entity.Title;
@@ -48,8 +49,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDto getUser(Long userId) {
 		log.info("유저 상세 정보 조회 시작");
-		User byIdAndStatus = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-										   .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+		User byIdAndStatus = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE).orElseThrow(
+			() -> new CustomException(USER_NOT_FOUND));
 		return UserDto.toDto(byIdAndStatus);
 	}
 
@@ -58,10 +59,6 @@ public class UserServiceImpl implements UserService {
 	public UserDto updateUser(User user, UserUpdateRequest updateRequest) {
 		String nickname = updateRequest.getNickname();
 		String profileImgId = updateRequest.getProfileImgId();
-		String addressCd = updateRequest.getAddressCode();
-		String addressDetail = updateRequest.getAddressDetail();
-		Double lat = updateRequest.getLat();
-		Double lng = updateRequest.getLng();
 
 		// 닉네임 변경 시 중복 검사
 		if (nickname != null && !nickname.equals(user.getNickname())) {
@@ -71,29 +68,14 @@ public class UserServiceImpl implements UserService {
 			user.updateNickname(nickname);
 		}
 
-		AddressDto savedAddress = null;
-		if (addressCd != null) {
-			// 주소 코드가 들어왔을 경우 나머지 필드는 필수
-			CreateAddressRequest createAddressRequest = CreateAddressRequest.builder()
-																			.addressCd(addressCd)
-																			.addressDetail(addressDetail)
-																			.lat(lat)
-																			.lng(lng)
-																			.build();
-
-			savedAddress = addressService.createAddress(createAddressRequest);
-
-			user.updateAddressId(savedAddress.getId());
-		}
-
 		// 프로필 이미지 변경
 		if (profileImgId != null) {
-			AttachmentFile imgFile = fileRepository.findById(profileImgId)
-												   .orElseThrow(() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
+			AttachmentFile imgFile = fileRepository.findById(profileImgId).orElseThrow(
+				() -> new CustomException(ErrorCode.FILE_NOT_FOUND));
 			user.updateProfileImg(imgFile);
 		}
 
-		return savedAddress == null ? UserDto.toDto(user) : UserDto.toDto(user, savedAddress);
+		return UserDto.toDto(user);
 	}
 
 	@Transactional
@@ -107,8 +89,8 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public UpdateMainTitleResponse updateMainTitle(User user, Long titleId) {
-		Title title = titleRepository.findById(titleId)
-									 .orElseThrow(() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
+		Title title = titleRepository.findById(titleId).orElseThrow(
+			() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));
 		if (user.getStatus() != UserStatus.ACTIVE) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
@@ -129,4 +111,14 @@ public class UserServiceImpl implements UserService {
 		user.updatePassword(encodedNewPassword);
 	}
 
+	@Transactional
+	@Override
+	public AddressDto updateUserAddress(User user, AddressRequest request) {
+		request.setAddressTypeCd(AddressType.USER);
+		request.setTargetId(user.getId());
+
+		AddressDto response = addressService.createOrReplace(request);
+
+		return response;
+	}
 }

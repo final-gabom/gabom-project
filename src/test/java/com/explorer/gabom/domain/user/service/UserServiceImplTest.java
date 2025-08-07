@@ -15,8 +15,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.explorer.gabom.domain.address.dto.AddressDto;
-import com.explorer.gabom.domain.address.dto.request.CreateAddressRequest;
 import com.explorer.gabom.domain.address.service.AddressService;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
@@ -37,14 +35,8 @@ class UserServiceImplTest {
 	private static final Long USER_ID = 1L;
 	private static final String EMAIL = "test@example.com";
 	private static final String OLD_NICKNAME = "testUser";
-
 	private static final String NEW_NICKNAME = "newNick";
-	private static final String NEW_ADDRESS_CD = "1111010100";
-	private static final String NEW_ADDRESS_DETAIL = "서울시 강남구 역삼동 와르르멘션 204호";
-	private static final Double NEW_LAT = 37.5;
-	private static final Double NEW_LNG = 127.0;
 	private static final String PROFILE_IMG_ID = "file-123";
-	private static final Long SAVED_ADDRESS_ID = 99L;
 
 	@Mock
 	private UserRepository userRepository;
@@ -86,9 +78,8 @@ class UserServiceImplTest {
 				   .build();
 	}
 
-	private UserUpdateRequest createUpdateRequest(String nickname, String addressCd, String addressDetail, Double lat,
-												  Double lng, String profileImgId) {
-		return new UserUpdateRequest(nickname, addressCd, addressDetail, lat, lng, profileImgId);
+	private UserUpdateRequest createUpdateRequest(String nickname, String profileImgId) {
+		return new UserUpdateRequest(nickname, profileImgId);
 	}
 
 	private AttachmentFile createAttachmentFile(String fileId) {
@@ -137,41 +128,21 @@ class UserServiceImplTest {
 	@DisplayName("updateUser")
 	class Describe_updateUser {
 		@Test
-		@DisplayName("성공: 닉네임·주소·프로필 이미지 모두 업데이트")
+		@DisplayName("성공: 닉네임·프로필 이미지 모두 업데이트")
 		void it_updates_nickname_address_and_profileImage() {
 			// given
 			UserUpdateRequest req = createUpdateRequest(
-				NEW_NICKNAME, NEW_ADDRESS_CD, NEW_ADDRESS_DETAIL,
-				NEW_LAT, NEW_LNG, PROFILE_IMG_ID
+				NEW_NICKNAME, PROFILE_IMG_ID
 			);
 			AttachmentFile mockFile = createAttachmentFile(PROFILE_IMG_ID);
 
 			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
 			given(fileRepository.findById(PROFILE_IMG_ID)).willReturn(Optional.of(mockFile));
 
-			CreateAddressRequest expectedReq = CreateAddressRequest.builder()
-																   .addressCd(NEW_ADDRESS_CD)
-																   .addressDetail(NEW_ADDRESS_DETAIL)
-																   .lat(NEW_LAT)
-																   .lng(NEW_LNG)
-																   .build();
-			given(addressService.createAddress(refEq(expectedReq)))
-				.willReturn(AddressDto.builder()
-									  .id(SAVED_ADDRESS_ID)
-									  .detail(NEW_ADDRESS_DETAIL)
-									  .lat(NEW_LAT)
-									  .lng(NEW_LNG)
-									  .build());
-
 			// when
 			UserDto updated = userService.updateUser(user, req);
 
 			// then
-			then(addressService).should().createAddress(refEq(expectedReq));
-			assertThat(updated.getAddress().getId()).isEqualTo(SAVED_ADDRESS_ID);
-			assertThat(updated.getAddress().getLat()).isEqualTo(NEW_LAT);
-			assertThat(updated.getAddress().getLng()).isEqualTo(NEW_LNG);
-			assertThat(updated.getAddress().getDetail()).isEqualTo(NEW_ADDRESS_DETAIL);
 			assertThat(updated.getNickname()).isEqualTo(NEW_NICKNAME);
 			assertThat(updated.getProfileImgUrl()).isEqualTo(mockFile.getFilePath());
 		}
@@ -181,8 +152,7 @@ class UserServiceImplTest {
 		void it_throws_when_duplicate_nickname() {
 			String dupNick = "existNick";
 			UserUpdateRequest req = createUpdateRequest(
-				dupNick, NEW_ADDRESS_CD, NEW_ADDRESS_DETAIL,
-				NEW_LAT, NEW_LNG, null
+				dupNick, null
 			);
 			given(userRepository.existsByNickname(dupNick)).willReturn(true);
 
@@ -198,27 +168,11 @@ class UserServiceImplTest {
 			// given
 			String badFileId = "no-such-file";
 			UserUpdateRequest req = createUpdateRequest(
-				NEW_NICKNAME, NEW_ADDRESS_CD, NEW_ADDRESS_DETAIL,
-				NEW_LAT, NEW_LNG, badFileId
+				NEW_NICKNAME, badFileId
 			);
 
-			// 닉네임 중복 없도록
 			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
 
-			// (1) 주소 저장이 먼저 호출되므로 AddressDto 리턴 스텁
-			AddressDto savedAddress = AddressDto.builder()
-												.id(SAVED_ADDRESS_ID)
-												.sidoName(null)
-												.sigunguName(null)
-												.eupmyeondongName(null)
-												.detail(NEW_ADDRESS_DETAIL)
-												.lat(NEW_LAT)
-												.lng(NEW_LNG)
-												.build();
-			given(addressService.createAddress(any(CreateAddressRequest.class)))
-				.willReturn(savedAddress);
-
-			// (2) 파일 조회 시 예외용 빈 Optional
 			given(fileRepository.findById(badFileId)).willReturn(Optional.empty());
 
 			// when & then

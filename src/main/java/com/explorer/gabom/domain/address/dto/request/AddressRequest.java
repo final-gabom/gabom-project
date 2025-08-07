@@ -1,26 +1,31 @@
 package com.explorer.gabom.domain.address.dto.request;
 
+import com.explorer.gabom.domain.address.type.AddressType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Schema(description = "주소 등록 요청 정보")
 @Getter
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class CreateAddressRequest {
+@Setter
+@Schema(description = "주소 등록/수정 요청 DTO")
+public class AddressRequest {
+	@Schema(description = "연관된 테이블의 타입 (ex.PLACE, USER)", example = "USER")
+	private AddressType addressTypeCd;
 
-	@Schema(description = "법정동 코드 (읍면동 코드 전체)", example = "110105")
+	@Schema(description = "연관된 테이블 내 식별 ID", example = "23")
+	private Long targetId;
+
+	@Schema(description = "법정동 코드 (읍면동 코드 전체)", example = "1101050000")
 	@NotBlank(message = "addressCd는 필수입니다.")
-	private String addressCd;
+	private String emdCd;
 
 	@Schema(description = "상세 주소", example = "역삼동 123-45")
-	@NotBlank(message = "addressDetail은 필수입니다.")
+	@NotBlank(message = "상세 주소는 필수입니다.")
 	private String addressDetail;
 
 	@Schema(description = "위도", example = "37.498095")

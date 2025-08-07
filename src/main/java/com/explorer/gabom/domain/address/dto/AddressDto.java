@@ -13,8 +13,14 @@ import lombok.Getter;
 @Schema(description = "주소 정보 DTO")
 public class AddressDto {
 
-	@Schema(description = "유저 고유 ID", example = "1")
+	@Schema(description = "주소 고유 ID", example = "1")
 	private final Long id;
+
+	@Schema(description = "연관된 테이블의 타입 (ex. PLACE, USER)", example = "USER")
+	private final String addressTypeCd;
+
+	@Schema(description = "연관된 테이블 내 식별 ID", example = "23")
+	private final Long targetId;
 
 	@Schema(description = "시도명", example = "서울특별시")
 	private final String sidoName;
@@ -37,6 +43,8 @@ public class AddressDto {
 	public static AddressDto toDto(Address addr) {
 		return AddressDto.builder()
 						 .id(addr.getId())
+						 .addressTypeCd(addr.getAddressTypeCd())
+						 .targetId(addr.getTargetId())
 						 .sidoName(addr.getSido().getSdCd())
 						 .sigunguName(addr.getSigungu().getSggNm())
 						 .eupmyeondongName(addr.getEupmyeondong().getEmdNm())
