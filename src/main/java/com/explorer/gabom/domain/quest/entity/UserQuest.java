@@ -96,6 +96,8 @@ public class UserQuest {
 	}
 
 	public void markAsDeleted() {
+		if (this.deleted)
+			return;
 		this.deleted = true;
 		this.deletedAt = LocalDateTime.now();
 	}

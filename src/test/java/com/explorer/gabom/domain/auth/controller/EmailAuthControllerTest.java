@@ -107,7 +107,7 @@ class EmailAuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("비밀번호 재설정이 완료 되었습니다. "))
+                .andExpect(jsonPath("$.message").value("비밀번호 재설정이 완료 되었습니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
 
         verify(passwordResetService).verifiedResetCode(any(PasswordResetVerifyRequest.class));

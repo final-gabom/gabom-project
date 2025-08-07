@@ -3,7 +3,6 @@ package com.explorer.gabom.domain.quest.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -125,7 +124,6 @@ class AdminQuestServiceTest {
 
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.of(existingQuest));
 		given(titleRepository.findById(NEW_TITLE_ID)).willReturn(Optional.of(newTitle));
-		given(userQuestRepository.findAllByQuestAndQuest_DeletedFalse(any())).willReturn(List.of());
 
 		QuestUpdateResponse response = adminQuestService.updateQuest(QUEST_ID, request);
 
@@ -158,12 +156,12 @@ class AdminQuestServiceTest {
 		UserQuest userQuest = mock(UserQuest.class);
 
 		given(questRepository.findByIdAndDeletedFalse(QUEST_ID)).willReturn(Optional.of(quest));
-		given(userQuestRepository.findAllByQuest(quest)).willReturn(List.of(userQuest));
 
 		QuestDeleteResponse response = adminQuestService.deleteQuest(QUEST_ID);
 
 		assertThat(response.getQuestId()).isEqualTo(QUEST_ID);
-		verify(userQuest).markAsDeleted();
+		verify(questRepository).findByIdAndDeletedFalse(QUEST_ID);
+		verify(userQuestRepository).bulkDeleteByQuest(any(Quest.class));
 	}
 
 	@Test
