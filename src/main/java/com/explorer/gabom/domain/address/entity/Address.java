@@ -48,9 +48,9 @@ public class Address extends BaseTimeEntity {
 
 	/** 위도 */
 	@Column(nullable = false)
-	private Double latitude;
+	private Double lat;
 
 	/** 경도 */
 	@Column(nullable = false)
-	private Double longitude;
+	private Double lng;
 }
