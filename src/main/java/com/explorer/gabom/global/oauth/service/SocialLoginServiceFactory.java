@@ -1,11 +1,12 @@
 package com.explorer.gabom.global.oauth.service;
 
 import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
+@Component
 public class SocialLoginServiceFactory {
     private final Map<OAuthProvider, SocialOAuthLoginService> serviceMap = new EnumMap<>(OAuthProvider.class);
 
