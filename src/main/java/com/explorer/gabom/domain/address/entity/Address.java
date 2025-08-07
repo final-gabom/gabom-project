@@ -11,11 +11,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "address")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class Address extends BaseTimeEntity {
 
 	@Id
@@ -44,7 +51,7 @@ public class Address extends BaseTimeEntity {
 	private String emdCd;
 
 	/** 상세주소 */
-	private String street;
+	private String detail;
 
 	/** 위도 */
 	@Column(nullable = false)
