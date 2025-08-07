@@ -14,8 +14,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -28,12 +31,20 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
     private final JwtProvider jwtProvider;
     private final RedisTokenService redisTokenService;
 
+    @Value("${KAKAO_CLIENT_ID}")
+    private String kakaoClientId;
+
+    @Value("${KAKAO_REDIRECT_URI}")
+    private String kakaoRedirectUri;
 
     @Override
-    public SocialLoginResponse login(String accessToken) {
+    public SocialLoginResponse login(String code) {
+        // 1. 인가 코드로 액세스 토큰 받기
+        String accessToken = getAccessToken(code);
+
+        // 2. 액세스 토큰으로 사용자 정보 조회
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
-// 요청 헤더 생성
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -52,20 +63,25 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
             Long providerId = root.path("id").asLong();
             String email = root.path("kakao_account").path("email").asText();
 
+            // 3. 사용자 DB 조회 또는 신규 회원가입
             User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
                     .orElseGet(() -> userRepository.save(
                             User.builder()
                                     .email(email)
-                                    .nickname("kakao_" + providerId) // 기본 닉네임 임의 지정
-                                    .password("")  // 소셜 로그인은 비밀번호 필요 없거나 빈 문자열 처리
+                                    .nickname("kakao_" + providerId)
+                                    .password("")  // 소셜 로그인은 비밀번호 불필요
                                     .userRole(UserRole.USER)
                                     .build()
                     ));
 
+            // 4. JWT 토큰 발급
             String issuedAccessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
             String issuedRefreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
-            // Redis에 refresh token 저장
+
+            // 5. Redis에 refresh token 저장
             redisTokenService.saveRefreshToken(user.getId(), issuedRefreshToken, jwtProvider.getRefreshTokenExpiration());
+
+            // 6. 로그인 응답 생성 및 반환
             return SocialLoginResponse.builder()
                     .providerId(String.valueOf(providerId))
                     .email(email)
@@ -74,9 +90,35 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
                     .build();
 
         } catch (Exception e) {
+            log.error("카카오 로그인 처리 중 오류 발생", e);
             throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
+    }
 
+    // 인가 코드로 액세스 토큰 요청 메서드
+    public String getAccessToken(String code) {
+        String tokenUrl = "https://kauth.kakao.com/oauth/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", kakaoClientId);
+        params.add("redirect_uri", kakaoRedirectUri);
+        params.add("code", code);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, request, String.class);
+
+        try {
+            JsonNode root = new ObjectMapper().readTree(response.getBody());
+            return root.path("access_token").asText();
+        } catch (Exception e) {
+            log.error("카카오 액세스 토큰 요청 중 오류 발생", e);
+            throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
+        }
     }
 
     @Override

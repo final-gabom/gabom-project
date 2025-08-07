@@ -8,4 +8,6 @@ public interface SocialOAuthLoginService {
     SocialLoginResponse login(String accessToken);
 
     OAuthProvider getProvider();
+
+   String getAccessToken(String code);
 }
