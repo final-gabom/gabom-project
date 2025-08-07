@@ -7,6 +7,7 @@ import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.global.dto.ApiResponse;
+import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class AuthController implements AuthControllerDocs {
     public ResponseEntity<ApiResponse<CheckNicknameResponse>> checkNickname(@RequestParam String nickname) {
         CheckNicknameResponse response = authService.checkNickname(nickname);
         return ResponseEntity.ok(ApiResponse.success("닉네임 중복확인을 완료하였습니다.", response));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<TokenResponse>> reissue(@RequestBody String refreshToken) {
+        TokenResponse tokenResponse = authService.reissue(refreshToken);
+        return ResponseEntity.ok(ApiResponse.success("토큰 재발급 성공", tokenResponse));
     }
 
 }
