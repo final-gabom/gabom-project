@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.address.entity;
 
+import com.explorer.gabom.global.entity.BaseTimeEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +16,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "address")
-public class Address {
+public class Address extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
