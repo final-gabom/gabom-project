@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.user.entity;
 
+import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.entity.UserTitle;
@@ -54,11 +55,11 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<UserTitle> userTitles = new ArrayList<>();
 
-    private String address;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "addressId", insertable = false, updatable = false)
+	private Address address;
 
-    private Double lat;
-
-    private Double lng;
+    private String addressId;
 
     @Column(nullable = false)
     private Integer point;
@@ -104,18 +105,6 @@ public class User extends BaseTimeEntity {
 
     public void updateProfileImg(AttachmentFile profileImg) {
         this.profileImg = profileImg;
-    }
-
-    public void updateAddress(String address) {
-        this.address = address;
-    }
-
-    public void updateLat(Double lat) {
-        this.lat = lat;
-    }
-
-    public void updateLng(Double lng) {
-        this.lng = lng;
     }
 
     public void setTitle(Title newTitle) {

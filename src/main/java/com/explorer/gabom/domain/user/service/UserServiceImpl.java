@@ -51,7 +51,8 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(User user, UserUpdateRequest updateRequest) {
         String nickname = updateRequest.getNickname();
         String profileImgId = updateRequest.getProfileImgId();
-        String address = updateRequest.getAddress();
+		String addressCd = updateRequest.getAddressCode();
+        String addressDetail = updateRequest.getAddressDetail();
         Double lat = updateRequest.getLat();
         Double lng = updateRequest.getLng();
 
@@ -62,16 +63,12 @@ public class UserServiceImpl implements UserService {
             }
             user.updateNickname(nickname);
         }
-        // 주소 변경
-        if (address != null) {
-            user.updateAddress(address);
-        }
-        if (lat != null) {
-            user.updateLat(lat);
-        }
-        if (lng != null) {
-            user.updateLng(lng);
-        }
+
+        // TODO: 주소 변경
+		if (addressCd != null) {
+			// 주소 객체 저장 후 해당 주소를 UserEntity에 저장
+		}
+
         // todo: 추후 파일 입출력 이후 변경 필요
         // 프로필 이미지 변경
         if (profileImgId != null) {

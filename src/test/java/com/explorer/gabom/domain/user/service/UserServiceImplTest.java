@@ -36,7 +36,8 @@ class UserServiceImplTest {
     private static final String OLD_NICKNAME = "testUser";
 
     private static final String NEW_NICKNAME = "newNick";
-    private static final String NEW_ADDRESS = "서울시 강남구";
+    private static final String NEW_ADDRESS = "1111010100";
+    private static final String NEW_ADDRESS_DETAIL = "서울시 강남구 역삼동 와르르멘션 204호";
     private static final Double NEW_LAT = 37.5;
     private static final Double NEW_LNG = 127.0;
     private static final String PROFILE_IMG_ID = "file-123";
@@ -77,8 +78,8 @@ class UserServiceImplTest {
                 .build();
     }
 
-    private UserUpdateRequest createUpdateRequest(String nickname, String address, Double lat, Double lng, String profileImgId) {
-        return new UserUpdateRequest(nickname, address, lat, lng, profileImgId);
+    private UserUpdateRequest createUpdateRequest(String nickname, String addressCd, String addressDetail, Double lat, Double lng, String profileImgId) {
+        return new UserUpdateRequest(nickname, addressCd, addressDetail, lat, lng, profileImgId);
     }
 
     private AttachmentFile createAttachmentFile(String fileId) {
@@ -125,7 +126,7 @@ class UserServiceImplTest {
         @DisplayName("사용자정보 수정 성공")
         @Test
         void updateUserInfo_success() {
-            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, NEW_ADDRESS, NEW_LAT, NEW_LNG, PROFILE_IMG_ID);
+            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, NEW_ADDRESS, NEW_ADDRESS_DETAIL, NEW_LAT, NEW_LNG, PROFILE_IMG_ID);
             AttachmentFile mockFile = createAttachmentFile(PROFILE_IMG_ID);
 
             when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(false);
@@ -144,7 +145,7 @@ class UserServiceImplTest {
         @Test
         void duplicateNickname_throwsException() {
             String duplicatedNick = "existingNick";
-            UserUpdateRequest updateRequest = createUpdateRequest(duplicatedNick, "주소", 1.0, 2.0, null);
+            UserUpdateRequest updateRequest = createUpdateRequest(duplicatedNick, "1111010100", "와르르멘션 204호",1.0, 2.0, null);
 
             when(userRepository.existsByNickname(duplicatedNick)).thenReturn(true);
 
@@ -157,7 +158,7 @@ class UserServiceImplTest {
         @Test
         void fileNotFound_throwsException() {
             String profileImgId = "not-found-id";
-            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, "주소", 1.0, 2.0, profileImgId);
+            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, "주소", "와르르멘션 204호", 1.0, 2.0, profileImgId);
 
             when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(false);
             when(fileRepository.findById(profileImgId)).thenReturn(Optional.empty());

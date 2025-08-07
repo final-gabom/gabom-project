@@ -45,7 +45,6 @@ public class UserDto {
 					  .email(user.getEmail())
 					  .profileImgUrl(user.getProfileImg() != null ? user.getProfileImg().getFilePath() : null)
 					  .title(user.getTitle() != null ? TitleDto.toDto(user.getTitle()) : null)
-					  .address(user.getAddress() != null ? user.getAddress() : null)
 					  .level(user.getLevel())
 					  .exp(user.getExp())
 					  .point(user.getPoint())
