@@ -2,13 +2,13 @@ package com.explorer.gabom.global.oauth.service;
 
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.service.UserService;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
 import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +18,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import static com.explorer.gabom.global.exception.ErrorCode.USER_NOT_FOUND;
-
 @Slf4j
 @Service("KAKAO")
 @RequiredArgsConstructor
@@ -28,6 +26,8 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final RedisTokenService redisTokenService;
+
 
     @Override
     public SocialLoginResponse login(String accessToken) {
@@ -52,7 +52,7 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
             Long providerId = root.path("id").asLong();
             String email = root.path("kakao_account").path("email").asText();
 
-            User user = userRepository.findByEmailAndStatus(email,UserStatus.ACTIVE)
+            User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
                     .orElseGet(() -> userRepository.save(
                             User.builder()
                                     .email(email)
@@ -62,9 +62,10 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
                                     .build()
                     ));
 
-            String issuedAccessToken = jwtProvider.createAccessToken(user.getId(),user.getUserRole());
-            String issuedRefreshToken = jwtProvider.createRefreshToken(user.getId(),user.getUserRole());
-
+            String issuedAccessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
+            String issuedRefreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
+            // Redis에 refresh token 저장
+            redisTokenService.saveRefreshToken(user.getId(), issuedRefreshToken, jwtProvider.getRefreshTokenExpiration());
             return SocialLoginResponse.builder()
                     .providerId(String.valueOf(providerId))
                     .email(email)
@@ -77,6 +78,7 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
         }
 
     }
+
     @Override
     public OAuthProvider getProvider() {
         return OAuthProvider.KAKAO;

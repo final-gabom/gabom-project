@@ -195,4 +195,8 @@ public class JwtProvider {
 		return this.getClaims(token).getSubject();
 	}
 
+	public long getRefreshTokenExpiration() {
+		return refreshTokenExpiration;
+	}
+
 }
