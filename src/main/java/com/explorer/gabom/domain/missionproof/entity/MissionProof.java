@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
-import com.explorer.gabom.domain.file.entity.AttachmentFile;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -35,10 +35,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 @Table(name = "mission_proof")
 @SQLDelete(sql = "UPDATE mission_proof SET deleted_at = NOW() WHERE id = ?")
-
 public class MissionProof extends BaseTimeEntity {
 
 	@Id
@@ -80,7 +79,6 @@ public class MissionProof extends BaseTimeEntity {
 		this.imageFiles.clear();
 		this.imageFiles.addAll(newFiles);
 	}
-
 
 	public void delete() {
 	}
