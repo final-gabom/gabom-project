@@ -5,3 +5,4 @@ spring:
     group:
       dev: dev
       local: local
+    active: local
