@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class UserControllerIntegrationTest {
 	private static final String NEW_NICKNAME = "newNick";
-	private static final String NEW_ADDRESS = "서울시 강남구";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -91,10 +90,6 @@ public class UserControllerIntegrationTest {
 	void updateProfile_Success() throws Exception {
 		UserUpdateRequest updateRequest = new UserUpdateRequest(
 			NEW_NICKNAME,
-			null,
-			null,
-			null,
-			null,
 			null
 		);
 
