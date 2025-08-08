@@ -6,8 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetail;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.PlaceDetail;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.response.PlaceUpdateResponse;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.PageResponse;
 
@@ -23,7 +24,7 @@ public interface PlaceService {
 	PageResponse<PlaceSummary> getPlaceList(String query, Double lat, Double lng, Pageable pageable);
 
 	@Transactional
-	PlaceDetail updatePlace(Long placeId, Long userId, PlaceUpdateRequest request);
+	PlaceUpdateResponse updatePlace(Long placeId, Long userId, PlaceUpdateRequest request);
 
 	@Transactional
 	Long deletePlace(Long placeId, Long userId);

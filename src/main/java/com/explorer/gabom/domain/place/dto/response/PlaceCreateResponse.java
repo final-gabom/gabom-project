@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.place.dto.response;
 
-import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.place.entity.Place;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,12 +28,12 @@ public class PlaceCreateResponse {
 	private final String proofMethod;
 
 	@Schema(description = "주소 정보")
-	private final AddressCreateResponse address;
+	private final AddressDto address;
 
 	@Schema(description = "장소 상태", example = "APPROVED")
 	private final String status;
 
-	public static PlaceCreateResponse toDto(Place place, AddressCreateResponse address) {
+	public static PlaceCreateResponse toDto(Place place, AddressDto address) {
 		return PlaceCreateResponse.builder()
 								  .id(place.getId())
 								  .title(place.getTitle())

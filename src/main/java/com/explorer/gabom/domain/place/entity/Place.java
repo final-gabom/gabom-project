@@ -109,12 +109,16 @@ public class Place extends BaseTimeEntity {
 					.orElse(null);
 	}
 
-	public Place update(PlaceUpdateRequest request) {
-		this.title = request.getTitle();
-		this.proofMethod = request.getProofMethod();
-		this.content = request.getContent();
-
-		return this;
+	public void update(PlaceUpdateRequest request) {
+		if (request.getTitle() != null) {
+			this.title = request.getTitle();
+		}
+		if (request.getProofMethod() != null) {
+			this.proofMethod = request.getProofMethod();
+		}
+		if (request.getContent() != null) {
+			this.content = request.getContent();
+		}
 	}
 
 	public void setAddressId(Long addressId) {

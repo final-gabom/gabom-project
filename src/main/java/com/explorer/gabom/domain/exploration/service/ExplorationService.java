@@ -46,8 +46,8 @@ public class ExplorationService {
 		double userLat = request.getLat();
 		double userLng = request.getLng();
 
-		double placeLat = place.getLat();
-		double placeLng = place.getLng();
+		double placeLat = place.getAddress().getLat();
+		double placeLng = place.getAddress().getLng();
 
 		double distance = DistanceCalculator.calculateKm(userLat, userLng, placeLat, placeLng);
 		int rewardExp = RewardCalculator.calculate(distance);
