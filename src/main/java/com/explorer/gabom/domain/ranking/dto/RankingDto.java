@@ -11,20 +11,21 @@ public class RankingDto {
 	private int rankNo;
 	private Long userId;
 	private String nickname;
-	private String profileImageId;
 	private int level;
 	private int exp;
-	private String titleName;
+	private Long titleId;
+	private String profileImageId;
 
 	public static RankingDto toDto(Ranking ranking) {
 		return RankingDto.builder()
-						 .rankNo(ranking.getRankNo())
+						 .rankNo(ranking.getRankNo() != null ? ranking.getRankNo() : 0)
 						 .userId(ranking.getUserId())
 						 .nickname(ranking.getNickname())
-						 .profileImageId(ranking.getProfileImageId())
 						 .level(ranking.getLevel())
 						 .exp(ranking.getExp())
-						 .titleName(ranking.getTitleName())
+						 .titleId(ranking.getTitle() != null ? ranking.getTitle().getId() : null)
+						 .profileImageId(
+							 ranking.getProfileImage() != null ? ranking.getProfileImage().getFileId() : null)
 						 .build();
 	}
 }
