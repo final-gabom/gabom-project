@@ -16,7 +16,7 @@ public class Sigungu {
 
 	/** 시군구 코드 (PK) */
 	@Id
-	@Column(length = 3)
+	@Column(length = 5)
 	private String sggCd;
 
 	/** 연관된 시도 */
