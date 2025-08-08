@@ -6,8 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
+import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.address.service.AddressService;
 import com.explorer.gabom.domain.address.type.AddressType;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
@@ -113,12 +113,10 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public AddressDto updateUserAddress(User user, AddressRequest request) {
+	public AddressCreateResponse updateUserAddress(User user, AddressRequest request) {
 		request.setAddressTypeCd(AddressType.USER);
 		request.setTargetId(user.getId());
 
-		AddressDto response = addressService.createOrReplace(request);
-
-		return response;
+		return addressService.createOrReplace(request);
 	}
 }

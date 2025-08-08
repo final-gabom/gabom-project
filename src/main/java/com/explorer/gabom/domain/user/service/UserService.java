@@ -1,7 +1,7 @@
 package com.explorer.gabom.domain.user.service;
 
-import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
+import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
@@ -24,5 +24,5 @@ public interface UserService {
 
 	void updatePassword(User user, @Valid PasswordUpdateRequest passwordUpdateRequest);
 
-	AddressDto updateUserAddress(User user, AddressRequest request);
+	AddressCreateResponse updateUserAddress(User user, AddressRequest request);
 }

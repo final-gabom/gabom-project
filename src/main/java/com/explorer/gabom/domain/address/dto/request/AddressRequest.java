@@ -6,18 +6,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
 @Setter
+@Builder
 @Schema(description = "주소 등록/수정 요청 DTO")
 public class AddressRequest {
-	@Schema(description = "연관된 테이블의 타입 (ex.PLACE, USER)", example = "USER")
+	@Schema(hidden = true)
 	private AddressType addressTypeCd;
 
-	@Schema(description = "연관된 테이블 내 식별 ID", example = "23")
+	@Schema(hidden = true)
 	private Long targetId;
 
 	@Schema(description = "법정동 코드 (읍면동 코드 전체)", example = "1101050000")

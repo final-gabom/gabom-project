@@ -7,16 +7,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "eupmyeondong")
 public class Eupmyeondong {
 
 	/** 읍면동 코드 (PK) */
 	@Id
-	@Column(length = 5)
+	@Column(length = 10)
 	private String emdCd;
 
 	/** 연관된 시군구 (FK → sigungu.sgg_cd) */
