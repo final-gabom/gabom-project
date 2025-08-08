@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequest;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.service.PlaceRecommendationService;
 import com.explorer.gabom.domain.place.type.ExploreRadius;
 import com.explorer.gabom.global.dto.ApiResponse;

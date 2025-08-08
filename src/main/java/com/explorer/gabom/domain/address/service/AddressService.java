@@ -1,18 +1,19 @@
 package com.explorer.gabom.domain.address.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.address.dto.AddressCodeComponents;
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
-import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.address.entity.Eupmyeondong;
 import com.explorer.gabom.domain.address.repository.AddressRepository;
 import com.explorer.gabom.domain.address.repository.EupmyeondongRepository;
+import com.explorer.gabom.domain.address.type.AddressType;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,7 +24,7 @@ public class AddressService {
 	private final EupmyeondongRepository emdRepository;
 
 	@Transactional
-	public AddressCreateResponse createOrReplace(AddressRequest request) {
+	public AddressDto createOrReplace(AddressRequest request) {
 		AddressCodeComponents codes = parseAddressCodes(request.getEmdCd());
 
 		Eupmyeondong emd = emdRepository.findById(codes.getEmdCd())
@@ -45,7 +46,7 @@ public class AddressService {
 								 .lng(request.getLng())
 								 .build();
 
-		return AddressCreateResponse.toDto(addressRepository.save(address), emd);
+		return AddressDto.toDto(addressRepository.save(address), emd);
 	}
 
 	private AddressCodeComponents parseAddressCodes(String emdCd) {
@@ -57,5 +58,15 @@ public class AddressService {
 		String sggCd = emdCd.substring(0, 5);
 
 		return new AddressCodeComponents(sdCd, sggCd, emdCd);
+	}
+
+	@Transactional(readOnly = true)
+	public AddressDto getByTypeAndTargetId(AddressType addressType, Long id) {
+		Address address = addressRepository.findByAddressTypeCdAndTargetId(
+			addressType.name(),
+			id
+		).orElseThrow(() -> new CustomException(ErrorCode.ADDRESS_NOT_FOUND));
+
+		return AddressDto.toDto(address);
 	}
 }

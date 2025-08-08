@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.place.dto.request.PlaceRecommendationRequest;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.querydsl.core.Tuple;

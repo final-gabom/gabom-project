@@ -12,8 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
-import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.address.entity.Eupmyeondong;
 import com.explorer.gabom.domain.address.repository.AddressRepository;
@@ -68,7 +68,7 @@ class AddressServiceTest {
 		given(addressRepository.save(any(Address.class))).willReturn(savedAddress);
 
 		// when
-		AddressCreateResponse result = addressService.createOrReplace(request);
+		AddressDto result = addressService.createOrReplace(request);
 
 		// then
 		assertThat(result.getId()).isEqualTo(100L);

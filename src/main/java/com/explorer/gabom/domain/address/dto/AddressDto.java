@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.address.dto;
 
 import com.explorer.gabom.domain.address.entity.Address;
+import com.explorer.gabom.domain.address.entity.Eupmyeondong;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -22,14 +23,11 @@ public class AddressDto {
 	@Schema(description = "연관된 테이블 내 식별 ID", example = "23")
 	private final Long targetId;
 
-	@Schema(description = "시도명", example = "서울특별시")
-	private final String sidoName;
-
-	@Schema(description = "시군구명", example = "종로구")
-	private final String sigunguName;
+	@Schema(description = "법정동 코드 (읍면동 코드 전체)", example = "1101050000")
+	private final String emdCd;
 
 	@Schema(description = "읍면동명", example = "사직동")
-	private final String eupmyeondongName;
+	private final String emdNm;
 
 	@Schema(description = "상세주소", example = "123-45")
 	private final String detail;
@@ -45,9 +43,21 @@ public class AddressDto {
 						 .id(addr.getId())
 						 .addressTypeCd(addr.getAddressTypeCd())
 						 .targetId(addr.getTargetId())
-						 .sidoName(addr.getSido().getSdCd())
-						 .sigunguName(addr.getSigungu().getSggNm())
-						 .eupmyeondongName(addr.getEupmyeondong().getEmdNm())
+						 .emdCd(addr.getEmdCd())
+						 .emdNm(addr.getEupmyeondong().getEmdNm())
+						 .detail(addr.getDetail())
+						 .lat(addr.getLat())
+						 .lng(addr.getLng())
+						 .build();
+	}
+
+	public static AddressDto toDto(Address addr, Eupmyeondong emd) {
+		return AddressDto.builder()
+						 .id(addr.getId())
+						 .addressTypeCd(addr.getAddressTypeCd())
+						 .targetId(addr.getTargetId())
+						 .emdCd(emd.getEmdCd())
+						 .emdNm(emd.getEmdNm())
 						 .detail(addr.getDetail())
 						 .lat(addr.getLat())
 						 .lng(addr.getLng())
