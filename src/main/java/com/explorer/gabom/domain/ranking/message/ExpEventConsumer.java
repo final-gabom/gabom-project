@@ -24,8 +24,10 @@ public class ExpEventConsumer {
 
 		// Redis Hash: 유저 상세 정보 저장
 		redisTemplate.opsForHash().put(userKey, "nickname", message.getNickname());
-		redisTemplate.opsForHash().put(userKey, "titleName", message.getTitleName());
-		redisTemplate.opsForHash().put(userKey, "profileImageId", message.getProfileImgId());
+		redisTemplate.opsForHash().put(userKey, "titleId",
+									   message.getTitleId() != null ? message.getTitleId() : "");
+		redisTemplate.opsForHash().put(userKey, "profileImageId",
+									   message.getProfileImgId() != null ? message.getProfileImgId() : "");
 		redisTemplate.opsForHash().put(userKey, "level", String.valueOf(message.getLevel()));
 	}
 }
