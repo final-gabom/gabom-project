@@ -12,6 +12,6 @@ public class ExpEventMessage {
 	private int exp;
 	private int level;
 	private String nickname;
-	private String titleName;
+	private Long titleId;
 	private String profileImgId;
 }
