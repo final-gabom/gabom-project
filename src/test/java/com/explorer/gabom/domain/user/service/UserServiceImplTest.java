@@ -1,5 +1,21 @@
 package com.explorer.gabom.domain.user.service;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.explorer.gabom.domain.address.service.AddressService;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.file.type.FileType;
@@ -13,158 +29,157 @@ import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.validator.PasswordValidator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 class UserServiceImplTest {
 
-    private static final Long USER_ID = 1L;
-    private static final String EMAIL = "test@example.com";
-    private static final String OLD_NICKNAME = "testUser";
+	private static final Long USER_ID = 1L;
+	private static final String EMAIL = "test@example.com";
+	private static final String OLD_NICKNAME = "testUser";
+	private static final String NEW_NICKNAME = "newNick";
+	private static final String PROFILE_IMG_ID = "file-123";
 
-    private static final String NEW_NICKNAME = "newNick";
-    private static final String NEW_ADDRESS = "서울시 강남구";
-    private static final Double NEW_LAT = 37.5;
-    private static final Double NEW_LNG = 127.0;
-    private static final String PROFILE_IMG_ID = "file-123";
+	@Mock
+	private UserRepository userRepository;
 
-    @Mock
-    private UserRepository userRepository;
+	@Mock
+	private AttachmentFileRepository fileRepository;
 
-    @Mock
-    private AttachmentFileRepository fileRepository;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+	@Mock
+	private PasswordValidator passwordValidator;
 
-    @Mock
-    private PasswordValidator passwordValidator;
+	@Mock
+	private TitleRepository titleRepository;
 
-    @Mock
-    private TitleRepository titleRepository;
+	@Mock
+	private AddressService addressService;
 
-    private UserServiceImpl userService;
+	private UserServiceImpl userService;
 
-    private User user;
+	private User user;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        userService = new UserServiceImpl(userRepository, fileRepository, titleRepository, passwordValidator, passwordEncoder);
+	@BeforeEach
+	void setUp() {
+		MockitoAnnotations.openMocks(this);
+		userService = new UserServiceImpl(userRepository, fileRepository, titleRepository, passwordValidator,
+										  passwordEncoder, addressService);
 
-        user = createUser(USER_ID, EMAIL, OLD_NICKNAME);
-    }
+		user = createUser(USER_ID, EMAIL, OLD_NICKNAME);
+	}
 
-    private User createUser(Long id, String email, String nickname) {
-        return User.builder()
-                .id(id)
-                .email(email)
-                .nickname(nickname)
-                .userRole(UserRole.USER)
-                .build();
-    }
+	private User createUser(Long id, String email, String nickname) {
+		return User.builder()
+				   .id(id)
+				   .email(email)
+				   .nickname(nickname)
+				   .userRole(UserRole.USER)
+				   .build();
+	}
 
-    private UserUpdateRequest createUpdateRequest(String nickname, String address, Double lat, Double lng, String profileImgId) {
-        return new UserUpdateRequest(nickname, address, lat, lng, profileImgId);
-    }
+	private UserUpdateRequest createUpdateRequest(String nickname, String profileImgId) {
+		return new UserUpdateRequest(nickname, profileImgId);
+	}
 
-    private AttachmentFile createAttachmentFile(String fileId) {
-        AttachmentFile file = AttachmentFile.builder()
-                .fileType(FileType.PROFILE)
-                .fileName("img.png")
-                .fileSize(12345L)
-                .refId(USER_ID)
-                .mimeType("image/png")
-                .hash("hash")
-                .filePath("/path/to/img.png")
-                .orderIdx(0)
-                .build();
+	private AttachmentFile createAttachmentFile(String fileId) {
+		AttachmentFile file = AttachmentFile.builder()
+											.fileType(FileType.PROFILE)
+											.fileName("img.png")
+											.fileSize(12345L)
+											.refId(USER_ID)
+											.mimeType("image/png")
+											.hash("hash")
+											.filePath("/path/to/img.png")
+											.orderIdx(0)
+											.build();
 
-        ReflectionTestUtils.setField(file, "fileId", fileId);
-        return file;
-    }
+		ReflectionTestUtils.setField(file, "fileId", fileId);
+		return file;
+	}
 
-    @Nested
-    class getUser {
+	@Nested
+	class getUser {
 
-        @Test
-        @DisplayName("성공")
-        void getUser_성공() {
-            when(userRepository.findByIdAndStatus(USER_ID, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
+		@Test
+		@DisplayName("성공")
+		void getUser_성공() {
+			when(userRepository.findByIdAndStatus(USER_ID, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
 
-            UserDto userDto = userService.getUser(USER_ID);
+			UserDto userDto = userService.getUser(USER_ID);
 
-            assertThat(userDto).isNotNull();
-            assertThat(userDto.getId()).isEqualTo(USER_ID);
-            assertThat(userDto.getNickname()).isEqualTo(OLD_NICKNAME);
-            assertThat(userDto.getEmail()).isEqualTo(EMAIL);
-        }
+			assertThat(userDto).isNotNull();
+			assertThat(userDto.getId()).isEqualTo(USER_ID);
+			assertThat(userDto.getNickname()).isEqualTo(OLD_NICKNAME);
+			assertThat(userDto.getEmail()).isEqualTo(EMAIL);
+		}
 
-        @Test
-        @DisplayName("실패_UserNotFound")
-        void getUser_실패() {
-            when(userRepository.findByIdAndStatus(USER_ID, UserStatus.ACTIVE)).thenReturn(Optional.empty());
+		@Test
+		@DisplayName("실패_UserNotFound")
+		void getUser_실패() {
+			when(userRepository.findByIdAndStatus(USER_ID, UserStatus.ACTIVE)).thenReturn(Optional.empty());
 
-            CustomException exception = assertThrows(CustomException.class, () -> userService.getUser(USER_ID));
-            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
-        }
+			CustomException exception = assertThrows(CustomException.class, () -> userService.getUser(USER_ID));
+			assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+		}
+	}
 
-        @DisplayName("사용자정보 수정 성공")
-        @Test
-        void updateUserInfo_success() {
-            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, NEW_ADDRESS, NEW_LAT, NEW_LNG, PROFILE_IMG_ID);
-            AttachmentFile mockFile = createAttachmentFile(PROFILE_IMG_ID);
+	@Nested
+	@DisplayName("updateUser")
+	class Describe_updateUser {
+		@Test
+		@DisplayName("성공: 닉네임·프로필 이미지 모두 업데이트")
+		void it_updates_nickname_address_and_profileImage() {
+			// given
+			UserUpdateRequest req = createUpdateRequest(
+				NEW_NICKNAME, PROFILE_IMG_ID
+			);
+			AttachmentFile mockFile = createAttachmentFile(PROFILE_IMG_ID);
 
-            when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(false);
-            when(fileRepository.findById(PROFILE_IMG_ID)).thenReturn(Optional.of(mockFile));
+			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
+			given(fileRepository.findById(PROFILE_IMG_ID)).willReturn(Optional.of(mockFile));
 
-            UserDto updatedUser = userService.updateUser(user, updateRequest);
+			// when
+			UserDto updated = userService.updateUser(user, req);
 
-            assertThat(updatedUser.getNickname()).isEqualTo(NEW_NICKNAME);
-            assertThat(updatedUser.getAddress()).isEqualTo(NEW_ADDRESS);
-            assertThat(user.getLat()).isEqualTo(NEW_LAT);
-            assertThat(user.getLng()).isEqualTo(NEW_LNG);
-            assertThat(user.getProfileImg()).isEqualTo(mockFile);
-        }
+			// then
+			assertThat(updated.getNickname()).isEqualTo(NEW_NICKNAME);
+			assertThat(updated.getProfileImgUrl()).isEqualTo(mockFile.getFilePath());
+		}
 
-        @DisplayName("닉네임 중복 시 예외 발생")
-        @Test
-        void duplicateNickname_throwsException() {
-            String duplicatedNick = "existingNick";
-            UserUpdateRequest updateRequest = createUpdateRequest(duplicatedNick, "주소", 1.0, 2.0, null);
+		@Test
+		@DisplayName("실패: 닉네임 중복 시 NICKNAME_ALREADY_EXISTS 예외")
+		void it_throws_when_duplicate_nickname() {
+			String dupNick = "existNick";
+			UserUpdateRequest req = createUpdateRequest(
+				dupNick, null
+			);
+			given(userRepository.existsByNickname(dupNick)).willReturn(true);
 
-            when(userRepository.existsByNickname(duplicatedNick)).thenReturn(true);
+			assertThatThrownBy(() -> userService.updateUser(user, req))
+				.isInstanceOf(CustomException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
 
-            assertThatThrownBy(() -> userService.updateUser(user, updateRequest))
-                    .isInstanceOf(CustomException.class)
-                    .hasMessageContaining(ErrorCode.NICKNAME_ALREADY_EXISTS.getMessage());
-        }
+		@Test
+		@DisplayName("실패: 프로필 이미지 ID 없으면 FILE_NOT_FOUND 예외")
+		void it_throws_when_file_not_found() {
+			// given
+			String badFileId = "no-such-file";
+			UserUpdateRequest req = createUpdateRequest(
+				NEW_NICKNAME, badFileId
+			);
 
-        @DisplayName("존재하지 않는 파일일떄 예외 발생")
-        @Test
-        void fileNotFound_throwsException() {
-            String profileImgId = "not-found-id";
-            UserUpdateRequest updateRequest = createUpdateRequest(NEW_NICKNAME, "주소", 1.0, 2.0, profileImgId);
+			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
 
-            when(userRepository.existsByNickname(NEW_NICKNAME)).thenReturn(false);
-            when(fileRepository.findById(profileImgId)).thenReturn(Optional.empty());
+			given(fileRepository.findById(badFileId)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> userService.updateUser(user, updateRequest))
-                    .isInstanceOf(CustomException.class)
-                    .hasMessageContaining(ErrorCode.FILE_NOT_FOUND.getMessage());
-        }
-    }
+			// when & then
+			assertThatThrownBy(() -> userService.updateUser(user, req))
+				.isInstanceOf(CustomException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.FILE_NOT_FOUND);
+		}
+	}
 }

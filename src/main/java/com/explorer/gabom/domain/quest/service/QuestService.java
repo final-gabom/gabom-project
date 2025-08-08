@@ -9,4 +9,5 @@ public interface QuestService {
 	PageResponse<QuestDto> getQuestPage(Pageable pageable);
 
 	QuestDto getQuestById(Long questId);
+
 }

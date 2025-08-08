@@ -71,6 +71,9 @@ public enum ErrorCode {
 	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
 	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN,"미션 인증글 삭제 권한이 없습니다."),
 
+	// Address
+	INVALID_ADDRESS_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 법정동 코드입니다."),
+
 
 	// Notification
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),

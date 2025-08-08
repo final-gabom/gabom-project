@@ -72,4 +72,7 @@ public class NotificationService {
 															  () -> new CustomException(NOTIFICATION_NOT_FOUND));
 		notification.markAsRead();
 	}
+
+
+
 }

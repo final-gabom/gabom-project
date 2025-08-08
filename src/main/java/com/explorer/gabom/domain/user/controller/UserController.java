@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.address.dto.request.AddressRequest;
+import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
@@ -28,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class UserController implements UserControllerDocs{
+public class UserController implements UserControllerDocs {
 
 	private final UserService userService;
 
@@ -76,6 +79,14 @@ public class UserController implements UserControllerDocs{
 		log.info("비밀번호 변경 요청: userId={}", userDetails.getUser().getId());
 		userService.updatePassword(userDetails.getUser(), passwordUpdateRequest);
 		return ResponseEntity.ok(ApiResponse.success("비밀번호가 성공적으로 변경되었습니다."));
+	}
 
+	@PutMapping("/me/address")
+	public ResponseEntity<ApiResponse<AddressCreateResponse>> updateAddress(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid AddressRequest request) {
+		log.info("주소 변경 요청: userId={}", userDetails.getUser().getId());
+		AddressCreateResponse response = userService.updateUserAddress(userDetails.getUser(), request);
+		return ResponseEntity.ok(ApiResponse.success("주소 등록을 성공했습니다.", response));
 	}
 }
