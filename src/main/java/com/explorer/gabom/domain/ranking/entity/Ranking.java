@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.ranking.entity;
 
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
+import com.explorer.gabom.domain.title.entity.Title;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,33 +39,33 @@ public class Ranking {
 	@Column(nullable = false)
 	private String nickname;
 
-	@Column(nullable = false)
-	private String titleName;
+	@ManyToOne
+	@JoinColumn(name = "title_id")
+	private Title title;
 
 	@ManyToOne
-	@JoinColumn(name = "profileImageId", insertable = false, updatable = false)
+	@JoinColumn(name = "profile_image_id")
 	private AttachmentFile profileImage;
 
-	@Column(nullable = true)
-	private String profileImageId;
-
-	public Ranking(Long userId, Integer rankNo, int level, int exp, String nickname, String titleName,
-				   String profileImageId) {
+	public Ranking(Long userId, Integer rankNo, int level, int exp, String nickname, Title title,
+				   AttachmentFile profileImage) {
 		this.userId = userId;
 		this.rankNo = rankNo;
 		this.level = level;
 		this.exp = exp;
 		this.nickname = nickname;
-		this.titleName = titleName;
-		this.profileImageId = profileImageId;
+		this.title = title;
+		this.profileImage = profileImage;
 	}
 
-	public void update(int exp, int level, String nickname, String titleName, String profileImageId) {
+	public void update(Integer rankNo, int exp, int level, String nickname, Title title,
+					   AttachmentFile profileImage) {
+		this.rankNo = rankNo;
 		this.exp = exp;
 		this.level = level;
 		this.nickname = nickname;
-		this.titleName = titleName;
-		this.profileImageId = profileImageId;
+		this.title = title;
+		this.profileImage = profileImage;
 	}
 }
 
