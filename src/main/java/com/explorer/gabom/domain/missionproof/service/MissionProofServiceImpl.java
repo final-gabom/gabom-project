@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
+import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
@@ -79,7 +80,6 @@ public class MissionProofServiceImpl implements MissionProofService {
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}
 
-
 	// 미션 인증글 수정
 	@Override
 	@Transactional
@@ -135,7 +135,8 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional
 	public void deleteMissionProof(Long id, Long userId) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
+														  .orElseThrow(
+															  () -> new CustomException(NOT_FOUND_MISSION_PROOF));
 		if (!missionProof.getUser().getId().equals(userId)) {
 			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
 		}
@@ -147,9 +148,11 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional(readOnly = true)
 	public MissionProofDetailResponse getMissionProofDetail(Long id) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MISSION_PROOF));
+														  .orElseThrow(() -> new CustomException(
+															  ErrorCode.NOT_FOUND_MISSION_PROOF));
 
-		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id, FileType.MISSION_PROOF);
+		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id,
+																							 FileType.MISSION_PROOF);
 
 		List<FileResponseDto> profileImages = imageFiles.stream()
 														.map(FileResponseDto::toDto)
@@ -157,4 +160,44 @@ public class MissionProofServiceImpl implements MissionProofService {
 
 		return MissionProofDetailResponse.toDto(missionProof, profileImages);
 	}
+
+	@Override
+	public OffsetResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
+
+		// 검색 조건에 해당하는 미션 인증 요약 리스트 조회
+		List<MissionProofSummary> results = missionProofQueryRepository.searchByCondition(condition);
+
+		// 총 데이터 개수 조회 (페이징용 메타데이터)
+		long totalElements = missionProofQueryRepository.countByCondition(condition);
+
+		// 결과 리스트를 한 번 더 가공하여 새로운 MissionProofSummary 객체로 매핑
+		// (필요 시 내부 객체나 필드에 대해 null 처리 등 후처리를 할 수 있음)
+		List<MissionProofSummary> summaries = results.stream()
+													 .map(mp -> new MissionProofSummary(
+														 mp.getId(),                   // 인증 ID
+														 mp.getFieldType(),           // 필드 타입
+														 new UserSummaryDto(          // 작성자 정보 재구성
+																					  mp.getWriter().getId(),
+																					  mp.getWriter().getNickname(),
+																					  mp.getWriter().getLevel(),
+
+																					  // title이 null인 경우 작성자의 title도 null로 처리
+																					  mp.getTitle() != null
+																					  ? mp.getWriter().getTitle()
+																					  : null
+														 ),
+														 mp.getTitle(),               // 인증 제목
+														 mp.getCreatedAt(),           // 생성일
+														 mp.getUpdatedAt(),           // 수정일
+														 mp.getProfileImages()        // 이미지 목록
+													 ))
+													 .collect(Collectors.toList()); // 최종 리스트 생성
+
+		// 커서 페이징용 lastId 추출 (가장 마지막 ID, 다음 페이지 조회에 사용)
+		Long lastId = !results.isEmpty() ? results.get(results.size() - 1).getId() : null;
+
+		// OffsetResponse 객체로 응답 (데이터, 개수, 마지막 ID, 전체 개수 포함)
+		return new OffsetResponse<>(summaries, summaries.size(), lastId, totalElements);
+	}
+
 }
