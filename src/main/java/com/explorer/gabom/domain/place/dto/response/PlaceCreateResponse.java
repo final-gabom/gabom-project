@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.place.dto.response;
 
+import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,28 +27,21 @@ public class PlaceCreateResponse {
 	@Schema(description = "인증 방법", example = "사진 인증")
 	private final String proofMethod;
 
-	@Schema(description = "장소 주소", example = "서울특별시 성동구 뚝섬로 273")
-	private final String address;
-
-	@Schema(description = "위도", example = "37.547121")
-	private final Double lat;
-
-	@Schema(description = "경도", example = "127.074910")
-	private final Double lng;
+	@Schema(description = "주소 정보")
+	private final AddressCreateResponse address;
 
 	@Schema(description = "장소 상태", example = "APPROVED")
 	private final String status;
 
-	public static PlaceCreateResponse toDto(Place place) {
+	public static PlaceCreateResponse toDto(Place place, AddressCreateResponse address) {
 		return PlaceCreateResponse.builder()
 								  .id(place.getId())
 								  .title(place.getTitle())
 								  .content(place.getContent())
 								  .proofMethod(place.getProofMethod())
-								  .address(place.getAddress())
-								  .lat(place.getLat())
-								  .lng(place.getLng())
+								  .address(address)
 								  .status(place.getStatus().name())
 								  .build();
 	}
+
 }
