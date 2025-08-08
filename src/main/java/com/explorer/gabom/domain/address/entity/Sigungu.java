@@ -23,7 +23,7 @@ public class Sigungu {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sdCd", nullable = false, updatable = false, insertable = false)
 	private Sido sido;
-	@Column(nullable = false)
+	@Column(nullable = false, length = 2)
 	private String sdCd;
 
 	/** 시군구명 */
