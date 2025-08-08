@@ -16,10 +16,10 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
-import com.explorer.gabom.domain.missionproof.dto.response.OffsetResponse;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
@@ -162,7 +162,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	}
 
 	@Override
-	public OffsetResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
+	public CursorResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
 
 		// 검색 조건에 해당하는 미션 인증 요약 리스트 조회
 		List<MissionProofSummary> results = missionProofQueryRepository.searchByCondition(condition);
@@ -196,8 +196,8 @@ public class MissionProofServiceImpl implements MissionProofService {
 		// 커서 페이징용 lastId 추출 (가장 마지막 ID, 다음 페이지 조회에 사용)
 		Long lastId = !results.isEmpty() ? results.get(results.size() - 1).getId() : null;
 
-		// OffsetResponse 객체로 응답 (데이터, 개수, 마지막 ID, 전체 개수 포함)
-		return new OffsetResponse<>(summaries, summaries.size(), lastId, totalElements);
+		// CursorResponse 객체로 응답 (데이터, 개수, 마지막 ID, 전체 개수 포함)
+		return new CursorResponse<>(summaries, summaries.size(), lastId, totalElements);
 	}
 
 }

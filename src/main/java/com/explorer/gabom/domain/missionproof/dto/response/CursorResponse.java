@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class OffsetResponse<T> {
+public class CursorResponse<T> {
 	private final List<T> items;
 	private final int size;
 	private final Long lastId;

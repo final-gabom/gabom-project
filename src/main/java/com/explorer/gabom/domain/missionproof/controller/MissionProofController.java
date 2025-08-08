@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
-import com.explorer.gabom.domain.missionproof.dto.response.OffsetResponse;
 import com.explorer.gabom.domain.missionproof.service.MissionProofService;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -74,7 +74,7 @@ public class MissionProofController implements MissionProofControllerDocs {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<OffsetResponse<MissionProofSummary>>> getMissionProofList(
+	public ResponseEntity<ApiResponse<CursorResponse<MissionProofSummary>>> getMissionProofList(
 		@RequestParam(value = "type", required = false) MissionProofType type,
 		@RequestParam(value = "id", required = false) Long targetId,
 		@RequestParam(value = "userId", required = false) Long userId,
@@ -82,7 +82,7 @@ public class MissionProofController implements MissionProofControllerDocs {
 		@RequestParam(value = "size", defaultValue = "10") int size
 	) {
 		MissionProofSearchCondition condition = new MissionProofSearchCondition(type, targetId, userId, lastId, size);
-		OffsetResponse<MissionProofSummary> response = missionProofService.getMissionProofs(condition);
+		CursorResponse<MissionProofSummary> response = missionProofService.getMissionProofs(condition);
 		return ResponseEntity.ok(ApiResponse.success("조회 성공", response));
 	}
 }
