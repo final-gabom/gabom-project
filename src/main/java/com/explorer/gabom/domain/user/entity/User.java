@@ -57,6 +57,9 @@ public class User extends BaseTimeEntity {
 	@JoinColumn(name = "profile_img_id")
 	private AttachmentFile profileImg;
 
+	@Column(nullable = true)
+	private String profileImageId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private UserStatus status;

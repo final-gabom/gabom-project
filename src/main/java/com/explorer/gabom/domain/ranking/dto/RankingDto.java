@@ -8,20 +8,20 @@ import lombok.Getter;
 @Getter
 @Builder
 public class RankingDto {
-	private int rank;
+	private int rankNo;
 	private Long userId;
 	private String nickname;
-	private String profileImageUrl;
+	private String profileImageId;
 	private int level;
 	private int exp;
 	private String titleName;
 
 	public static RankingDto toDto(Ranking ranking) {
 		return RankingDto.builder()
-						 .rank(ranking.getRankNo())
+						 .rankNo(ranking.getRankNo())
 						 .userId(ranking.getUserId())
 						 .nickname(ranking.getNickname())
-						 .profileImageUrl(ranking.getProfileImageUrl())
+						 .profileImageId(ranking.getProfileImageId())
 						 .level(ranking.getLevel())
 						 .exp(ranking.getExp())
 						 .titleName(ranking.getTitleName())
