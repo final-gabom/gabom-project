@@ -1,8 +1,12 @@
 spring:
   config:
-    import: "optional:classpath:/application-${spring.profiles.active}.yml"
+    import: optional:file:.env[.properties]
   profiles:
     group:
       dev: dev
       local: local
-    active: local
+
+address:
+  import:
+    enabled: true
+    path: classpath:law_codes.csv
