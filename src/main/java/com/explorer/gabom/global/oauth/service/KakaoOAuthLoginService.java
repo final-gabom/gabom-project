@@ -2,7 +2,6 @@ package com.explorer.gabom.global.oauth.service;
 
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
@@ -57,22 +56,14 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
                 request,
                 String.class
         );
-
         try {
             JsonNode root = new ObjectMapper().readTree(response.getBody());
             Long providerId = root.path("id").asLong();
             String email = root.path("kakao_account").path("email").asText();
 
-            // 3. 사용자 DB 조회 또는 신규 회원가입
+            // 3. 사용자 DB 조회 후 없으면 예외처리
             User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
-                    .orElseGet(() -> userRepository.save(
-                            User.builder()
-                                    .email(email)
-                                    .nickname("kakao_" + providerId)
-                                    .password("")  // 소셜 로그인은 비밀번호 불필요
-                                    .userRole(UserRole.USER)
-                                    .build()
-                    ));
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
             // 4. JWT 토큰 발급
             String issuedAccessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
