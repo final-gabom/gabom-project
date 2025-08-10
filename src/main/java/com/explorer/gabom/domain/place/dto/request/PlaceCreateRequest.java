@@ -15,9 +15,13 @@ public class PlaceCreateRequest {
 	@NotBlank(message = "제목은 필수입니다.")
 	private final String title;
 
+	@Schema(description = "법정동 코드 (읍면동 코드 전체)", example = "1101050000")
+	@NotBlank(message = "법정동 코드는 필수입니다.")
+	private String emdCd;
+
 	@Schema(description = "장소 주소", example = "서울특별시 서초구 반포동 115-5")
-	@NotBlank(message = "주소는 필수입니다.")
-	private final String address;
+	@NotBlank(message = "상세 주소는 필수입니다.")
+	private final String addressDetail;
 
 	@Schema(description = "위도", example = "37.508987")
 	@NotNull(message = "위도 값은 필수입니다.")

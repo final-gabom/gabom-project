@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.place.dto.response;
+package com.explorer.gabom.domain.place.dto;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
@@ -33,14 +34,8 @@ public class PlaceDetail {
 	@Schema(description = "장소 제목", example = "한강공원 반포지구")
 	private String title;
 
-	@Schema(description = "장소 주소", example = "서울특별시 서초구 반포동 115-5")
-	private String address;
-
-	@Schema(description = "위도", example = "37.508987")
-	private Double lat;
-
-	@Schema(description = "경도", example = "126.995751")
-	private Double lng;
+	@Schema(description = "주소 정보")
+	private AddressDto address;
 
 	@Schema(description = "인증 미션 수행 횟수", example = "12")
 	private Integer missionProofCount;
@@ -69,6 +64,32 @@ public class PlaceDetail {
 	@Schema(description = "장소에 등록된 파일 목록")
 	private List<FileResponseDto> files;
 
+	public static PlaceDetail toDto(Place place, AddressDto addressDto) {
+		if (place == null) {
+			return null;
+		}
+
+		return PlaceDetail.builder()
+						  .id(place.getId())
+						  .title(place.getTitle())
+						  .address(addressDto)
+
+						  .missionProofCount(getMissionProofCount(place))
+						  .avgScore(getAvgScore(place))
+
+						  .content(place.getContent())
+						  .proofMethod(place.getProofMethod())
+						  .viewCount(getViewCount(place))
+
+						  .createdAt(place.getCreatedAt())
+						  .updatedAt(place.getUpdatedAt())
+
+						  .writer(getWriter(place))
+						  .files(getFiles(place))
+
+						  .build();
+	}
+
 	public static PlaceDetail toDto(Place place) {
 		if (place == null) {
 			return null;
@@ -77,9 +98,7 @@ public class PlaceDetail {
 		return PlaceDetail.builder()
 						  .id(place.getId())
 						  .title(place.getTitle())
-						  .address(place.getAddress())
-						  .lat(place.getLat())
-						  .lng(place.getLng())
+						  .address(AddressDto.toDto(place.getAddress()))
 
 						  .missionProofCount(getMissionProofCount(place))
 						  .avgScore(getAvgScore(place))
