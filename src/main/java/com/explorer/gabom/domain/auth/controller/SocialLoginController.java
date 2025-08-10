@@ -1,8 +1,12 @@
 package com.explorer.gabom.domain.auth.controller;
 
+import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.service.SocialLoginService;
+import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.oauth.dto.request.SocialLoginRequest;
 import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
+import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
 import com.explorer.gabom.global.oauth.service.SocialLoginServiceFactory;
 import com.explorer.gabom.global.oauth.service.SocialOAuthLoginService;
 import com.explorer.gabom.global.oauth.type.OAuthProvider;
@@ -21,6 +25,7 @@ import java.io.IOException;
 public class SocialLoginController {
 
     private final SocialLoginServiceFactory socialLoginServiceFactory;
+    private final SocialLoginService socialLoginService;
 
     @Value("${KAKAO_CLIENT_ID}")
     private String clientId;
@@ -39,6 +44,7 @@ public class SocialLoginController {
 
         response.sendRedirect(kakaoAuthUrl);
     }
+
     @GetMapping("/kakao/callback")
     public ResponseEntity<?> kakaoCallback(@RequestParam String code) {
         // 받은 인가 코드로 액세스 토큰 요청 및 로그인 처리 로직 작성
@@ -52,11 +58,23 @@ public class SocialLoginController {
     }
 
     @PostMapping("/social-login")
-    public ResponseEntity<ApiResponse<SocialLoginResponse>>socialLogin(
+    public ResponseEntity<ApiResponse<SocialLoginResponse>> socialLogin(
             @RequestBody @Valid SocialLoginRequest request) {
 
         SocialOAuthLoginService service = socialLoginServiceFactory.getService(request.getProvider());
         SocialLoginResponse response = service.login(request.getCode());
         return ResponseEntity.ok(ApiResponse.success("소셜 로그인에 성공하였습니다.", response));
+    }
+
+    // 소셜 회원가입 API
+    @PostMapping("/social-signup")
+    public ResponseEntity<ApiResponse<TokenResponse>> socialSignup(@RequestBody @Valid SignupRequest signupRequest) {
+        // isSocial = true로 회원가입 처리
+        UserSummaryDto userDto = socialLoginService.signup(signupRequest, true);
+
+        // 회원가입 후 바로 JWT 토큰 생성
+        TokenResponse tokenResponse = socialLoginService.loginSocialGenerateToken(userDto.getEmail());
+
+        return ResponseEntity.ok(ApiResponse.success("회원가입 성공", tokenResponse));
     }
 }
