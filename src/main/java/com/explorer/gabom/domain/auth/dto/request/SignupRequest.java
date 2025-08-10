@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.auth.dto.request;
 
 import com.explorer.gabom.domain.user.type.UserRole;
 
+import com.explorer.gabom.global.oauth.type.OAuthProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,4 +33,10 @@ public class SignupRequest {
 	@NotNull(message = "사용자, 관리자를 선택해주세요.")
 	@Schema(description = "회원가입 권한 설정")
 	private UserRole role;
+	// 추가: 소셜 로그인 제공자 (예: KAKAO, GOOGLE)
+	@Schema(description = "소셜 로그인 제공자 (일반 회원가입 시 null 가능)")
+	private OAuthProvider provider;
+	// 추가: 소셜 로그인 제공자의 유저 고유 ID
+	@Schema(description = "소셜 로그인 제공자의 유저 고유 ID")
+	private String providerId;
 }
