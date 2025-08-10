@@ -39,20 +39,6 @@ public class Address extends BaseTimeEntity {
 
 	private Long targetId;
 
-	/** 연관된 시도 (FK → sido.ctpv_cd) */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sdCd", insertable = false, updatable = false)
-	private Sido sido;
-	@Column(nullable = false)
-	private String sdCd;
-
-	/** 연관된 시군구 (FK → sigungu.sgg_cd) */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sggCd", insertable = false, updatable = false)
-	private Sigungu sigungu;
-	@Column(nullable = false)
-	private String sggCd;
-
 	/** 연관된 읍면동 (FK → eupmyeondong.emd_cd) */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "emdCd", insertable = false, updatable = false)
@@ -71,9 +57,7 @@ public class Address extends BaseTimeEntity {
 	@Column(nullable = false)
 	private Double lng;
 
-	public void update(String sdCd, String sggCd, String emdCd, String detail, Double lat, Double lng) {
-		this.sdCd = sdCd;
-		this.sggCd = sggCd;
+	public void update(String emdCd, String detail, Double lat, Double lng) {
 		this.emdCd = emdCd;
 		this.detail = detail;
 		this.lat = lat;

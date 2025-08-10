@@ -56,8 +56,6 @@ class AddressServiceTest {
 									  .id(100L)
 									  .addressTypeCd("USER")
 									  .targetId(1L)
-									  .sdCd("11")
-									  .sggCd("11010")
 									  .emdCd("1101050000")
 									  .detail("와르르멘션 204호")
 									  .lat(37.498095)

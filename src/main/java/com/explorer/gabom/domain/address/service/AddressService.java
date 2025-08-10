@@ -38,8 +38,6 @@ public class AddressService {
 		Address address = Address.builder()
 								 .addressTypeCd(request.getAddressTypeCd().name())
 								 .targetId(request.getTargetId())
-								 .sdCd(codes.getSdCd())
-								 .sggCd(codes.getSggCd())
 								 .emdCd(codes.getEmdCd())
 								 .detail(request.getAddressDetail())
 								 .lat(request.getLat())
