@@ -6,6 +6,7 @@ import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
+import com.explorer.gabom.global.oauth.type.OAuthProvider;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,6 +69,15 @@ public class User extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Integer exp;
+
+    // 소셜 로그인 제공자 (kakao,google,naver 등)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private OAuthProvider provider;
+
+    // 소셜 제공자의 유저 고유 ID > 카카오에서 주는 ID 값
+    @Column(nullable = true)
+    private String providerId;
 
     @Builder
     public User(Long id, String email, String password, String nickname, UserRole userRole) {
