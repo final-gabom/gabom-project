@@ -17,6 +17,9 @@ public class UserSummaryDto {
 	@Schema(description = "유저 ID", example = "1")
 	private Long id;
 
+	@Schema(description = "이메일 주소", example = "gabom@example.com")
+	private String email;
+
 	@Schema(description = "유저 닉네임", example = "gabomUser")
 	private String nickname;
 
