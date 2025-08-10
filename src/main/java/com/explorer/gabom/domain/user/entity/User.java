@@ -80,7 +80,7 @@ public class User extends BaseTimeEntity {
     private String providerId;
 
     @Builder
-    public User(Long id, String email, String password, String nickname, UserRole userRole) {
+    public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status, OAuthProvider provider, String providerId) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -90,6 +90,8 @@ public class User extends BaseTimeEntity {
         this.point = 0;
         this.level = 1;
         this.exp = 0;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public void addPoint(int point) {
