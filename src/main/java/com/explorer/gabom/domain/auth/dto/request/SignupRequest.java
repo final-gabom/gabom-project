@@ -26,7 +26,7 @@ public class SignupRequest {
 	@Size(min = 2, max = 10, message = "닉네임은 2자 이상, 10자 이하만 가능합니다.")
 	@Schema(description = "활동 시 사용할 닉네임")
 	private String nickname;
-	@NotBlank(message = "비밀번호 입력은 필수입니다.")
+	// 소셜 회원가입 시 비밀번호 없이 넘어올 수 있으므로 비밀번호는 필수 입력에서 제외
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$", message = "비밀번호는 최소 8글자 이상, 대소문자 하나 이상 포함해야합니다.")
 	@Schema(description = "로그인 시 사용할 비밀번호")
 	private String password;
