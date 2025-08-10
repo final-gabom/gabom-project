@@ -56,11 +56,13 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
                 request,
                 String.class
         );
+        log.info("getAccessToken - kakao response status: {}", response.getStatusCode());
+        log.info("getAccessToken - kakao response body: {}", response.getBody());
         try {
             JsonNode root = new ObjectMapper().readTree(response.getBody());
             Long providerId = root.path("id").asLong();
             String email = root.path("kakao_account").path("email").asText();
-
+            log.info("getAccessToken - access_token: {}", accessToken);
             // 3. 사용자 DB 조회 후 없으면 예외처리
             User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));

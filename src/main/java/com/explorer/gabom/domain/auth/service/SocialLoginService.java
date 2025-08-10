@@ -12,26 +12,29 @@ import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
-import com.explorer.gabom.global.validator.PasswordValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SocialLoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordValidator passwordValidator;
+
     private final JwtProvider jwtProvider;
     private final EmailCodeStorageService emailCodeStorageService;
     private final RedisTokenService redisTokenService;
 
     @Transactional
     public UserSummaryDto signup(SignupRequest request, boolean isSocial) {
+        log.info("회원가입 시도: email={}", request.getEmail());
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("이메일 중복: {}", request.getEmail());
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         // 이메일 인증 체크
@@ -52,6 +55,7 @@ public class SocialLoginService {
         }
 
         // user
+        log.info("회원 저장 전");
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodePassword)
@@ -63,7 +67,7 @@ public class SocialLoginService {
                 .build();
 
         User savedUser = userRepository.save(user);
-
+        log.info("회원 저장 완료: id={}, email={}", savedUser.getId(), savedUser.getEmail());
         return UserSummaryDto.toDto(savedUser);
     }
 
