@@ -1,11 +1,12 @@
 package com.explorer.gabom.domain.ranking.service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,41 +31,64 @@ public class RankingServiceImpl implements RankingService {
 		int start = (int)pageable.getOffset();
 		int end = start + pageable.getPageSize() - 1;
 
-		// Redis ZSet에서 해당 페이지 구간의 유저와 점수 조회
 		Set<ZSetOperations.TypedTuple<String>> userScores =
-			redisTemplate.opsForZSet().reverseRangeWithScores(rankingKey, start, end);
+			Objects.requireNonNullElse(
+				redisTemplate.opsForZSet().reverseRangeWithScores(rankingKey, start, end),
+				Collections.emptySet()
+			);
 
-		long totalCount = redisTemplate.opsForZSet().size(rankingKey);
+		long totalCount =
+			Objects.requireNonNullElse(
+				redisTemplate.opsForZSet().size(rankingKey),
+				0L
+			);
 
-		List<RankingDto> rankingList = new ArrayList<>();
-		int rankOffset = start + 1;
+		AtomicInteger rankNo = new AtomicInteger(start + 1);
 
-		// null 체크 불필요 → 빈 Set 여부만 확인
-		if (!userScores.isEmpty()) {
-			for (ZSetOperations.TypedTuple<String> tuple : userScores) {
-				Long userId = Long.valueOf(tuple.getValue());
-				int exp = tuple.getScore().intValue();
+		List<RankingDto> rankingList = userScores.stream()
+												 .map(tuple -> {
+													 Long userId = Long.valueOf(tuple.getValue());
+													 int exp = tuple.getScore().intValue();
 
-				// 유저 상세 정보 해시에서 조회
-				String userKey = "ranking:user:" + userId;
-				Map<Object, Object> userInfo = redisTemplate.opsForHash().entries(userKey);
+													 Map<Object, Object> userInfo = redisTemplate.opsForHash()
+																								 .entries(
+																									 "ranking:user:"
+																										 + userId);
 
-				rankingList.add(
-					RankingDto.builder()
-							  .rankNo(rankOffset++)
-							  .userId(userId)
-							  .nickname((String)userInfo.get("nickname"))
-							  .profileImageId((String)userInfo.get("profileImageId"))
-							  .level(Integer.parseInt((String)userInfo.get("level")))
-							  .exp(exp)
-							  .titleName((String)userInfo.get("titleName"))
-							  .build()
-				);
-			}
-		}
+													 return RankingDto.builder()
+																	  .rankNo(rankNo.getAndIncrement())
+																	  .userId(userId)
+																	  .nickname((String)userInfo.get("nickname"))
+																	  .profileImageId(
+																		  (String)userInfo.get("profileImageId"))
+																	  .level(toInt(userInfo.get("level")))
+																	  .exp(exp)
+																	  .titleId(toLong(userInfo.get("titleId")))
+																	  .build();
+												 })
+												 .toList();
 
-		// Page 객체로 변환 후 PageResponse 생성
-		Page<RankingDto> rankingDtoPage = new PageImpl<>(rankingList, pageable, totalCount);
-		return PageResponse.toDto(rankingDtoPage);
+		return PageResponse.toDto(new PageImpl<>(rankingList, pageable, totalCount));
 	}
+
+	private Long toLong(Object value) {
+		if (value == null)
+			return null;
+		try {
+			return Long.parseLong(value.toString());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	private Integer toInt(Object value) {
+		if (value == null)
+			return null;
+		try {
+			return Integer.parseInt(value.toString());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
 }
