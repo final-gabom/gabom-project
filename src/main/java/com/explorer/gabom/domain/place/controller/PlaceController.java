@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.place.controller;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,9 +60,13 @@ public class PlaceController implements PlaceControllerDocs {
 		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
 		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
 		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
-		@PageableDefault(page = 0, size = 10) Pageable pageable) {
+		@PageableDefault(
+			page = 0, size = 10,
+			sort = {"viewCount", "proofCount"},
+			direction = Sort.Direction.DESC) Pageable pageable) {
 		log.info("[GET] 탐험 장소 리스트 조회 /api/places lat={}, lng={}, keyword={}, sdCd={}, sggCd={}, emdCd={}, page={}",
 				 lat, lng, keyword, sdCd, sggCd, emdCd, pageable.getPageNumber());
+
 		PlaceSearchCond cond = new PlaceSearchCond(lat, lng, sdCd, sggCd, emdCd, pageable, keyword);
 		PageResponse<PlaceSummary> response = placeService.getPlaceList(cond);
 		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", response));
