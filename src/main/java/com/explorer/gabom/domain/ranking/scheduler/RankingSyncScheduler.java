@@ -71,21 +71,17 @@ public class RankingSyncScheduler {
 			Map<Object, Object> userInfo = redisTemplate.opsForHash().entries(userKey);
 			userInfoMap.put(userId, userInfo);
 
-			String titleIdStr = (String)userInfo.get("titleId");
-			if (titleIdStr != null && !titleIdStr.isEmpty()) {
-				try {
-					titleIds.add(Long.valueOf(titleIdStr));
-				} catch (NumberFormatException ignored) {
-				}
+			Long titleId = parseLongSafe((String)userInfo.get("titleId"));
+			if (titleId != null) {
+				titleIds.add(titleId);
 			}
 
-			String profileImageId = (String)userInfo.get("profileImageId");
-			if (profileImageId != null && !profileImageId.isEmpty()) {
+			String profileImageId = parseStringSafe((String)userInfo.get("profileImageId"), null);
+			if (profileImageId != null) {
 				profileImageIds.add(profileImageId);
 			}
 		}
 
-		// 배치 조회 (한 번씩만 DB 조회)
 		Map<Long, Title> titleMap = titleRepository.findByIdIn(titleIds)
 												   .stream()
 												   .collect(Collectors.toMap(Title::getId, Function.identity()));
@@ -106,22 +102,18 @@ public class RankingSyncScheduler {
 
 			Map<Object, Object> userInfo = userInfoMap.get(userId);
 
-			String nickname = (String)userInfo.get("nickname");
-			String titleIdStr = (String)userInfo.get("titleId");
-			String profileImageId = (String)userInfo.get("profileImageId");
-			int level = Integer.parseInt((String)userInfo.get("level"));
+			String nickname = parseStringSafe((String)userInfo.get("nickname"), "Unknown");
+			int level = parseIntSafe((String)userInfo.get("level"), 0);
 
 			Title title = null;
-			if (titleIdStr != null && !titleIdStr.isEmpty()) {
-				try {
-					Long tid = Long.valueOf(titleIdStr);
-					title = titleMap.get(tid);
-				} catch (NumberFormatException ignored) {
-				}
+			Long titleId = parseLongSafe((String)userInfo.get("titleId"));
+			if (titleId != null) {
+				title = titleMap.get(titleId);
 			}
 
 			AttachmentFile profileImage = null;
-			if (profileImageId != null && !profileImageId.isEmpty()) {
+			String profileImageId = parseStringSafe((String)userInfo.get("profileImageId"), null);
+			if (profileImageId != null) {
 				profileImage = profileImageMap.get(profileImageId);
 			}
 
@@ -136,7 +128,33 @@ public class RankingSyncScheduler {
 			rankNo++;
 		}
 
-		// 일괄 저장
 		rankingRepository.saveAll(rankingsToSave);
 	}
+
+	private int parseIntSafe(String value, int defaultValue) {
+		if (value == null || value.isEmpty()) {
+			return defaultValue;
+		}
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
+	private Long parseLongSafe(String value) {
+		if (value == null || value.isEmpty()) {
+			return null;
+		}
+		try {
+			return Long.valueOf(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	private String parseStringSafe(String value, String defaultValue) {
+		return (value == null || value.isEmpty()) ? defaultValue : value;
+	}
+
 }
