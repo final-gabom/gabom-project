@@ -28,11 +28,10 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
 
     private final SocialLoginService socialLoginService;
 
-
-    @Value("${kakao.client.id}")
+    @Value("${KAKAO_CLIENT_ID}")
     private String kakaoClientId;
 
-    @Value("${kakao.redirect.uri}")
+    @Value("${KAKAO_REDIRECT_URI}")
     private String kakaoRedirectUri;
 
     @Override
@@ -67,7 +66,8 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
                 request,
                 String.class
         );
-
+        // 여기 로그 추가 (사용자 정보 응답 출력)
+        log.debug("카카오 사용자 정보 응답: {}", response.getBody());
         try {
             // 응답 JSON 파싱
             JsonNode root = new ObjectMapper().readTree(response.getBody());
@@ -80,7 +80,7 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
             // 공통 사용자 정보 DTO 생성
             OAuthUserInfo userInfo = new OAuthUserInfo(OAuthProvider.KAKAO, String.valueOf(providerId), email);
 
-            return socialLoginService.loginOrSignUp(userInfo);
+            return socialLoginService.socialLogin(userInfo);
 
         } catch (Exception e) {
             log.error("카카오 로그인 처리 중 오류 발생", e);
@@ -106,7 +106,8 @@ public class KakaoOAuthLoginService implements SocialOAuthLoginService {
 
         // 토큰 요청 POST
         ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, request, String.class);
-
+        // 여기 로그 추가 (응답 바디 출력)
+        log.debug("카카오 액세스 토큰 응답: {}", response.getBody());
         try {
             ObjectMapper mapper = new ObjectMapper();
             SsoAuthToken token = mapper.readValue(response.getBody(), SsoAuthToken.class);
