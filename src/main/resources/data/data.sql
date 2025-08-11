@@ -1,3 +1,5 @@
+DELETE
+FROM level;
 INSERT INTO level (level, required_exp)
 VALUES (1, 0);
 INSERT INTO level (level, required_exp)
