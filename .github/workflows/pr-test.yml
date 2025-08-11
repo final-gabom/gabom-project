@@ -108,3 +108,9 @@ jobs:
         run: |
           echo "==== BUILD DIR TREE ===="
           ls -R build || true
+
+      - name: Debug build directory
+        if: failure()
+        run: |
+          echo "==== BUILD DIRECTORY STRUCTURE ===="
+          ls -R build || true
