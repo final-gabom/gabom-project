@@ -102,3 +102,9 @@ jobs:
           path: |
             build/reports/tests/test/**
             build/test-results/test/**
+
+      - name: List build dir (debug)
+        if: failure()
+        run: |
+          echo "==== BUILD DIR TREE ===="
+          ls -R build || true
