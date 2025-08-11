@@ -29,7 +29,7 @@ public class Eupmyeondong {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sggCd", nullable = false, updatable = false, insertable = false)
 	private Sigungu sigungu;
-	@Column(nullable = false)
+	@Column(nullable = false, length=5)
 	private String sggCd;
 
 	/** 읍면동명 */

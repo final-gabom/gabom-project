@@ -47,7 +47,8 @@ public class Place extends BaseTimeEntity {
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private final List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
-
+	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
+	private final List<MissionProof> missionProofs = new ArrayList<>();
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -60,8 +61,9 @@ public class Place extends BaseTimeEntity {
 	private String title;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "addressId", insertable = false, updatable = false)
+	@JoinColumn(name = "address_id", insertable = false, updatable = false)
 	private Address address;
+	@Column(name = "address_id")
 	private Long addressId;
 
 	@Lob
@@ -77,9 +79,6 @@ public class Place extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private PlaceStatus status;
-
-	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
-	private final List<MissionProof> missionProofs = new ArrayList<>();
 
 	public Place(PlaceCreateRequest request, User user) {
 		this.user = user;
@@ -123,5 +122,10 @@ public class Place extends BaseTimeEntity {
 
 	public void setAddressId(Long addressId) {
 		this.addressId = addressId;
+	}
+
+	public void linkAddress(Address addr) {
+		this.address = addr;
+		this.addressId = addr.getId();
 	}
 }
