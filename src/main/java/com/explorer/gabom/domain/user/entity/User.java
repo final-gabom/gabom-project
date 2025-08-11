@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+<<<<<<< HEAD
+=======
+import com.explorer.gabom.domain.address.entity.Address;
+>>>>>>> develop
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.title.entity.Title;
 import com.explorer.gabom.domain.title.entity.UserTitle;
@@ -65,6 +69,7 @@ public class User extends BaseTimeEntity {
 	@JoinColumn(name = "title_id")
 	private Title title;
 
+<<<<<<< HEAD
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<UserTitle> userTitles = new ArrayList<>();
 
@@ -146,6 +151,75 @@ public class User extends BaseTimeEntity {
 
 	public void changePassword(String encodedPassword) {
 		this.password = encodedPassword;
+=======
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "addressId", insertable = false, updatable = false)
+	private Address address;
+	private Long addressId;
+
+	@Column(nullable = false)
+	private Integer point;
+
+	@Column(nullable = false)
+	private Integer level;
+
+	@Column(nullable = false)
+	private Integer exp;
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<UserTitle> userTitles = new ArrayList<>();
+
+	@Builder
+	public User(Long id, String email, String password, String nickname, UserRole userRole) {
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.userRole = userRole;
+		this.status = UserStatus.ACTIVE;
+		this.point = 0;
+		this.level = 1;
+		this.exp = 0;
+	}
+
+	public void addPoint(int point) {
+		this.point += point;
+	}
+
+	public void addExp(int exp) {
+		this.exp += exp;
+	}
+
+	public void addTitle(Title title) {
+		boolean alreadyHas = userTitles.stream().anyMatch(userTitle -> userTitle.getTitle().equals(title));
+		if (!alreadyHas) {
+			userTitles.add(new UserTitle(this, title));
+		}
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updateProfileImg(AttachmentFile profileImg) {
+		this.profileImg = profileImg;
+	}
+
+	public void setTitle(Title newTitle) {
+		this.title = newTitle;
+	}
+
+	public void updatePassword(String encodedNewPassword) {
+		this.password = encodedNewPassword;
+	}
+
+	public void changePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
+	public void updateAddressId(Long addressId) {
+		this.addressId = addressId;
+>>>>>>> develop
 	}
 }
 

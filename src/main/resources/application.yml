@@ -1,8 +1,12 @@
 spring:
   config:
-    import: "optional:classpath:/application-${spring.profiles.active}.yml"
+    import: optional:file:.env[.properties]
   profiles:
     group:
       dev: dev
       local: local
-    active: local
+
+# 법정동 코드 초기 세팅용 설정. true로 설정하면 법정동 코드 테이블에 초기 데이터를 추가합니다.
+address:
+  import:
+    enabled: ${ADDRESS_IMPORT_ENABLED}

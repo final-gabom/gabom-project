@@ -1,14 +1,9 @@
 package com.explorer.gabom.domain.user.controller;
 
-import com.explorer.gabom.domain.title.entity.Title;
-import com.explorer.gabom.domain.title.repository.TitleRepository;
-import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
-import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
-import com.explorer.gabom.domain.user.entity.User;
-import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserRole;
-import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,17 +15,21 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.explorer.gabom.domain.title.entity.Title;
+import com.explorer.gabom.domain.title.repository.TitleRepository;
+import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
+import com.explorer.gabom.domain.user.dto.request.UserUpdateRequest;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
+import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 public class UserControllerIntegrationTest {
-	private static final String NEW_NICKNAME  = "newNick";
-	private static final String NEW_ADDRESS   = "서울시 강남구";
+	private static final String NEW_NICKNAME = "newNick";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -91,9 +90,6 @@ public class UserControllerIntegrationTest {
 	void updateProfile_Success() throws Exception {
 		UserUpdateRequest updateRequest = new UserUpdateRequest(
 			NEW_NICKNAME,
-			NEW_ADDRESS,
-			null,
-			null,
 			null
 		);
 
@@ -104,7 +100,6 @@ public class UserControllerIntegrationTest {
 			   .andExpect(status().isOk())
 			   .andExpect(jsonPath("$.success").value(true))
 			   .andExpect(jsonPath("$.message").value("프로필 수정을 완료하였습니다."))
-			   .andExpect(jsonPath("$.data.nickname").value(NEW_NICKNAME))
-			   .andExpect(jsonPath("$.data.address").value(NEW_ADDRESS));
+			   .andExpect(jsonPath("$.data.nickname").value(NEW_NICKNAME));
 	}
 }

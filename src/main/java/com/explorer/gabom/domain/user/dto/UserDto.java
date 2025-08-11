@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.user.dto;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.title.dto.TitleDto;
 import com.explorer.gabom.domain.user.entity.User;
 
@@ -27,8 +28,8 @@ public class UserDto {
 	@Schema(description = "칭호 정보", nullable = true)
 	private final TitleDto title;
 
-	@Schema(description = "주소", example = "서울시 강남구", nullable = true)
-	private final String address;
+	@Schema(description = "주소 정보", nullable = true)
+	private final AddressDto address;
 
 	@Schema(description = "레벨", example = "5")
 	private final Integer level;
@@ -40,12 +41,37 @@ public class UserDto {
 	private final Integer point;
 
 	public static UserDto toDto(User user) {
-		return UserDto.builder().id(user.getId())
+		return UserDto.builder()
+					  .id(user.getId())
 					  .nickname(user.getNickname())
 					  .email(user.getEmail())
-					  .profileImgUrl(user.getProfileImg() != null ? user.getProfileImg().getFilePath() : null)
-					  .title(user.getTitle() != null ? TitleDto.toDto(user.getTitle()) : null)
-					  .address(user.getAddress() != null ? user.getAddress() : null)
+					  .profileImgUrl(user.getProfileImg() != null
+									 ? user.getProfileImg().getFilePath()
+									 : null)
+					  .title(user.getTitle() != null
+							 ? TitleDto.toDto(user.getTitle())
+							 : null)
+					  .address(user.getAddress() != null
+							   ? AddressDto.toDto(user.getAddress())
+							   : null)
+					  .level(user.getLevel())
+					  .exp(user.getExp())
+					  .point(user.getPoint())
+					  .build();
+	}
+
+	public static UserDto toDto(User user, AddressDto address) {
+		return UserDto.builder()
+					  .id(user.getId())
+					  .nickname(user.getNickname())
+					  .email(user.getEmail())
+					  .profileImgUrl(user.getProfileImg() != null
+									 ? user.getProfileImg().getFilePath()
+									 : null)
+					  .title(user.getTitle() != null
+							 ? TitleDto.toDto(user.getTitle())
+							 : null)
+					  .address(address)
 					  .level(user.getLevel())
 					  .exp(user.getExp())
 					  .point(user.getPoint())
