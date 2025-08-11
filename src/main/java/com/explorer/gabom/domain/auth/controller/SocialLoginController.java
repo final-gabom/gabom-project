@@ -27,43 +27,28 @@ public class SocialLoginController {
     private final SocialLoginServiceFactory socialLoginServiceFactory;
     private final SocialLoginService socialLoginService;
 
-    // 카카오 로그인 페이지로 이동 (리다이렉트)
-    @GetMapping("/kakao")
-    public void redirectToKakao(HttpServletResponse response) throws IOException {
-                String kakaoAuthUrl = socialLoginService.buildKakaoAuthUrl();
-        response.sendRedirect(kakaoAuthUrl);
+    // 로그인 페이지로 이동 (리다이렉트)
+    public void redirectToProvider(
+            @PathVariable String provider,
+            HttpServletResponse response) throws IOException {
+        // provider 대소문자 구분없이 enum에 맞게 변환
+        OAuthProvider oauthProvider = OAuthProvider.valueOf(provider.toUpperCase());
+        SocialOAuthLoginService service = socialLoginServiceFactory.getService(oauthProvider);
+        String authorizationUrl = service.getAuthorizationUrl();
+        response.sendRedirect(authorizationUrl);
     }
+    // 인가 코드 받고 로그인 or 회원가입 + JWT 토큰 발급 응답
+    @GetMapping("/{provider}/callback")
+    public ResponseEntity<ApiResponse<SocialLoginResponse>> oAuthCallback(
+            @PathVariable String provider,
+            @RequestParam String code) {
 
-    @GetMapping("/kakao/callback")
-    public ResponseEntity<?> kakaoCallback(@RequestParam String code) {
-        // 받은 인가 코드로 액세스 토큰 요청 및 로그인 처리 로직 작성
-        System.out.println("인가 코드: " + code);
+        OAuthProvider oauthProvider = OAuthProvider.valueOf(provider.toUpperCase());
+        SocialOAuthLoginService service = socialLoginServiceFactory.getService(oauthProvider);
 
-        // 예시: socialLoginServiceFactory에서 카카오 서비스 가져와서 로그인 처리
-        SocialOAuthLoginService kakaoService = socialLoginServiceFactory.getService(OAuthProvider.KAKAO);
-        SocialLoginResponse response = kakaoService.login(code);
+        // 로그인 및 회원가입 통합 처리 후 토큰 발급까지 수행
+        SocialLoginResponse loginResponse = service.login(code);
 
-        return ResponseEntity.ok(ApiResponse.success("카카오 로그인 성공", response));
-    }
-
-    @PostMapping("/social-login")
-    public ResponseEntity<ApiResponse<SocialLoginResponse>> socialLogin(
-            @RequestBody @Valid SocialLoginRequest request) {
-
-        SocialOAuthLoginService service = socialLoginServiceFactory.getService(request.getProvider());
-        SocialLoginResponse response = service.login(request.getCode());
-        return ResponseEntity.ok(ApiResponse.success("소셜 로그인에 성공하였습니다.", response));
-    }
-
-    // 소셜 회원가입 API
-    @PostMapping("/social-signup")
-    public ResponseEntity<ApiResponse<TokenResponse>> socialSignup(@RequestBody @Valid SignupRequest signupRequest) {
-        // isSocial = true로 회원가입 처리
-        UserSummaryDto userDto = socialLoginService.signup(signupRequest, true);
-
-        // 회원가입 후 바로 JWT 토큰 생성
-        TokenResponse tokenResponse = socialLoginService.loginSocialGenerateToken(userDto.getEmail());
-
-        return ResponseEntity.ok(ApiResponse.success("회원가입 성공", tokenResponse));
+        return ResponseEntity.ok(ApiResponse.success(oauthProvider.name() + " 로그인 성공", loginResponse));
     }
 }

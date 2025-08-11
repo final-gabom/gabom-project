@@ -10,4 +10,6 @@ public interface SocialOAuthLoginService {
     OAuthProvider getProvider();
 
    String getAccessToken(String code);
+    // 인증 URL 반환 메서드 추가
+    String getAuthorizationUrl();
 }

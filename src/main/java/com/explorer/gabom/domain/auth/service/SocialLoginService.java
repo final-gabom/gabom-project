@@ -1,106 +1,62 @@
 package com.explorer.gabom.domain.auth.service;
 
 
-import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
-import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
-import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
-import com.explorer.gabom.global.exception.CustomException;
-import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
+import com.explorer.gabom.global.oauth.dto.OAuthUserInfo;
+import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SocialLoginService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
+    private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
-    private final EmailCodeStorageService emailCodeStorageService;
     private final RedisTokenService redisTokenService;
 
+    // OAuthUserInfo 기반 로그인 또는 신규 회원가입 후 토큰 발급
     @Transactional
-    public UserSummaryDto signup(SignupRequest request, boolean isSocial) {
-        log.info("회원가입 시도: email={}", request.getEmail());
-        // 이메일 중복 체크
-        if (userRepository.existsByEmail(request.getEmail())) {
-            log.warn("이메일 중복: {}", request.getEmail());
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
-        // 이메일 인증 체크
-        if (!isSocial) {
-            EmailCodeVerifyRequest verifiedRequest = EmailCodeVerifyRequest.onlyEmail(request.getEmail());
-            if (!emailCodeStorageService.isEmailVerified(verifiedRequest)) {
-                throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
-            }
-        }
-        // 닉네임 중복 체크
-        if (userRepository.existsByNickname(request.getNickname())) {
-            throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
-        }
-        // 비밀번호 (소셜로그인 회원가입시 비밀번호 정보가 없을 수 있음)
-        String encodePassword = "";
-        if (!isSocial) {
-            encodePassword = passwordEncoder.encode(request.getPassword());
-        }
+    public SocialLoginResponse loginOrSignUp(OAuthUserInfo userInfo) {
+        // 1. 이메일로 활성화된 유저가 있는지 조회
+        User user = userRepository.findByEmailAndStatus(userInfo.getEmail(), UserStatus.ACTIVE)
+                // 2. 없으면 신규 회원가입 처리
+                .orElseGet(() -> createUser(userInfo));
 
-        // user
-        log.info("회원 저장 전");
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(encodePassword)
-                .nickname(request.getNickname())
-                .userRole(request.getRole())
-                .provider(request.getProvider())
-                .providerId(request.getProviderId())
-                .status(UserStatus.ACTIVE)
-                .build();
-
-        User savedUser = userRepository.save(user);
-        log.info("회원 저장 완료: id={}, email={}", savedUser.getId(), savedUser.getEmail());
-        return UserSummaryDto.toDto(savedUser);
-    }
-
-    //회원가입 부분 토큰생성하는 메서드
-    @Transactional(readOnly = true)
-    public TokenResponse loginSocialGenerateToken(String email) {
-        User user = userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+        // 3. JWT AccessToken, RefreshToken 생성
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
         String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
+        // 4. Redis에 RefreshToken 저장 (유효기간 포함)
         redisTokenService.saveRefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpiration());
 
-        return TokenResponse.builder()
+        // 5. 로그인 응답 생성 및 반환
+        return SocialLoginResponse.builder()
+                .providerId(userInfo.getProviderId())
+                .email(user.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
 
-    @Value("${kakao.client.id}")
-    private String clientId;
+    //회원가입 부분 토큰생성하는 메서드
+    private User createUser(OAuthUserInfo userInfo) {
+        User user = User.builder()
+                .email(userInfo.getEmail())
+                .nickname(userInfo.getNickname() != null ? userInfo.getNickname() : "User" + System.currentTimeMillis())
+                .password("")                                 // 소셜 로그인 회원가입 비밀번호 없음
+                .provider(userInfo.getProvider())
+                .providerId(userInfo.getProviderId())
+                .status(UserStatus.ACTIVE)
+                .build();
 
-    @Value("${kakao.redirect.uri}")
-    private String redirectUri;
-
-    public String buildKakaoAuthUrl() {
-        return UriComponentsBuilder.fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
-                .queryParam("client_id", clientId)
-                .queryParam("redirect_uri", redirectUri)
-                .queryParam("response_type", "code")
-                .toUriString();
+        return userRepository.save(user);
     }
 }
