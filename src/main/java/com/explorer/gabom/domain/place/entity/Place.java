@@ -125,7 +125,6 @@ public class Place extends BaseTimeEntity {
 	}
 
 	public void linkAddress(Address addr) {
-		this.address = addr;
 		this.addressId = addr.getId();
 	}
 }
