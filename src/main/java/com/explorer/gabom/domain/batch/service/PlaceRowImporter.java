@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.address.repository.AddressRepository;
-import com.explorer.gabom.domain.batch.AddressRefResolver;
-import com.explorer.gabom.domain.batch.dto.PlaceCsvRow;
+import com.explorer.gabom.domain.batch.dto.PlaceCsv;
+import com.explorer.gabom.domain.batch.util.AddressRefResolver;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
@@ -30,11 +30,11 @@ public class PlaceRowImporter {
 	 * - 트랜잭션 경계가 행마다 새로 열리므로, 이전 실패로 인한 rollback-only 전파를 막음.
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void importOne(PlaceCsvRow row, User admin) {
+	public void importOne(PlaceCsv row, User admin) {
 		// 1) Place 생성/저장
 		//    - CSV에서 들어온 필드들을 그대로 매핑
 		//    - user는 “관리자 계정(고정)”으로 귀속
-		//    - status는 잘못된 값이면 PENDING으로 보정(parseStatus)
+		//    - status는 APPROVED
 		Place place = Place.builder()
 						   .user(admin)
 						   .title(row.getTitle())
@@ -46,10 +46,7 @@ public class PlaceRowImporter {
 		place = placeRepository.save(place);  // ID 확정 (address.targetId로 사용 예정)
 
 		// 2) 주소 참조 해석
-		//    - emdCd가 CSV에 있으면 그대로 사용
-		//    - 없으면 address 문자열을 파싱해 시/군/동을 유추하여 DB에서 해당 EMD(읍면동) 엔티티를 조회
-		//    - AddressRefResolver 내부에서 시도/시군구/읍면동 조회 규칙(정확일치/startsWith/endsWith 등) 처리
-		var emd = addressRefResolver.resolveEmd(row.getAddress(), row.getEmdCd());
+		var emd = addressRefResolver.byEmdCd(row.getEmdCd());
 
 		// 3) Address 생성/저장
 		//    - addressTypeCd: enum 매핑을 위한 실제 코드값(문자열) 컬럼. enum 필드는 읽기전용일 수 있어 코드컬럼에 직접 세팅
@@ -75,19 +72,13 @@ public class PlaceRowImporter {
 		// 5) 업데이트 반영
 		//    - link 이후 place의 FK(address_id)가 갱신되므로 다시 save
 		placeRepository.save(place);
-
-		// (선택) 디버깅에 유용:
-		// log.debug("Imported placeId={}, addressId={}", place.getId(), addr.getId());
 	}
 
 	/**
-	 * CSV에서 넘어온 status 문자열을 안전하게 PlaceStatus로 변환.
-	 * - null 또는 유효하지 않은 값이면 PENDING으로 대체하여 저장.
+	 * 초기데이터 APPROVED 로 저장
 	 */
 	private PlaceStatus parseStatus(String raw) {
-		if (raw == null) return PlaceStatus.PENDING;
-		try { return PlaceStatus.valueOf(raw.trim().toUpperCase()); }
-		catch (IllegalArgumentException e) { return PlaceStatus.PENDING; }
+		return PlaceStatus.APPROVED;
 	}
 }
 

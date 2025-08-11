@@ -2,7 +2,7 @@ package com.explorer.gabom.domain.batch.service;
 
 import org.springframework.stereotype.Service;
 
-import com.explorer.gabom.domain.batch.CsvImporter;
+import com.explorer.gabom.domain.batch.util.CsvImporter;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 
@@ -39,6 +39,11 @@ public class PlaceImportService {
 
 		// 3) 행 단위 처리 루프
 		for (var row : rows) {
+			// emdcd 없는 행 스킵(Blank 사용하여 공백 포함)
+			if (row.getEmdCd() == null || row.getEmdCd().isBlank()) {
+				log.warn("[PlaceImport] skip title='{}' reason=emdCd 누락", row.getTitle());
+				continue;
+			}
 			try {
 				// - 실제 저장은 행 전용 컴포넌트에서 수행 (트랜잭션 경계도 거기서 관리)
 				rowImporter.importOne(row, admin);

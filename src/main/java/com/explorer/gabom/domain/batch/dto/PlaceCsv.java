@@ -7,14 +7,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PlaceCsvRow {
+public class PlaceCsv {
 	@CsvBindByName(column = "id", required = false)
 	private Long id;
 
 	@CsvBindByName(column = "title")
 	private String title;
 
-	@CsvBindByName(column = "address")
+	@CsvBindByName(column = "address_detail")
 	private String address;
 
 	@CsvBindByName(column = "lat")
@@ -26,17 +26,18 @@ public class PlaceCsvRow {
 	@CsvBindByName(column = "content")
 	private String content;
 
-	@CsvBindByName(column = "proofMethod")
+	@CsvBindByName(column = "proof_method")
 	private String proofMethod;
 
-	@CsvBindByName(column = "viewCount", required = false)
+	@CsvBindByName(column = "view_count", required = false)
 	private Integer viewCount;
 
 	@CsvBindByName(column = "status")
 	private String status;
 
 	// 있으면 그대로 사용, 없으면 address에서 추출해서 매핑
-	@CsvBindByName(column = "emdCd", required = false)    private String emdCd;
+	@CsvBindByName(column = "emd_cd", required = false)
+	private String emdCd;
 }
 
 

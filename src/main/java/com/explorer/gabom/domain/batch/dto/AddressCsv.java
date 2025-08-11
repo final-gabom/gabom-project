@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LawAddressCode {
+public class AddressCsv {
 
 	@CsvBindByPosition(position = 0)
 	private String code;

@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.batch;
+package com.explorer.gabom.domain.batch.roader;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -30,11 +30,18 @@ public class PlaceLoader implements CommandLineRunner {
 			log.info("[PlaceLoader] 비활성화됨. 스킵");
 			return;
 		}
+
+		int saved;
 		try {
-			// 2) 실제 임포트 시작
 			log.info("[PlaceLoader] 시작 (CSV → DB)");
-			service.loadFromClasspath();
-			log.info("[PlaceLoader] 완료.");
+			long t0 = System.nanoTime();
+
+			saved = service.loadFromClasspath();
+
+			long t1 = System.nanoTime();
+
+			long durationMs = (t1 - t0) / 1_000_000; // 밀리초 단위
+			log.info("[PlaceLoader] 완료. 총 {}건 저장됨. 소요 시간: {} ms (약 {}초)", saved, durationMs, durationMs / 1000.0);
 		} catch (Exception e) {
 			// 3) 배치 실패 시 전체 애플리케이션 부팅을 멈출지 여부
 			//    - 현재는 IllegalStateException으로 래핑 후 throw → 부팅 실패

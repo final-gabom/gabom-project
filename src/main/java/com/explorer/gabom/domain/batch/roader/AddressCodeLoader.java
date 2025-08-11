@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.batch;
+package com.explorer.gabom.domain.batch.roader;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
