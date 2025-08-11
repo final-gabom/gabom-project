@@ -1,7 +1,6 @@
 package com.explorer.gabom.domain.place.controller;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,8 +17,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 
 @Tag(
 	name = "PlaceAPI",
@@ -61,11 +60,20 @@ public interface PlaceControllerDocs {
 		@Parameter(description = "현재 위치의 경도", required = true)
 		@RequestParam Double lng,
 
-		@Parameter(description = "검색 키워드 (선택)", required = false)
+		@Parameter(description = "검색 키워드 (선택)")
 		@RequestParam(required = false) String keyword,
 
+		@Parameter(description = "시도 코드 ex.\"12\"")
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
+
+		@Parameter(description = "시군구 코드 ex.\"12140\"")
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
+
+		@Parameter(description = "읍면동 코드 ex.\"1214030000\"")
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+
 		@Parameter(description = "페이지 정보 (기본값: 거리 기준 오름차순)", required = false)
-		@PageableDefault(page = 0, size = 10, sort = "distance", direction = Sort.Direction.ASC) Pageable pageable
+		@PageableDefault(page = 0, size = 10) Pageable pageable
 	);
 
 	@Operation(
