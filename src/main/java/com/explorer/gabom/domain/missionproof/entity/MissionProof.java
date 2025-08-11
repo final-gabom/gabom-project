@@ -54,6 +54,7 @@ public class MissionProof extends BaseTimeEntity {
 	@Lob
 	private String content;
 
+	@Builder.Default
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "mission_proof_id")
 	private List<AttachmentFile> imageFiles = new ArrayList<>();
