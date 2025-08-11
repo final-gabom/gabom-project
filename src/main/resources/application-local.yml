@@ -15,10 +15,6 @@ spring:
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
     username: ${LOCAL_MYSQL_USERNAME}
     password: ${LOCAL_MYSQL_PASSWORD}
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data/level.sql
 
   data:
     redis:
