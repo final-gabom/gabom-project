@@ -1,6 +1,5 @@
 package com.explorer.gabom.global.scheduler;
 
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.explorer.gabom.domain.exploration.entity.Exploration;
@@ -20,31 +20,26 @@ import com.explorer.gabom.domain.notification.type.NotificationType;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Value;
-
 @Component
 @RequiredArgsConstructor
 public class ExplorationAlarmScheduler {
 
 	private static final Logger log = LoggerFactory.getLogger(ExplorationAlarmScheduler.class);
-
-    //  운영 기본: 30분 전
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+	private final NotificationService notificationService;
+	private final ExplorationRepository explorationRepository;
+	private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
+	//  운영 기본: 30분 전
 	@Value("${spring.exploration.alarm.almost-minutes:30}")
 	private long almostMinutes;
-
 	// 로컬 테스트용: 초 단위 임박 (설정되면 minutes 대신 이 값 우선)
 	@Value("${spring.exploration.alarm.almost-seconds:0}")
 	private long almostSeconds;
 
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-	private final NotificationService notificationService;
-	private final ExplorationRepository explorationRepository;
-
-	private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
-
 	private String key(Long id, String kind) {
 		return id + ":" + kind;
 	}
+
 	public void schedule(Exploration e) {
 		LocalDateTime endAt = e.getEndAt();
 		LocalDateTime almostAt = (almostSeconds > 0)
@@ -96,9 +91,11 @@ public class ExplorationAlarmScheduler {
 
 	public void cancel(Long explorationId) {
 		var a = futures.remove(key(explorationId, "almost"));
-		if (a != null) a.cancel(false);
+		if (a != null)
+			a.cancel(false);
 		var b = futures.remove(key(explorationId, "expire"));
-		if (b != null) b.cancel(false);
+		if (b != null)
+			b.cancel(false);
 	}
 
 	// 연장 시 재등록

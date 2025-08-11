@@ -29,19 +29,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExplorationService {
 
-	// 운영 기본 만료시간(시간)
-	@Value("${spring.exploration.duration.hours:3}")
-	private long explorationDurationHours;
-
-	// 로컬 즉시 확인용(초) – 설정되면 hours 대신 이 값 우선
-	@Value("${spring.exploration.test.duration-seconds:0}")
-	private long testDurationSeconds;
-
 	private final UserRepository userRepository;
 	private final PlaceRepository placeRepository;
 	private final ExplorationRepository explorationRepository;
 	private final AuthorValidator authorValidator;
 	private final ExplorationAlarmScheduler alarmScheduler;
+	// 운영 기본 만료시간(시간)
+	@Value("${spring.exploration.duration.hours:3}")
+	private long explorationDurationHours;
+	// 로컬 즉시 확인용(초) – 설정되면 hours 대신 이 값 우선
+	@Value("${spring.exploration.test.duration-seconds:0}")
+	private long testDurationSeconds;
 
 	// 탐험 시작
 	@Transactional
@@ -69,13 +67,11 @@ public class ExplorationService {
 		int rewardExp = RewardCalculator.calculate(distance);
 		int rewardPoint = RewardCalculator.calculate(distance);
 
-
 		// 시간 설정 (로컬 테스트면 초 단위, 운영은 시간 단위)
 		LocalDateTime startAt = LocalDateTime.now();
 		LocalDateTime endAt = (testDurationSeconds > 0)
 							  ? startAt.plusSeconds(testDurationSeconds)
 							  : startAt.plusHours(explorationDurationHours);
-
 
 		// 엔티티 생성 및 저장 (상태는 IN_PROGRESS 보장)
 		Exploration exploration = Exploration.builder()
