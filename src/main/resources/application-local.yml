@@ -10,7 +10,7 @@ logging:
 spring:
   config:
     import: optional:file:.env[.properties]
-    
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gabom?serverTimezone=Asia/Seoul
@@ -74,3 +74,12 @@ springdoc:
     enabled: true               # Swagger UI 사용여부 : 접근 경로 => <http://localhost:8080/swagger-ui/index.html>
     tags-sorter: alpha          # alpha: 알파벳 순 태그 정렬, method: HTTP Method 순 정렬
     operations-sorter: alpha
+
+    exploration:
+      duration:
+        hours: 3              # 운영 기본값 유지
+      test:
+        duration-seconds: 40  # 로컬: 시작 후 40초에 만료(= 바로 확인)
+      alarm:
+        almost-minutes: 30    # 운영 기본(유지)
+        almost-seconds: 10    # 로컬: 만료 10초 전에 임박 알림

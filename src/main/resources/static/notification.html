@@ -1,79 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>WebSocket Notification Test</title>
+    <meta charset="UTF-8" />
+    <title>WebSocket Notification Tester</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        fieldset { margin-bottom: 16px; }
+        label { display: inline-block; width: 180px; vertical-align: top; }
+        input[type="text"], input[type="number"] { width: 420px; }
+        .row { margin: 6px 0; }
+        #log, #messages { white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; height: 220px; overflow: auto; background: #fafafa; }
+        .ok { color: #0a7; }
+        .err { color: #c00; }
+        .msg { margin: 6px 0; padding: 6px; border-left: 4px solid #ccc; background:#fff; }
+    </style>
 </head>
 <body>
-<h2>📬 WebSocket 실시간 알림 테스트</h2>
+<h2>📬 WebSocket 실시간 알림 테스트 (STOMP)</h2>
 
-<div>
-    <label>User ID: </label>
-    <input type="number" id="userId" value="1" />
-    <br/><br/>
-    <label>JWT Token: </label>
-    <input type="text" id="jwtToken" placeholder="Bearer 없이 토큰만 입력" style="width: 400px;" />
-    <br/><br/>
-    <button onclick="connect()">🔌 Connect</button>
-</div>
+<fieldset>
+    <legend>연결 설정</legend>
+    <div class="row">
+        <label>SockJS URL</label>
+        <input id="wsUrl" type="text" value="http://localhost:8080/ws" />
+    </div>
+    <div class="row">
+        <label>JWT Token</label>
+        <input id="jwtToken" type="text" placeholder="Bearer 없이 토큰만" />
+    </div>
+    <div class="row">
+        <label>토큰 전달 방식</label>
+        <select id="tokenMode">
+            <option value="header" selected>STOMP Header (Authorization: Bearer ...)</option>
+            <option value="query">QueryString (?token=...)</option>
+            <option value="none">전달 안 함</option>
+        </select>
+    </div>
+    <div class="row">
+        <label>STOMP Header userId</label>
+        <input id="stompUserId" type="text" placeholder="예: 123 (서버가 Principal에 심는다면)" />
+    </div>
+    <div class="row">
+        <button id="btnConnect">🔌 Connect</button>
+        <button id="btnDisconnect" disabled>❌ Disconnect</button>
+    </div>
+</fieldset>
 
-<hr/>
+<fieldset>
+    <legend>구독 설정</legend>
+    <div class="row">
+        <label>구독 모드</label>
+        <select id="subMode">
+            <option value="userQueue" selected>/user/queue/notifications (convertAndSendToUser)</option>
+            <option value="custom">/sub/notifications/{userId} (커스텀 브로드캐스트)</option>
+            <option value="manual">직접 입력</option>
+        </select>
+    </div>
+    <div class="row">
+        <label>userId (경로치환용)</label>
+        <input id="userId" type="number" value="1" />
+    </div>
+    <div class="row">
+        <label>수동 경로(선택)</label>
+        <input id="manualPath" type="text" value="/user/queue/notifications" />
+    </div>
+    <div class="row">
+        <button id="btnSubscribe" disabled>👂 Subscribe</button>
+        <button id="btnUnsubscribe" disabled>🛑 Unsubscribe</button>
+    </div>
+</fieldset>
 
-<div id="messages" style="margin-top:20px; padding:10px; border:1px solid #ccc;">
-    <h3>📨 받은 알림:</h3>
-</div>
+<fieldset>
+    <legend>로그</legend>
+    <div id="log"></div>
+</fieldset>
+
+<fieldset>
+    <legend>수신 메시지</legend>
+    <div id="messages"></div>
+</fieldset>
 
 <script>
     let stompClient = null;
-    let isConnected = false;
+    let subscription = null;
+
+    const $ = id => document.getElementById(id);
+    const log = (msg, cls='') => {
+        const line = document.createElement('div');
+        if (cls) line.className = cls;
+        line.textContent = msg;
+        $('log').appendChild(line);
+        $('log').scrollTop = $('log').scrollHeight;
+    };
+    const showMsg = (obj) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg';
+        const now = new Date().toISOString();
+        wrap.innerHTML = `
+      🕒 <b>${obj.createdAt || now}</b><br/>
+      💬 <b>${obj.message || JSON.stringify(obj)}</b><br/>
+      ${obj.link ? `🔗 <a href="${obj.link}" target="_blank">${obj.link}</a>` : ''}
+    `;
+        $('messages').appendChild(wrap);
+        $('messages').scrollTop = $('messages').scrollHeight;
+    };
+
+    function buildSubscribePath() {
+        const mode = $('subMode').value;
+        const uid = $('userId').value?.trim();
+        const manual = $('manualPath').value?.trim();
+
+        if (mode === 'userQueue') return '/user/queue/notifications';
+        if (mode === 'custom') {
+            if (!uid) { alert('userId 입력 필요'); throw new Error('userId required'); }
+            return `/sub/notifications/${uid}`;
+        }
+        if (!manual) { alert('수동 경로를 입력하세요'); throw new Error('manual path required'); }
+        return manual;
+    }
 
     function connect() {
-        const userId = document.getElementById("userId").value;
-        const token = document.getElementById("jwtToken").value;
+        const baseUrl = $('wsUrl').value.trim();
+        const token = $('jwtToken').value.trim();
+        const tokenMode = $('tokenMode').value;
+        const stompUserId = $('stompUserId').value.trim();
 
-        if (!userId || !token) {
-            alert("⚠️ userId 또는 token이 비어있습니다.");
-            return;
+        if (!baseUrl) return alert('SockJS URL을 입력하세요');
+
+        let url = baseUrl;
+        if (tokenMode === 'query' && token) {
+            url += (baseUrl.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token);
         }
 
-        // ✅ 중복 연결 방지
         if (stompClient && stompClient.connected) {
-            console.log("⚠️ 이미 연결되어 있습니다. 중복 연결 방지됨.");
+            log('이미 연결됨. 중복 연결 방지.', 'err');
             return;
         }
 
-        const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+        const socket = new SockJS(url);
         stompClient = Stomp.over(socket);
+        stompClient.debug = (s) => log(s.replace(/\n/g,' ⏎ ')); // 너무 시끄러우면 주석처리
 
-        stompClient.connect(
-            { userId: userId },
-            function (frame) {
-                console.log('✅ WebSocket 연결 성공:', frame);
+        const headers = {};
+        if (tokenMode === 'header' && token) headers['Authorization'] = 'Bearer ' + token;
+        if (stompUserId) headers['userId'] = stompUserId; // 서버에서 Principal 매핑에 사용하면 세팅
 
-                // ✅ 중복 subscribe 방지
-                if (!isConnected) {
-                    stompClient.subscribe('/user/queue/notifications', function (message) {
-                        const msg = JSON.parse(message.body);
-                        console.log("📥 알림 수신:", msg);
-
-                        document.getElementById("messages").innerHTML +=
-                            `<p>
-                  🕒 <b>${msg.createdAt}</b><br/>
-                  💬 <b>${msg.message}</b><br/>
-                  🔗 <a href="${msg.link}" target="_blank">${msg.link}</a>
-                </p><hr/>`;
-                    });
-                    isConnected = true;
-                }
-            },
-            function (error) {
-                console.error("❌ WebSocket 연결 실패:", error);
-                alert("연결 실패. 콘솔 로그를 확인하세요.");
-            }
-        );
+        stompClient.connect(headers, (frame) => {
+            log('CONNECTED: ' + frame, 'ok');
+            $('btnConnect').disabled = true;
+            $('btnDisconnect').disabled = false;
+            $('btnSubscribe').disabled = false;
+        }, (err) => {
+            log('CONNECT ERROR: ' + JSON.stringify(err), 'err');
+            alert('연결 실패. 콘솔/로그 확인');
+        });
     }
+
+    function disconnect() {
+        try {
+            if (subscription) { subscription.unsubscribe(); subscription = null; }
+            if (stompClient && stompClient.connected) stompClient.disconnect(() => log('DISCONNECTED', 'ok'));
+        } catch (e) { log('disconnect error: ' + e.message, 'err'); }
+        $('btnConnect').disabled = false;
+        $('btnDisconnect').disabled = true;
+        $('btnSubscribe').disabled = true;
+        $('btnUnsubscribe').disabled = true;
+    }
+
+    function subscribeNow() {
+        if (!stompClient || !stompClient.connected) return alert('먼저 Connect 하세요');
+        if (subscription) { log('이미 구독 중. 먼저 Unsubscribe 하세요.', 'err'); return; }
+
+        const path = buildSubscribePath();
+        subscription = stompClient.subscribe(path, (message) => {
+            try {
+                const body = JSON.parse(message.body);
+                log('MESSAGE from ' + path + ': ' + message.body, 'ok');
+                showMsg(body);
+            } catch (e) {
+                log('MESSAGE(parse-fail) ' + message.body, 'err');
+                showMsg({ message: message.body });
+            }
+        });
+        $('btnUnsubscribe').disabled = false;
+        log('SUBSCRIBED: ' + path, 'ok');
+    }
+
+    function unsubscribeNow() {
+        if (subscription) {
+            subscription.unsubscribe();
+            subscription = null;
+            $('btnUnsubscribe').disabled = true;
+            log('UNSUBSCRIBED', 'ok');
+        }
+    }
+
+    $('btnConnect').addEventListener('click', connect);
+    $('btnDisconnect').addEventListener('click', disconnect);
+    $('btnSubscribe').addEventListener('click', subscribeNow);
+    $('btnUnsubscribe').addEventListener('click', unsubscribeNow);
 </script>
 </body>
 </html>

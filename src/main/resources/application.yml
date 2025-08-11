@@ -6,3 +6,12 @@ spring:
       dev: dev
       local: local
     active: local
+
+  exploration:
+    duration:
+      hours: 3              # 운영 기본 유지
+    test:
+      duration-seconds: 40  # 로컬 테스트: 시작 후 40초 만료
+    alarm:
+      almost-minutes: 30    # 운영 기본
+      almost-seconds: 10    # 로컬 테스트: 만료 10초 전에 임박 알림
