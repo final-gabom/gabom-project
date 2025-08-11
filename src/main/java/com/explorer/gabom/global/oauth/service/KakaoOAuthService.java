@@ -22,7 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 @Service("KAKAO")
 @RequiredArgsConstructor
-public class KakaoOAuthLoginService implements SocialOAuthLoginService {
+public class KakaoOAuthService implements SocialOAuthLoginService {
 
     private final RestTemplate restTemplate;
 

@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.auth.repository;
 
 import com.explorer.gabom.domain.user.entity.SocialAccount;
 import com.explorer.gabom.domain.user.type.SocialProvider;
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
