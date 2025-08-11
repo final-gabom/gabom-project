@@ -85,18 +85,6 @@ public class User extends BaseTimeEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<UserTitle> userTitles = new ArrayList<>();
 
-	@Builder
-	public User(Long id, String email, String password, String nickname, UserRole userRole) {
-		this.id = id;
-		this.email = email;
-		this.password = password;
-		this.nickname = nickname;
-		this.userRole = userRole;
-		this.status = UserStatus.ACTIVE;
-		this.point = 0;
-		this.level = 1;
-		this.exp = 0;
-	}
     // 소셜 로그인 제공자 (kakao,google,naver 등)
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
