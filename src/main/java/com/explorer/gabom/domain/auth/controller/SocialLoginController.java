@@ -27,21 +27,10 @@ public class SocialLoginController {
     private final SocialLoginServiceFactory socialLoginServiceFactory;
     private final SocialLoginService socialLoginService;
 
-    @Value("${KAKAO_CLIENT_ID}")
-    private String clientId;
-
-    @Value("${KAKAO_REDIRECT_URI}")
-    private String redirectUri;
-
     // 카카오 로그인 페이지로 이동 (리다이렉트)
     @GetMapping("/kakao")
     public void redirectToKakao(HttpServletResponse response) throws IOException {
-        System.out.println("redirectUri = " + redirectUri);  // 이 값이 제대로 나오나요?
-        String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize" +
-                "?client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
-                "&response_type=code";
-
+                String kakaoAuthUrl = socialLoginService.buildKakaoAuthUrl();
         response.sendRedirect(kakaoAuthUrl);
     }
 
