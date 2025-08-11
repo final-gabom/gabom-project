@@ -96,21 +96,10 @@ jobs:
 
       - name: Upload test reports (if failed)
         if: failure()
+        continue-on-error: true  # 경로가 없어도 실패로 처리하지 않음
         uses: actions/upload-artifact@v4
         with:
           name: junit-test-reports
           path: |
-            build/reports/tests/test/**
-            build/test-results/test/**
-
-      - name: List build dir (debug)
-        if: failure()
-        run: |
-          echo "==== BUILD DIR TREE ===="
-          ls -R build || true
-
-      - name: Debug build directory
-        if: failure()
-        run: |
-          echo "==== BUILD DIRECTORY STRUCTURE ===="
-          ls -R build || true
+            **/reports/tests/**
+            **/test-results/test/**
