@@ -83,59 +83,22 @@ jobs:
             echo "⏳ waiting mysql... $i"; sleep 2
           done
 
-      # 진단 빌드: 에러 나도 즉시 종료하지 않고 리포트/코드 남김
-      - name: Build (diagnostic; skip tests)
-        shell: bash
+      - name: Run tests
+        run: ./gradlew clean test --no-daemon --info
+
+      - name: Show test report if failed
+        if: failure()
         run: |
-          set +e
-          ./gradlew clean build -x test --no-daemon --warning-mode all --stacktrace --info
-          BUILD_EXIT=$?
+          echo "==== TEST RESULTS (console) ===="
+          ./gradlew test --stacktrace || true
+          echo "==== TEST HTML REPORT PATH ===="
+          echo "Check: build/reports/tests/test/index.html"
 
-          echo "::group::Build Diagnostics"
-          echo "Build exit code: $BUILD_EXIT"
-          java -version || true
-          ./gradlew -v || true
-          echo "Reports under build/reports:"
-          ls -R build/reports || true
-          echo "::endgroup::"
-
-          set -e
-          echo "$BUILD_EXIT" > .build-exit
-
-      # 진단 테스트: 테스트도 같은 방식으로 원인 수집
-      - name: Test (diagnostic)
-        shell: bash
-        run: |
-          set +e
-          ./gradlew test --no-daemon --stacktrace --info
-          TEST_EXIT=$?
-
-          echo "::group::Test Diagnostics"
-          echo "Test exit code: $TEST_EXIT"
-          echo "Test reports under build/reports/tests:"
-          ls -R build/reports/tests || true
-          echo "::endgroup::"
-
-          set -e
-          echo "$TEST_EXIT" > .test-exit
-
-      # 실패 시 리포트 아티팩트 업로드
-      - name: Upload Gradle problem reports
-        if: always()
+      - name: Upload test reports (if failed)
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: gradle-reports
+          name: junit-test-reports
           path: |
-            build/reports/problems/**
-            build/reports/tests/**
-
-      # 최종 종료 코드 반영 (하나라도 실패면 실패 처리)
-      - name: Fail if build/test failed
-        shell: bash
-        run: |
-          BUILD_EXIT=$(cat .build-exit)
-          TEST_EXIT=$(cat .test-exit)
-          echo "BUILD_EXIT=$BUILD_EXIT, TEST_EXIT=$TEST_EXIT"
-          if [ "$BUILD_EXIT" -ne 0 ] || [ "$TEST_EXIT" -ne 0 ]; then
-            exit 1
-          fi
+            build/reports/tests/test/**
+            build/test-results/test/**
