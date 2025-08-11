@@ -91,7 +91,8 @@ jobs:
       - name: Run tests
         run: ./gradlew clean test --no-daemon --info
 
-      # 테스트 실패 시, 실패 내역과 HTML 리포트 경로를 콘솔에 출력
+      # 테스트 실패 시,
+      # 실패 내역과 HTML 리포트 경로를 콘솔에 출력
       - name: Show test report if failed
         if: failure()
         run: |
@@ -100,7 +101,7 @@ jobs:
           echo "==== TEST HTML REPORT PATH ===="
           echo "Check: build/reports/tests/test/index.html"
 
-      # 테스트 실패 시, HTML/JUnit 리포트를 워크플로우 아티팩트로 업로드해 다운로드 가능하게 함
+      # HTML/JUnit 리포트를 워크플로우 아티팩트로 업로드해 다운로드 가능하게 함
       - name: Upload test reports (if failed)
         if: failure()
         continue-on-error: true  # 경로가 없어도 실패로 처리하지 않음
@@ -110,8 +111,3 @@ jobs:
           path: |
             **/reports/tests/**
             **/test-results/test/**
-
-      # 테스트 실패 시, --stacktrace 옵션으로 상세 에러 로그를 콘솔에 재출력
-      - name: Show failed tests (console)
-        if: failure()
-        run: ./gradlew test --stacktrace || true
