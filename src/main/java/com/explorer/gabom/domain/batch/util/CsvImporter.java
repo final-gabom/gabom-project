@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CsvImporter {
 
-	private static final String PLACE_CSV_PATH = "classpath:data/place_import.csv";
+	private static final String PLACE_CSV_PATH = "classpath:data/combined_places.csv";
 	private static final String LAW_CODES_CSV_PATH = "classpath:data/emd_codes.csv";
 
 	private final ResourceLoader resourceLoader;
