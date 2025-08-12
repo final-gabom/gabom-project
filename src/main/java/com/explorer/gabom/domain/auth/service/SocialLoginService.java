@@ -1,7 +1,7 @@
 package com.explorer.gabom.domain.auth.service;
 
 
-import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.request.SocialSignupRequest;
 import com.explorer.gabom.domain.auth.repository.SocialAccountRepository;
 import com.explorer.gabom.domain.user.entity.SocialAccount;
 import com.explorer.gabom.domain.user.entity.User;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.user.type.UserRole;
+
 
 @Slf4j
 @Service
@@ -87,7 +88,7 @@ public class SocialLoginService {
 
 
     @Transactional
-    public SocialLoginResponse signUp(SignupRequest signupRequest) {
+    public SocialLoginResponse signUp(SocialSignupRequest signupRequest) {
         log.debug("signUp 호출: email={}, nickname={}, provider={}, providerId={}",
                 signupRequest.getEmail(), signupRequest.getNickname(), signupRequest.getProvider(), signupRequest.getProviderId());
         SocialProvider socialProvider = SocialProvider.fromOAuthProvider(signupRequest.getProvider());

@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.auth.controller;
 
-import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
+import com.explorer.gabom.domain.auth.dto.request.SocialSignupRequest;
 import com.explorer.gabom.domain.auth.service.SocialLoginService;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
@@ -56,7 +56,7 @@ public class SocialLoginController {
 
     @PostMapping("/social-signup")
     public ResponseEntity<ApiResponse<SocialLoginResponse>> signUp(
-            @Valid @RequestBody SignupRequest signupRequest) {
+            @Valid @RequestBody SocialSignupRequest signupRequest) {
 
 
         SocialLoginResponse response = socialLoginService.signUp(signupRequest);
