@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.user.type;
 
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
 
 public enum SocialProvider {
 	GOOGLE, KAKAO, NAVER;

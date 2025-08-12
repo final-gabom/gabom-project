@@ -1,6 +1,6 @@
 package com.explorer.gabom.domain.auth.dto.request;
 
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

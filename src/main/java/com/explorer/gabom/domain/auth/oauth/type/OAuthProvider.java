@@ -1,4 +1,4 @@
-package com.explorer.gabom.global.oauth.type;
+package com.explorer.gabom.domain.auth.oauth.type;
 
 
 public enum OAuthProvider {

@@ -1,4 +1,4 @@
-package com.explorer.gabom.global.oauth.dto.response;
+package com.explorer.gabom.domain.auth.oauth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

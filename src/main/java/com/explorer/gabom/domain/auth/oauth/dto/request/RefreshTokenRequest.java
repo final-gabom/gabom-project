@@ -1,4 +1,4 @@
-package com.explorer.gabom.global.oauth.dto.request;
+package com.explorer.gabom.domain.auth.oauth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

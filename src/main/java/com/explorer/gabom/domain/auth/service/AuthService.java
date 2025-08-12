@@ -1,6 +1,5 @@
 package com.explorer.gabom.domain.auth.service;
 
-import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
@@ -12,7 +11,7 @@ import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.common.SignupCommonService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
+import com.explorer.gabom.domain.auth.oauth.dto.response.TokenResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.explorer.gabom.global.validator.PasswordValidator;

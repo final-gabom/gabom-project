@@ -2,7 +2,7 @@ package com.explorer.gabom.domain.auth.dto.request;
 
 import com.explorer.gabom.domain.user.type.UserRole;
 
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

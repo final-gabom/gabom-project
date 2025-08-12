@@ -1,12 +1,12 @@
-package com.explorer.gabom.global.oauth.service;
+package com.explorer.gabom.domain.auth.oauth.service;
 
 import com.explorer.gabom.domain.auth.service.SocialLoginService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.global.oauth.dto.OAuthUserInfo;
-import com.explorer.gabom.global.oauth.dto.SsoAuthToken;
-import com.explorer.gabom.global.oauth.dto.response.SocialLoginResponse;
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.auth.oauth.dto.OAuthUserInfo;
+import com.explorer.gabom.domain.auth.oauth.dto.SsoAuthToken;
+import com.explorer.gabom.domain.auth.oauth.dto.response.SocialLoginResponse;
+import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

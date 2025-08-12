@@ -1,6 +1,6 @@
-package com.explorer.gabom.global.oauth.dto;
+package com.explorer.gabom.domain.auth.oauth.dto;
 
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

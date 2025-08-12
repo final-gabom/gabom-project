@@ -7,7 +7,7 @@ import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.global.dto.ApiResponse;
-import com.explorer.gabom.global.oauth.dto.response.TokenResponse;
+import com.explorer.gabom.domain.auth.oauth.dto.response.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
