@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  app:
+    # 컨테이너 이름
+    container_name: gabom-container
+
+    # 이미지 태그 (없으면 dev)
+    image: gabom-server:${TAG:-dev}
+
+    # 현재 디렉토리 기준 Dockerfile 경로
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # 호스트:컨테이너 포트 매핑
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+
+    # 컨테이너 자동 재시작 정책
+    restart: always
+
+    # 환경변수
+    env_file:
+      - .env
+
+    # Spring 프로필
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+
+    # 로그 디렉토리 마운트
+    volumes:
+      - ./logs:/logs
+
+    # 헬스체크 설정
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
