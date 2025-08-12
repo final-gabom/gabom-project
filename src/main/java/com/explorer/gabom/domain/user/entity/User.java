@@ -7,7 +7,7 @@ import com.explorer.gabom.domain.title.entity.UserTitle;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.entity.BaseTimeEntity;
-import com.explorer.gabom.global.oauth.type.OAuthProvider;
+
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,8 +24,52 @@ import java.util.List;
 @Table(name = "users")
 public class User extends BaseTimeEntity {
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<UserTitle> userTitles = new ArrayList<>();
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<UserTitle> userTitles = new ArrayList<>();
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(unique = true, nullable = false)
+	private String email;
+
+	@Column(nullable = false)
+	private String password;
+
+	@Column(unique = true, nullable = false)
+	private String nickname;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserRole userRole;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "profile_img_id")
+	private AttachmentFile profileImg;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserStatus status;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "title_id")
+	private Title title;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "address_id", insertable = false, updatable = false)
+	private Address address;
+	@Column(name = "address_id")
+	private Long addressId;
+
+	@Column(nullable = false)
+	private Integer point;
+
+	@Column(nullable = false)
+	private Integer level;
+
+	@Column(nullable = false)
+	private Integer exp;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -58,18 +102,18 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer exp;
 
-    @Builder
-    public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.userRole = userRole;
-        this.status = UserStatus.ACTIVE;
-        this.point = 0;
-        this.level = 1;
-        this.exp = 0;
-    }
+	@Builder
+	public User(Long id, String email, String password, String nickname, UserRole userRole) {
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.userRole = userRole;
+		this.status = UserStatus.ACTIVE;
+		this.point = 0;
+		this.level = 1;
+		this.exp = 0;
+	}
 
     public void addPoint(int point) {
         this.point += point;
