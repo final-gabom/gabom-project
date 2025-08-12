@@ -8,6 +8,7 @@ import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.SocialProvider;
 import com.explorer.gabom.domain.user.type.UserStatus;
+import com.explorer.gabom.global.common.SignupCommonService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.oauth.dto.OAuthUserInfo;
@@ -18,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.explorer.gabom.domain.user.type.UserRole;
 
 
 @Slf4j
@@ -30,6 +30,7 @@ public class SocialLoginService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final RedisTokenService redisTokenService;
+    private final SignupCommonService signupCommonService;
 
     @Transactional
     public SocialLoginResponse socialLogin(OAuthUserInfo userInfo) {
@@ -82,70 +83,40 @@ public class SocialLoginService {
             throw new CustomException(ErrorCode.SOCIAL_ACCOUNT_NOT_LINKED);
         }
 
-        return generateTokensAndResponse(userFromEmail);
+        return generateTokensAndResponse(userFromEmail, userInfo.getProviderId());
 
     }
 
 
     @Transactional
     public SocialLoginResponse signUp(SocialSignupRequest signupRequest) {
-        log.debug("signUp 호출: email={}, nickname={}, provider={}, providerId={}",
-                signupRequest.getEmail(), signupRequest.getNickname(), signupRequest.getProvider(), signupRequest.getProviderId());
-        SocialProvider socialProvider = SocialProvider.fromOAuthProvider(signupRequest.getProvider());
+        // 검증
+        signupCommonService.validateEmailNotExistsForSocial(signupRequest.getEmail());
+        SocialProvider provider = SocialProvider.fromOAuthProvider(signupRequest.getProvider());
+        signupCommonService.validateSocialAccountNotExists(provider, signupRequest.getProviderId());
+        signupCommonService.validateNicknameNotExists(signupRequest.getNickname());
 
-        // 이미 가입된 유저인지 확인 (이메일 중복체크)
-        if (userRepository.findByEmailAndStatus(signupRequest.getEmail(), UserStatus.ACTIVE).isPresent()) {
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
-        }
+        // 유저 생성
+        User user = signupCommonService.createUserForSocial(
+                signupRequest.getEmail(),
+                signupRequest.getNickname()
+        );
 
-        // SocialAccount 중복 확인 (provider + providerId)
-        if (socialAccountRepository.findByProviderAndProviderId(socialProvider, signupRequest.getProviderId()).isPresent()) {
-            throw new CustomException(ErrorCode.DUPLICATED_SOCIAL_ACCOUNT);
-        }
+        // 소셜 계정 연결
+        signupCommonService.createAndLinkSocialAccount(user, provider, signupRequest.getProviderId(), signupRequest.getEmail());
 
-        // User 생성
-        User user = User.builder()
-                .email(signupRequest.getEmail())
-                .nickname(signupRequest.getNickname())
-                .password("") // 소셜 로그인은 비밀번호 없음
-                .provider(signupRequest.getProvider())
-                .providerId(signupRequest.getProviderId())
-                .status(UserStatus.ACTIVE)
-                .userRole(UserRole.USER)
-                .build();
-        userRepository.save(user);
-
-        // SocialAccount 생성 및 연결
-        SocialAccount socialAccount = SocialAccount.builder()
-                .user(user)
-                .email(signupRequest.getEmail())
-                .provider(socialProvider)
-                .providerId(signupRequest.getProviderId())
-                .build();
-        socialAccountRepository.save(socialAccount);
-
-        // 토큰 생성
-        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
-        String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
-
-        redisTokenService.saveRefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpiration());
-
-        // 응답 DTO 생성 및 반환
-        return SocialLoginResponse.builder()
-                .providerId(signupRequest.getProviderId())
-                .email(user.getEmail())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        // 토큰 생성 및 반환
+        return signupCommonService.generateSocialLoginResponse(user, signupRequest.getProviderId());
     }
-    private SocialLoginResponse generateTokensAndResponse(User user) {
+
+    private SocialLoginResponse generateTokensAndResponse(User user, String providerId) {
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
         String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
         redisTokenService.saveRefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpiration());
 
         return SocialLoginResponse.builder()
-                .providerId(user.getProviderId())
+                .providerId(providerId)
                 .email(user.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
