@@ -44,16 +44,9 @@ jobs:
           key: ${{ secrets.DEV_EC2_SSH_KEY }}
 
           source: |
-            # 빌드된 JAR
             build/libs/gabom-0.0.1-SNAPSHOT.jar
-            
-            # Dockerfile
             Dockerfile
-            
-            # Compose 파일
             docker-compose.yml
-            
-            # dev 환경 설정
             src/main/resources/application-dev.yml
 
           # EC2 내 복사 경로
@@ -73,11 +66,11 @@ jobs:
             set -e
             cd ~/gabom
 
-            SHORT_SHA=$(echo "${TAG}" | cut -c1-7)  # 커밋 SHA 앞 7자리
+            SHORT_SHA=$(echo "${TAG}" | cut -c1-7)
             echo "Using TAG=${SHORT_SHA}"
 
             echo "[1/5] Stop old stack"
-            docker compose down || true            # 기존 컨테이너 종료
+            docker compose down || true 
 
             echo "[2/5] Build image (tag: dev & ${SHORT_SHA})"
             docker build -t gabom-server:dev -t gabom-server:${SHORT_SHA} .
@@ -98,3 +91,18 @@ jobs:
 
             echo "[5/5] Cleanup dangling images"
             docker image prune -f
+
+      # 실패 시, HTML/JUnit 리포트를 워크플로우 아티팩트로 업로드해 다운로드 가능하게 함
+      - name: Upload deploy artifacts (if failed)
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          # 아티팩트 이름에 커밋 SHA 포함
+          name: deploy-artifacts-${{ github.sha }}
+
+          path: |
+            build/libs/gabom-0.0.1-SNAPSHOT.jar
+            Dockerfile
+            docker-compose.yml
+            src/main/resources/application-dev.yml
