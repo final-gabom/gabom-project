@@ -28,6 +28,8 @@ public class ExpEventConsumer {
 									   message.getTitleId() != null ? message.getTitleId() : "");
 		redisTemplate.opsForHash().put(userKey, "profileImageId",
 									   message.getProfileImgId() != null ? message.getProfileImgId() : "");
+		redisTemplate.opsForHash().put(userKey, "profileImageUrl",
+									   message.getProfileImgUrl() != null ? message.getProfileImgUrl() : "");
 		redisTemplate.opsForHash().put(userKey, "level", String.valueOf(message.getLevel()));
 	}
 }

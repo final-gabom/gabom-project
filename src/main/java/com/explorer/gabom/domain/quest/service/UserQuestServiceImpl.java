@@ -100,7 +100,8 @@ public class UserQuestServiceImpl implements UserQuestService {
 			level,
 			user.getNickname(),
 			user.getTitle() != null ? user.getTitle().getId() : null,
-			user.getProfileImg() != null ? user.getProfileImg().getFileId() : null
+			user.getProfileImg() != null ? user.getProfileImg().getFileId() : null,
+			user.getProfileImg() != null ? user.getProfileImg().getFilePath() : null
 		));
 
 		return QuestRewardResponse.toDto(userQuest.getQuest());

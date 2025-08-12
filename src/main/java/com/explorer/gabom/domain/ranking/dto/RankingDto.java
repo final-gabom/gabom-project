@@ -14,7 +14,7 @@ public class RankingDto {
 	private int level;
 	private int exp;
 	private Long titleId;
-	private String profileImageId;
+	private String profileImgUrl;
 
 	public static RankingDto toDto(Ranking ranking) {
 		return RankingDto.builder()
@@ -24,8 +24,8 @@ public class RankingDto {
 						 .level(ranking.getLevel())
 						 .exp(ranking.getExp())
 						 .titleId(ranking.getTitle() != null ? ranking.getTitle().getId() : null)
-						 .profileImageId(
-							 ranking.getProfileImage() != null ? ranking.getProfileImage().getFileId() : null)
+						 .profileImgUrl(
+							 ranking.getProfileImage() != null ? ranking.getProfileImage().getFilePath() : null)
 						 .build();
 	}
 }

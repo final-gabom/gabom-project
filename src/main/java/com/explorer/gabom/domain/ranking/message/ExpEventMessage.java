@@ -14,4 +14,5 @@ public class ExpEventMessage {
 	private String nickname;
 	private Long titleId;
 	private String profileImgId;
+	private String profileImgUrl;
 }

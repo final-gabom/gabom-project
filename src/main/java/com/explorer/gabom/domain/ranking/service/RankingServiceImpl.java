@@ -59,8 +59,8 @@ public class RankingServiceImpl implements RankingService {
 																	  .rankNo(rankNo.getAndIncrement())
 																	  .userId(userId)
 																	  .nickname((String)userInfo.get("nickname"))
-																	  .profileImageId(
-																		  (String)userInfo.get("profileImageId"))
+																	  .profileImgUrl(
+																		  (String)userInfo.get("profileImageUrl"))
 																	  .level(toInt(userInfo.get("level")))
 																	  .exp(exp)
 																	  .titleId(toLong(userInfo.get("titleId")))
