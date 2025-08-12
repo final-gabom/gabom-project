@@ -19,14 +19,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CsvImporter {
 
-	private static final String PLACE_CSV_PATH = "classpath:data/combined_places.csv";
 	private static final String LAW_CODES_CSV_PATH = "classpath:data/emd_codes.csv";
 
 	private final ResourceLoader resourceLoader;
 
 	public List<AddressCsv> readCsv() throws Exception {
 		Resource resource = resourceLoader.getResource(LAW_CODES_CSV_PATH);
-		try (Reader reader = new InputStreamReader(resource.getInputStream())) {
+		try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
 			return new CsvToBeanBuilder<AddressCsv>(reader)
 				.withType(AddressCsv.class)
 				.withIgnoreLeadingWhiteSpace(true)
@@ -36,8 +35,8 @@ public class CsvImporter {
 		}
 	}
 
-	public List<PlaceCsv> readPlaceCsv() throws Exception {
-		Resource resource = resourceLoader.getResource(PLACE_CSV_PATH);
+	public List<PlaceCsv> readPlaceCsv(String url) throws Exception {
+		Resource resource = resourceLoader.getResource(url);
 		try (Reader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
 			return new CsvToBeanBuilder<PlaceCsv>(reader)
 				.withType(PlaceCsv.class)
