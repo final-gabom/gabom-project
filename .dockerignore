@@ -1,0 +1,25 @@
+### Git ###
+.git
+.gitignore
+
+### Gradle / 빌드 결과물 ###
+.gradle
+build
+
+### IDE ###
+.idea
+.vscode
+out
+bin
+
+### 환경변수 파일 ###
+.env
+*.env
+
+### 로그 ###
+logs
+*.log
+
+### OS 생성 파일 ###
+.DS_Store
+Thumbs.db
