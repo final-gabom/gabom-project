@@ -57,17 +57,9 @@ public class User extends BaseTimeEntity {
     private Integer level;
     @Column(nullable = false)
     private Integer exp;
-    // 소셜 로그인 제공자 (kakao,google,naver 등)
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
-    private OAuthProvider provider;
-
-    // 소셜 제공자의 유저 고유 ID > 카카오에서 주는 ID 값
-    @Column(nullable = true)
-    private String providerId;
 
     @Builder
-    public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status, OAuthProvider provider, String providerId) {
+    public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -77,8 +69,6 @@ public class User extends BaseTimeEntity {
         this.point = 0;
         this.level = 1;
         this.exp = 0;
-        this.provider = provider;
-        this.providerId = providerId;
     }
 
     public void addPoint(int point) {
