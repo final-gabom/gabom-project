@@ -1,10 +1,11 @@
 package com.explorer.gabom.domain.user.repository;
 
-import com.explorer.gabom.domain.user.entity.User;
-import com.explorer.gabom.domain.user.type.UserStatus;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.type.UserStatus;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -15,5 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdAndStatus(Long userId, UserStatus status);
 
     boolean existsByNickname(String nickname);
+
+    Optional<User> findByEmail(String email);
 
 }

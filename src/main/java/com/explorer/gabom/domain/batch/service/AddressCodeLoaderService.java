@@ -11,9 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.address.entity.Eupmyeondong;
 import com.explorer.gabom.domain.address.entity.Sido;
 import com.explorer.gabom.domain.address.entity.Sigungu;
-import com.explorer.gabom.domain.batch.CsvImporter;
-import com.explorer.gabom.domain.batch.dto.LawAddressCode;
+import com.explorer.gabom.domain.batch.dto.AddressCsv;
 import com.explorer.gabom.domain.batch.util.AddressCodeUtils;
+import com.explorer.gabom.domain.batch.util.CsvImporter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +29,13 @@ public class AddressCodeLoaderService {
 
 	@Transactional
 	public void loadFromClasspath() throws Exception {
-		List<LawAddressCode> rows = csvImporter.readCsv();
+		List<AddressCsv> rows = csvImporter.readCsv();
 
 		Map<String, Sido> sdMap = new HashMap<>();
 		Map<String, Sigungu> sggMap = new HashMap<>();
 		Map<String, Eupmyeondong> emdMap = new HashMap<>();
 
-		for (LawAddressCode row : rows) {
+		for (AddressCsv row : rows) {
 			if (row == null)
 				continue;
 
