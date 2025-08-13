@@ -59,6 +59,9 @@ spring:
 place:
   import:
     enabled: ${PLACE_IMPORT_ENABLED:false} # 기본값 false
+address:
+  import:
+    enabled: ${ADDRESS_IMPORT_ENABLED:false}
 
 jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
