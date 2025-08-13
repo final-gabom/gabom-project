@@ -39,25 +39,32 @@ public class Address extends BaseTimeEntity {
 
 	private Long targetId;
 
-	/** 연관된 읍면동 (FK → eupmyeondong.emd_cd) */
+	@Column(nullable = false, length = 2)
+	private String sdCd;
+
+	@Column(nullable = false, length = 5)
+	private String sggCd;
+
+	/** 연관된 읍·면·동 (읽기 전용 필드) */
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "emdCd", insertable = false, updatable = false)
-	private Eupmyeondong eupmyeondong;
-	@Column(nullable = false)
+	private Eupmyeondong eupmyeondong; // 읍·면·동 엔티티
+
+	/** 읍·면·동 코드 (저장 필드) */
+	@Column(nullable = false, length = 10)
 	private String emdCd;
 
-	/** 상세주소 */
 	private String detail;
 
-	/** 위도 */
 	@Column(nullable = false)
 	private Double lat;
 
-	/** 경도 */
 	@Column(nullable = false)
 	private Double lng;
 
-	public void update(String emdCd, String detail, Double lat, Double lng) {
+	public void update(String sdCd, String sggCd, String emdCd, String detail, Double lat, Double lng) {
+		this.sdCd = sdCd;
+		this.sggCd = sggCd;
 		this.emdCd = emdCd;
 		this.detail = detail;
 		this.lat = lat;
