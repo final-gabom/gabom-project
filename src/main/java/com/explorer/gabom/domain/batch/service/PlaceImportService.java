@@ -28,13 +28,13 @@ public class PlaceImportService {
 	 *   REQUIRES_NEW 트랜잭션으로 개별 처리 → 한 행 실패해도 다음 행 계속
 	 * - 처리 성공 건수(saved)를 리턴
 	 */
-	public int loadFromClasspath() throws Exception {
+	public int loadFromClasspath(String url) throws Exception {
 		// 1) 관리자 유저 미리 확보 (없으면 시더 먼저 실행)
 		User admin = userRepository.findByEmail("admin@test")
 								   .orElseThrow(() -> new IllegalStateException("admin@test 없음(시더 먼저 실행 필요)"));
 
 		// 2) CSV 파싱 (List<PlaceCsvRow>)
-		var rows = csvImporter.readPlaceCsv();
+		var rows = csvImporter.readPlaceCsv(url);
 		int saved = 0;
 
 		// 3) 행 단위 처리 루프

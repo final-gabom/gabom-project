@@ -60,9 +60,9 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.select(
 				place.id,
 				place.title,
-				address,                      // ✅ address 자체
-				address.lat,                 // ✅ 위도
-				address.lng,                 // ✅ 경도
+				address,                      // address 자체
+				address.lat,                 // 위도
+				address.lng,                 // 경도
 				place.viewCount,
 				writer.id,
 				writer.nickname,
