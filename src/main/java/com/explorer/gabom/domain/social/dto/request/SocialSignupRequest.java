@@ -1,6 +1,7 @@
-package com.explorer.gabom.domain.auth.dto.request;
+package com.explorer.gabom.domain.social.dto.request;
 
-import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.social.type.SocialProvider;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +22,7 @@ public class SocialSignupRequest {
     private String nickname;
 
     @NotNull
-    private OAuthProvider provider; // KAKAO, GOOGLE 등
+    private SocialProvider provider; // KAKAO, GOOGLE 등
 
     @NotBlank
     private String providerId;

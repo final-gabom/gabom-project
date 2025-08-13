@@ -1,12 +1,11 @@
-package com.explorer.gabom.domain.auth.oauth.service;
+package com.explorer.gabom.domain.social.service;
 
-import com.explorer.gabom.domain.auth.service.SocialLoginService;
+import com.explorer.gabom.domain.social.type.SocialProvider;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.domain.auth.oauth.dto.OAuthUserInfo;
-import com.explorer.gabom.domain.auth.oauth.dto.SsoAuthToken;
-import com.explorer.gabom.domain.auth.oauth.dto.response.SocialLoginResponse;
-import com.explorer.gabom.domain.auth.oauth.type.OAuthProvider;
+import com.explorer.gabom.domain.social.dto.OAuthUserInfo;
+import com.explorer.gabom.domain.social.dto.SsoAuthToken;
+import com.explorer.gabom.domain.social.dto.response.SocialLoginResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +21,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 @Service("KAKAO")
 @RequiredArgsConstructor
-public class KakaoOAuthService implements SocialOAuthLoginService {
+public class KakaoService implements SocialLoginService {
 
     private final RestTemplate restTemplate;
 
-    private final SocialLoginService socialLoginService;
+    private final com.explorer.gabom.domain.auth.service.SocialLoginService socialLoginService;
 
     @Value("${KAKAO_CLIENT_ID}")
     private String kakaoClientId;
@@ -35,16 +34,16 @@ public class KakaoOAuthService implements SocialOAuthLoginService {
     private String kakaoRedirectUri;
 
     @Override
-    public OAuthProvider getProvider() {
-        return OAuthProvider.KAKAO;
+    public SocialProvider getProvider() {
+        return SocialProvider.KAKAO;
     }
     @Override
     public String getAuthorizationUrl() {
-        return UriComponentsBuilder.fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
-                .queryParam("client_id", kakaoClientId)
-                .queryParam("redirect_uri", kakaoRedirectUri)
-                .queryParam("response_type", "code")
-                .toUriString();
+        return UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/authorize")
+								   .queryParam("client_id", kakaoClientId)
+								   .queryParam("redirect_uri", kakaoRedirectUri)
+								   .queryParam("response_type", "code")
+								   .toUriString();
     }
 
     @Override
@@ -78,7 +77,7 @@ public class KakaoOAuthService implements SocialOAuthLoginService {
                 throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
             }
             // 공통 사용자 정보 DTO 생성
-            OAuthUserInfo userInfo = new OAuthUserInfo(OAuthProvider.KAKAO, String.valueOf(providerId), email);
+            OAuthUserInfo userInfo = new OAuthUserInfo(SocialProvider.KAKAO, String.valueOf(providerId), email);
 
             return socialLoginService.socialLogin(userInfo);
 

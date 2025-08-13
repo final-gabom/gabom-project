@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.auth.oauth.dto;
+package com.explorer.gabom.domain.social.dto;
 
 import lombok.Data;
 

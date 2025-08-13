@@ -119,4 +119,17 @@ public class UserServiceImpl implements UserService {
 
 		return addressService.createOrReplace(request);
 	}
+
+	@Override
+	public void validateEmailNotExists(String email) {
+		if (userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE).isPresent()) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
+		}
+	}
+
+	public void validateNicknameNotExists(String nickname) {
+		if (userRepository.existsByNickname(nickname)) {
+			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
+	}
 }

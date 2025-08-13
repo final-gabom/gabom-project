@@ -1,17 +1,17 @@
 package com.explorer.gabom.global.common;
 
 import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
-import com.explorer.gabom.domain.auth.repository.SocialAccountRepository;
+import com.explorer.gabom.domain.social.repository.SocialAccountRepository;
 import com.explorer.gabom.domain.auth.service.EmailCodeStorageService;
-import com.explorer.gabom.domain.user.entity.SocialAccount;
+import com.explorer.gabom.domain.social.entity.SocialAccount;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.SocialProvider;
+import com.explorer.gabom.domain.social.type.SocialProvider;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.domain.auth.oauth.dto.response.SocialLoginResponse;
+import com.explorer.gabom.domain.social.dto.response.SocialLoginResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;

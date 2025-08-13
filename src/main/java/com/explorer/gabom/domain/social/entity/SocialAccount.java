@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.user.entity;
+package com.explorer.gabom.domain.social.entity;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.explorer.gabom.domain.user.type.SocialProvider;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.social.type.SocialProvider;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

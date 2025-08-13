@@ -11,7 +11,7 @@ import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.common.SignupCommonService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.domain.auth.oauth.dto.response.TokenResponse;
+import com.explorer.gabom.domain.social.dto.response.TokenResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.explorer.gabom.global.validator.PasswordValidator;
