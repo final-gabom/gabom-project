@@ -104,6 +104,10 @@ public class User extends BaseTimeEntity {
 		this.exp += exp;
 	}
 
+	public void updateLevel(int newLevel) {
+		this.level = newLevel;
+	}
+
 	public void addTitle(Title title) {
 		boolean alreadyHas = userTitles.stream().anyMatch(userTitle -> userTitle.getTitle().equals(title));
 		if (!alreadyHas) {

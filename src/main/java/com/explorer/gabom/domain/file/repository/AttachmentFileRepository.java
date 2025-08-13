@@ -1,5 +1,6 @@
 package com.explorer.gabom.domain.file.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,5 @@ public interface AttachmentFileRepository extends JpaRepository<AttachmentFile, 
 
 	List<AttachmentFile> findAllByRefIdAndFileType(Long refId, FileType fileType);
 
-
+	List<AttachmentFile> findByFileIdIn(Collection<String> ids);
 }

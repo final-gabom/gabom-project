@@ -16,6 +16,12 @@ spring:
     username: sa
     password:
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+
   sql:
     init:
       mode: always
