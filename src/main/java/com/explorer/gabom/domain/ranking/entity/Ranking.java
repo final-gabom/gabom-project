@@ -1,21 +1,27 @@
 package com.explorer.gabom.domain.ranking.entity;
 
-import com.explorer.gabom.domain.file.entity.AttachmentFile;
-import com.explorer.gabom.domain.title.entity.Title;
+import com.explorer.gabom.domain.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ranking")
+@Table(
+	name = "ranking",
+	indexes = {
+		@Index(name = "idx_exp_id", columnList = "exp DESC, id ASC")
+	}
+)
 @Getter
 @NoArgsConstructor
 public class Ranking {
@@ -24,48 +30,27 @@ public class Ranking {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private Long userId;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false, unique = true)
+	private User user;
 
-	@Column(nullable = true)
+	@Column
 	private Integer rankNo;
-
-	@Column(nullable = false)
-	private int level;
 
 	@Column(nullable = false)
 	private int exp;
 
-	@Column(nullable = false)
-	private String nickname;
-
-	@ManyToOne
-	@JoinColumn(name = "title_id")
-	private Title title;
-
-	@ManyToOne
-	@JoinColumn(name = "profile_image_id")
-	private AttachmentFile profileImage;
-
-	public Ranking(Long userId, Integer rankNo, int level, int exp, String nickname, Title title,
-				   AttachmentFile profileImage) {
-		this.userId = userId;
+	public Ranking(User user, Integer rankNo, int exp) {
+		this.user = user;
 		this.rankNo = rankNo;
-		this.level = level;
 		this.exp = exp;
-		this.nickname = nickname;
-		this.title = title;
-		this.profileImage = profileImage;
 	}
 
-	public void update(Integer rankNo, int exp, int level, String nickname, Title title,
-					   AttachmentFile profileImage) {
-		this.rankNo = rankNo;
+	public void updateExp(int exp) {
 		this.exp = exp;
-		this.level = level;
-		this.nickname = nickname;
-		this.title = title;
-		this.profileImage = profileImage;
+	}
+
+	public void updateRankNo(Integer rankNo) {
+		this.rankNo = rankNo;
 	}
 }
-

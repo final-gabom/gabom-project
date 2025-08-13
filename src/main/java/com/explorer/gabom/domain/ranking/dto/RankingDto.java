@@ -16,16 +16,17 @@ public class RankingDto {
 	private Long titleId;
 	private String profileImgUrl;
 
-	public static RankingDto toDto(Ranking ranking) {
+	public static RankingDto toDto(Ranking ranking, int rankNo) {
 		return RankingDto.builder()
-						 .rankNo(ranking.getRankNo() != null ? ranking.getRankNo() : 0)
-						 .userId(ranking.getUserId())
-						 .nickname(ranking.getNickname())
-						 .level(ranking.getLevel())
+						 .rankNo(rankNo)
+						 .userId(ranking.getUser().getId())
+						 .nickname(ranking.getUser().getNickname())
+						 .level(ranking.getUser().getLevel())
 						 .exp(ranking.getExp())
-						 .titleId(ranking.getTitle() != null ? ranking.getTitle().getId() : null)
+						 .titleId(ranking.getUser().getTitle() != null ? ranking.getUser().getTitle().getId() : null)
 						 .profileImgUrl(
-							 ranking.getProfileImage() != null ? ranking.getProfileImage().getFilePath() : null)
+							 ranking.getUser().getProfileImg() != null ? ranking.getUser().getProfileImg().getFilePath()
+																	   : null)
 						 .build();
 	}
 }

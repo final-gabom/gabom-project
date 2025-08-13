@@ -96,12 +96,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 		}
 		expEventProducer.sendExpEvent(new ExpEventMessage(
 			userId,
-			exp,
-			level,
-			user.getNickname(),
-			user.getTitle() != null ? user.getTitle().getId() : null,
-			user.getProfileImg() != null ? user.getProfileImg().getFileId() : null,
-			user.getProfileImg() != null ? user.getProfileImg().getFilePath() : null
+			exp
 		));
 
 		return QuestRewardResponse.toDto(userQuest.getQuest());

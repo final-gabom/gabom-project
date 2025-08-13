@@ -10,9 +10,4 @@ import lombok.NoArgsConstructor;
 public class ExpEventMessage {
 	private Long userId;
 	private int exp;
-	private int level;
-	private String nickname;
-	private Long titleId;
-	private String profileImgId;
-	private String profileImgUrl;
 }

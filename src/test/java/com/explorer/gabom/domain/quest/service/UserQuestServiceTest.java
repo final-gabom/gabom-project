@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.explorer.gabom.domain.level.service.LevelService;
 import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.entity.Quest;
@@ -27,6 +28,8 @@ import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
+import com.explorer.gabom.domain.ranking.message.ExpEventMessage;
+import com.explorer.gabom.domain.ranking.message.ExpEventProducer;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.dto.PageResponse;
@@ -48,6 +51,12 @@ class UserQuestServiceTest {
 	private QuestRepository questRepository;
 	@Mock
 	private UserRepository userRepository;
+	@Mock
+	private LevelService levelService;
+	@Mock
+	private ExpEventProducer expEventProducer;
+	@Mock
+	private ExpEventMessage expEventMessage;
 
 	private User user;
 	private Quest quest;
@@ -78,6 +87,7 @@ class UserQuestServiceTest {
 	@Test
 	@DisplayName("퀘스트 보상 수령 - 정상 케이스")
 	void claimReward_success() {
+		// given
 		when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 		when(userQuestRepository.findByUser_IdAndIdAndQuest_DeletedFalse(USER_ID, USER_QUEST_ID))
 			.thenReturn(Optional.of(userQuest));
@@ -89,11 +99,21 @@ class UserQuestServiceTest {
 		when(quest.getRewardPoint()).thenReturn(50);
 		when(quest.getRewardTitle()).thenReturn(null);
 
+		when(user.getExp()).thenReturn(200); // 현재 경험치 세팅
+		when(user.getLevel()).thenReturn(1);
+		when(levelService.calculateLevel(200 + 100)).thenReturn(2); // 보상 경험치 합산 후 레벨 계산
+
+		doNothing().when(expEventProducer).sendExpEvent(any(ExpEventMessage.class));
+
+		// when
 		QuestRewardResponse response = userQuestService.claimReward(USER_ID, USER_QUEST_ID);
 
+		// then
 		verify(userQuest).markRewardClaimed();
 		verify(user).addExp(100);
 		verify(user).addPoint(50);
+		verify(user).updateLevel(2);
+		verify(expEventProducer).sendExpEvent(any(ExpEventMessage.class));
 		assertThat(response).isNotNull();
 	}
 
