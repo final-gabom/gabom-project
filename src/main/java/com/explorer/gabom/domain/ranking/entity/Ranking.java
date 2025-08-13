@@ -34,23 +34,15 @@ public class Ranking {
 	@JoinColumn(name = "user_id", nullable = false, unique = true)
 	private User user;
 
-	@Column
-	private Integer rankNo;
-
 	@Column(nullable = false)
 	private int exp;
 
-	public Ranking(User user, Integer rankNo, int exp) {
+	public Ranking(User user, int exp) {
 		this.user = user;
-		this.rankNo = rankNo;
 		this.exp = exp;
 	}
 
 	public void updateExp(int exp) {
 		this.exp = exp;
-	}
-
-	public void updateRankNo(Integer rankNo) {
-		this.rankNo = rankNo;
 	}
 }

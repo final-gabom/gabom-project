@@ -32,7 +32,7 @@ public class ExpEventConsumer {
 			ranking.updateExp(message.getExp());
 			rankingRepository.save(ranking);
 		} else {
-			rankingRepository.save(new Ranking(user, null, message.getExp()));
+			rankingRepository.save(new Ranking(user, message.getExp()));
 		}
 	}
 }
