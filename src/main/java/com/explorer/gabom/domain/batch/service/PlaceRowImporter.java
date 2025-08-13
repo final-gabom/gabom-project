@@ -6,15 +6,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.address.repository.AddressRepository;
+import com.explorer.gabom.domain.address.repository.EupmyeondongRepository;
 import com.explorer.gabom.domain.batch.dto.PlaceCsv;
-import com.explorer.gabom.domain.batch.util.AddressRefResolver;
+import com.explorer.gabom.domain.batch.util.AddressCodeUtils;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.exception.CustomException;
+import com.explorer.gabom.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlaceRowImporter {
@@ -22,7 +27,7 @@ public class PlaceRowImporter {
 	// JPA 리포지토리 DI: 한 행(Place + Address) 저장에만 집중하는 전용 컴포넌트
 	private final PlaceRepository placeRepository;
 	private final AddressRepository addressRepository;
-	private final AddressRefResolver addressRefResolver;
+	private final EupmyeondongRepository eupmyeondongRepository;
 
 	/**
 	 * CSV의 단일 행을 독립 트랜잭션(REQUIRES_NEW)으로 처리한다.
@@ -45,8 +50,8 @@ public class PlaceRowImporter {
 						   .build();
 		place = placeRepository.save(place);  // ID 확정 (address.targetId로 사용 예정)
 
-		// 2) 주소 참조 해석
-		var emd = addressRefResolver.byEmdCd(row.getEmdCd());
+		String emd = row.getEmdCd();
+		validateEmdCd(emd);
 
 		// 3) Address 생성/저장
 		//    - addressTypeCd: enum 매핑을 위한 실제 코드값(문자열) 컬럼. enum 필드는 읽기전용일 수 있어 코드컬럼에 직접 세팅
@@ -56,8 +61,9 @@ public class PlaceRowImporter {
 		Address addr = Address.builder()
 							  .addressTypeCd("PLACE")
 							  .targetId(place.getId())
-							  .eupmyeondong(emd)          // 조회/연관용(실제 FK 컬럼은 emdCd)
-							  .emdCd(emd.getEmdCd())      // 실제 FK 값
+							  .sdCd(AddressCodeUtils.sdCd(emd))
+							  .sggCd(AddressCodeUtils.sggCd(emd))
+							  .emdCd(emd)                  // 실제 FK 값
 							  .detail(row.getAddress())   // 사용자에게 보이는 원문 주소 문자열
 							  .lat(row.getLat())
 							  .lng(row.getLng())
@@ -72,6 +78,25 @@ public class PlaceRowImporter {
 		// 5) 업데이트 반영
 		//    - link 이후 place의 FK(address_id)가 갱신되므로 다시 save
 		placeRepository.save(place);
+	}
+
+	// EmdCd 형식(10자리 문자), 존재 여부 검증
+	private void validateEmdCd(String emdCd) {
+		System.out.println(emdCd);
+		System.out.println(AddressCodeUtils.sdCd(emdCd));
+		System.out.println(AddressCodeUtils.sggCd(emdCd));
+		boolean isValidFormat = AddressCodeUtils.isValidLawCode(emdCd);
+
+		if (!isValidFormat) {
+			log.warn("잘못된 EMD 코드 형식 감지: {}", emdCd);
+			throw new IllegalArgumentException("잘못된 emdCd 형식: " + emdCd);
+		}
+
+		boolean exists = eupmyeondongRepository.existsByEmdCd(emdCd);
+		if (!exists) {
+			log.warn("존재하지 않는 EMD 코드 감지: {}", emdCd);
+			throw new CustomException(ErrorCode.EMD_CODE_NOT_FOUND);
+		}
 	}
 
 	/**
