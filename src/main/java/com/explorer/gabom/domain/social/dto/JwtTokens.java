@@ -1,14 +1,11 @@
-package com.explorer.gabom.domain.social.dto.response;
+package com.explorer.gabom.domain.social.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 @AllArgsConstructor
-public class SocialLoginResponse {
-
+public class JwtTokens {
     private final String accessToken;
     private final String refreshToken;
 }

@@ -1,18 +1,18 @@
 package com.explorer.gabom.domain.auth.service;
 
+import com.explorer.gabom.domain.auth.dto.request.EmailCodeVerifyRequest;
 import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.social.dto.OAuthUserInfo;
+import com.explorer.gabom.domain.social.dto.response.TokenResponse;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserStatus;
-import com.explorer.gabom.global.common.SignupCommonService;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
-import com.explorer.gabom.domain.social.dto.response.TokenResponse;
 import com.explorer.gabom.global.redis.service.RedisTokenService;
 import com.explorer.gabom.global.security.jwt.JwtProvider;
 import com.explorer.gabom.global.validator.PasswordValidator;
@@ -32,17 +32,15 @@ public class AuthService {
     private final RedisTokenService redisTokenService;
     private final SignupCommonService signupCommonService;
 
+    // 일반 회원가입
     @Transactional
     public UserSummaryDto signup(SignupRequest request) {
-
-        // 검증 (SignupCommonService 활용)
         // 이메일 중복 체크
-        signupCommonService.validateEmailNotExistsForRegular(request.getEmail());
+        validateEmailNotExistsForRegular(request.getEmail());
         // 이메일 인증 체크
-        signupCommonService.validateEmailVerified(request.getEmail());
+        validateEmailVerified(request.getEmail());
         // 닉네임 중복 체크
-        signupCommonService.validateNicknameNotExists(request.getNickname());
-
+        validateNicknameNotExists(request.getNickname());
         // 유저 생성
         User user = User.ofRegular(
                 request.getEmail(),
@@ -56,16 +54,11 @@ public class AuthService {
     // 포스트맨 회원가입시 테스트용
     @Transactional
     public UserSummaryDto testSignup(SignupRequest request) {
-        // 검증 (SignupCommonService 활용)
-        // 이메일 중복 체크
-        signupCommonService.validateEmailNotExistsForRegular(request.getEmail());
-        // 이메일 인증 체크
-        signupCommonService.validateEmailVerified(request.getEmail());
-        // 닉네임 중복 체크
-        signupCommonService.validateNicknameNotExists(request.getNickname());
-
+        validateEmailNotExistsForRegular(request.getEmail());
+        validateEmailVerified(request.getEmail());
+        validateNicknameNotExists(request.getNickname());
         // 유저 생성
-        User user = signupCommonService.createUserForRegular(
+        User user = User.ofRegular(
                 request.getEmail(),
                 request.getNickname(),
                 request.getPassword(),
@@ -143,4 +136,24 @@ public class AuthService {
         // 없으면 회원가입 진행
         // 있으면 로그인
     }
+
+    public void validateEmailNotExistsForRegular(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    public void validateEmailVerified(String email) {
+        EmailCodeVerifyRequest request = new EmailCodeVerifyRequest(email, null);
+        if (!emailCodeStorageService.isEmailVerified(request)) {
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+    }
+
+    public void validateNicknameNotExists(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
+    }
+
 }
