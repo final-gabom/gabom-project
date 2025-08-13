@@ -98,7 +98,7 @@ public class SocialLoginService {
 		signupCommonService.validateNicknameNotExists(signupRequest.getNickname());
 
 		// 유저 생성
-		User user = signupCommonService.createUserForSocial(
+		User user = User.ofSocial(
 			signupRequest.getEmail(),
 			signupRequest.getNickname()
 		);

@@ -65,30 +65,7 @@ public class SignupCommonService {
     }
 
     // ---------- 생성(공통) ----------
-    @Transactional
-    public User createUserForRegular(String email, String nickname, String rawPassword, UserRole role) {
-        String encoded = passwordEncoder.encode(rawPassword);
-        User user = User.builder()
-                .email(email)
-                .password(encoded)
-                .nickname(nickname)
-                .userRole(role)
-                .status(UserStatus.ACTIVE)
-                .build();
-        return userRepository.save(user);
-    }
 
-    @Transactional
-    public User createUserForSocial(String email, String nickname) {
-        User user = User.builder()
-                .email(email)
-                .password("") // 소셜로그인 비밀번호 없음
-                .nickname(nickname)
-                .userRole(UserRole.USER)
-                .status(UserStatus.ACTIVE)
-                .build();
-        return userRepository.save(user);
-    }
 
     @Transactional
     public SocialAccount createAndLinkSocialAccount(User user, SocialProvider provider, String providerId, String email) {

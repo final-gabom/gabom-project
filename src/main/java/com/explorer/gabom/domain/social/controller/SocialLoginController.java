@@ -46,8 +46,9 @@ public class SocialLoginController {
 
 		SocialProvider oauthProvider = SocialProvider.valueOf(provider.toUpperCase());
         SocialLoginService service = socialLoginServiceFactory.getService(oauthProvider);
+        // code를 사용하여 회원 정보 요청
 
-        // SocialLoginService 에서 로그인 or 회원가입 처리
+        // 가져온 회원 정보로 로그인
         SocialLoginResponse loginResponse = service.login(code);
 
         // 결과 반환

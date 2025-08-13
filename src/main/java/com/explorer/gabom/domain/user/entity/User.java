@@ -135,5 +135,27 @@ public class User extends BaseTimeEntity {
     public void updateAddressId(Long addressId) {
         this.addressId = addressId;
     }
+    // 일반 회원가입용
+    public static User ofRegular(String email, String encodedPassword, String nickname, UserRole role) {
+        return User.builder()
+                .email(email)
+                .password(encodedPassword)
+                .nickname(nickname)
+                .userRole(role)
+                .status(UserStatus.ACTIVE)
+                .build();
+    }
+
+    // 소셜 회원가입용
+    public static User ofSocial(String email, String nickname) {
+        return User.builder()
+                .email(email)
+                .password("") // 소셜로그인 비밀번호 없음
+                .nickname(nickname)
+                .userRole(UserRole.USER)
+                .status(UserStatus.ACTIVE)
+                .build();
+    }
+
 }
 

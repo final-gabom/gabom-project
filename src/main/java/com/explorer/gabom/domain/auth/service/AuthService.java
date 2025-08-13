@@ -4,6 +4,7 @@ import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
+import com.explorer.gabom.domain.social.dto.OAuthUserInfo;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -43,7 +44,7 @@ public class AuthService {
         signupCommonService.validateNicknameNotExists(request.getNickname());
 
         // 유저 생성
-        User user = signupCommonService.createUserForRegular(
+        User user = User.ofRegular(
                 request.getEmail(),
                 request.getNickname(),
                 request.getPassword(),
@@ -132,5 +133,14 @@ public class AuthService {
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
+    }
+
+    // TODO: 이걸 만들어야 함. 틀만 잡아주는 거임
+    // 소셜 정보 가지고 로그인하기
+    public LoginResponse socialLogin(OAuthUserInfo userInfo) {
+        // SocialAccount에 UserInfo로 저장된 SocialAccount가 있는지 확인 (provider랑 providerId만 있는지 확인하면 됨. email 검사 필요X)
+        // provider -> providerType 으로 바꿔주세요
+        // 없으면 회원가입 진행
+        // 있으면 로그인
     }
 }
