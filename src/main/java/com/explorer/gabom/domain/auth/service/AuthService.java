@@ -5,8 +5,11 @@ import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
+import com.explorer.gabom.domain.social.dto.JwtTokens;
 import com.explorer.gabom.domain.social.dto.OAuthUserInfo;
 import com.explorer.gabom.domain.social.dto.response.TokenResponse;
+import com.explorer.gabom.domain.social.entity.SocialAccount;
+import com.explorer.gabom.domain.social.repository.SocialAccountRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -21,6 +24,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -30,8 +35,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final EmailCodeStorageService emailCodeStorageService;
     private final RedisTokenService redisTokenService;
-    private final SignupCommonService signupCommonService;
-
+    private final SocialAccountRepository socialAccountRepository;
     // 일반 회원가입
     @Transactional
     public UserSummaryDto signup(SignupRequest request) {
@@ -80,7 +84,8 @@ public class AuthService {
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
         String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
 
-        return LoginResponse.toDto(accessToken, refreshToken);
+
+        return LoginResponse.toDto(accessToken, refreshToken, false);
     }
 
     // 닉네임 중복 확인
@@ -132,6 +137,36 @@ public class AuthService {
     // 소셜 정보 가지고 로그인하기
     public LoginResponse socialLogin(OAuthUserInfo userInfo) {
         // SocialAccount에 UserInfo로 저장된 SocialAccount가 있는지 확인 (provider랑 providerId만 있는지 확인하면 됨. email 검사 필요X)
+        // 1️⃣ SocialAccount 조회 (providerType + providerId 기준)
+        Optional<SocialAccount> socialAccountOpt = socialAccountRepository
+                .findByProviderTypeAndProviderId(userInfo.getProvider(), userInfo.getProviderId());
+
+        if (socialAccountOpt.isEmpty()) {
+            // 2️⃣ SocialAccount 없으면 → 신규 회원 가입 유도
+            // TODO: 실제 회원가입 화면 이동 또는 임시 SocialAccount 저장
+            SocialAccount tempAccount = SocialAccount.builder()
+                    .providerType(userInfo.getProvider()) // providerType으로 변경
+                    .providerId(userInfo.getProviderId())
+                    .email(userInfo.getEmail())           // email 필요하면 저장
+                    .build();
+
+            socialAccountRepository.save(tempAccount);
+
+            return LoginResponse.builder()
+                    .isNewUser(true)
+                    .build();
+        }
+
+        // 3️⃣ SocialAccount 있으면 → 기존 회원 로그인 처리
+        User user = socialAccountOpt.get().getUser();
+        JwtTokens tokens = generateTokens(user); // JWT 생성
+
+        return LoginResponse.builder()
+                .isNewUser(false)
+                .accessToken(tokens.getAccessToken())
+                .refreshToken(tokens.getRefreshToken())
+
+                .build();
         // provider -> providerType 으로 바꿔주세요
         // 없으면 회원가입 진행
         // 있으면 로그인
@@ -154,6 +189,16 @@ public class AuthService {
         if (userRepository.existsByNickname(nickname)) {
             throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
         }
+    }
+    // JWT 토큰 생성만 담당
+    private JwtTokens generateTokens(User user) {
+        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserRole());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getUserRole());
+
+        // Redis에 refresh token 저장
+        redisTokenService.saveRefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpiration());
+
+        return new JwtTokens(accessToken, refreshToken);
     }
 
 }

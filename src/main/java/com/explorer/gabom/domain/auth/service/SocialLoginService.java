@@ -41,11 +41,11 @@ public class SocialLoginService {
 
         //  User 없으면 SocialAccount 임시 저장 후 예외 발생
         if (userFromEmail == null) {
-            boolean exists = socialAccountRepository.existsByProviderAndProviderId(
+            boolean exists = socialAccountRepository.existsByProviderTypeAndProviderId(
                     socialProvider, userInfo.getProviderId());
             if (!exists) {
                 SocialAccount tempAccount = SocialAccount.builder()
-                        .provider(socialProvider)
+                        .providerType(socialProvider)
                         .providerId(userInfo.getProviderId())
                         .email(userInfo.getEmail())
                         .build();
@@ -58,8 +58,16 @@ public class SocialLoginService {
         }
 
         // 기존 유저이면 SocialAccount 연결 확인 (선택 사항)
-        socialAccountRepository.findByUserIdAndProvider(userFromEmail.getId(), socialProvider)
-                .orElseThrow(() -> new CustomException(ErrorCode.SOCIAL_ACCOUNT_NOT_LINKED));
+        socialAccountRepository.findByUserIdAndProviderType(userFromEmail.getId(), socialProvider)
+                .orElseGet(() -> {
+                            log.debug("기존 유저인데 소셜 연결 없음 → 자동 연결 시도");
+                            return createAndLinkSocialAccount(
+                                    userFromEmail,
+                                    socialProvider,
+                                    userInfo.getProviderId(),
+                                    userInfo.getEmail()
+                            );
+                });
 
 
         // JWT 토큰 생성
@@ -141,14 +149,14 @@ public class SocialLoginService {
     @Transactional
     public SocialAccount createAndLinkSocialAccount(User user, SocialProvider provider, String providerId, String email) {
         // 이 시점에서 duplicate 체크 해두는 게 안전
-        if (socialAccountRepository.findByProviderAndProviderId(provider, providerId).isPresent()) {
+        if (socialAccountRepository.findByProviderTypeAndProviderId(provider, providerId).isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_SOCIAL_ACCOUNT);
         }
 
         SocialAccount account = SocialAccount.builder()
                 .user(user)
                 .email(email)
-                .provider(provider)
+                .providerType(provider)
                 .providerId(providerId)
                 .build();
 

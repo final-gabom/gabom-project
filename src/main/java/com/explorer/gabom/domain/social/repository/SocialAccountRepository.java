@@ -9,10 +9,10 @@ import com.explorer.gabom.domain.social.type.SocialProvider;
 
 public interface SocialAccountRepository extends JpaRepository<SocialAccount, Long> {
 
-	Optional<SocialAccount> findByProviderAndProviderId(SocialProvider provider, String providerId);
+	Optional<SocialAccount> findByProviderTypeAndProviderId(SocialProvider providerType, String providerId);
 
-	boolean existsByProviderAndProviderId(SocialProvider socialProvider, String providerId);
+	boolean existsByProviderTypeAndProviderId(SocialProvider socialProvider, String providerId);
 
-	Optional<SocialAccount> findByUserIdAndProvider(Long id, SocialProvider socialProvider);
+	Optional<SocialAccount> findByUserIdAndProviderType(Long id, SocialProvider ProviderType);
 
 }

@@ -55,7 +55,7 @@ public class SocialAccount {
 	// 소셜 제공자
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private SocialProvider provider;
+	private SocialProvider providerType;
 
 	// 소셜 제공자의 고유 식별자 (예: sub, id)
 	@Column(nullable = false, length = 255)
