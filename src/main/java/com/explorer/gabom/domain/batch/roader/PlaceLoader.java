@@ -23,6 +23,17 @@ public class PlaceLoader implements CommandLineRunner {
 	@Value("${place.import.enabled:false}")
 	private boolean enabled;
 
+	@Value("${place.import.path:classpath:data/place_import.csv}")
+	private String placeCsvPath;
+
+	// 컨트롤러에서 호출할 메서드
+	public int loadAll() throws Exception {
+		log.info("[PlaceLoader] 시작 (CSV -> DB): {}", placeCsvPath);
+		int saved = service.loadFromClasspath(placeCsvPath);
+		log.info("[PlaceLoader] 완료. 총 {}건 저장됨.",  saved);
+		return saved;
+	}
+
 	@Override
 	public void run(String... args) {
 		// 1) 기능 on/off 스위치: 프로퍼티가 false면 바로 종료
@@ -30,17 +41,10 @@ public class PlaceLoader implements CommandLineRunner {
 			log.info("[PlaceLoader] 비활성화됨. 스킵");
 			return;
 		}
-
-		int saved;
 		try {
-			log.info("[PlaceLoader] 시작 (CSV → DB)");
 			long t0 = System.nanoTime();
-
-			saved = service.loadFromClasspath("classpath:data/place_import.csv");
-
-			long t1 = System.nanoTime();
-
-			long durationMs = (t1 - t0) / 1_000_000; // 밀리초 단위
+			int saved = loadAll();
+			long durationMs = (System.nanoTime() - t0) / 1_000_000; // 밀리초 단위
 			log.info("[PlaceLoader] 완료. 총 {}건 저장됨. 소요 시간: {} ms (약 {}초)", saved, durationMs, durationMs / 1000.0);
 		} catch (Exception e) {
 			// 3) 배치 실패 시 전체 애플리케이션 부팅을 멈출지 여부
