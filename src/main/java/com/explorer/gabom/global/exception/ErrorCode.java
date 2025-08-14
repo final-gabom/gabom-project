@@ -76,6 +76,9 @@ public enum ErrorCode {
 	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주소 정보를 찾을 수 없습니다."),
 	EMD_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 emdCd를 찾을 수 없습니다.");
 
+	// SQL
+	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다.");
+
 	private final HttpStatus httpStatus;
 	private final String message;
 

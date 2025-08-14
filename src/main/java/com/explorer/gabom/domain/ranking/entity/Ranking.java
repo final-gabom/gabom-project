@@ -1,16 +1,27 @@
 package com.explorer.gabom.domain.ranking.entity;
 
+import com.explorer.gabom.domain.user.entity.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ranking")
+@Table(
+	name = "ranking",
+	indexes = {
+		@Index(name = "idx_exp_id", columnList = "exp DESC, id ASC")
+	}
+)
 @Getter
 @NoArgsConstructor
 public class Ranking {
@@ -19,36 +30,19 @@ public class Ranking {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private Long userId;
-
-	@Column(nullable = false)
-	private int rankNo;
-
-	@Column(nullable = false)
-	private int level;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false, unique = true)
+	private User user;
 
 	@Column(nullable = false)
 	private int exp;
 
-	@Column(nullable = false)
-	private String nickname;
-
-	@Column(nullable = false)
-	private String titleName;
-
-	@Column(nullable = true)
-	private String profileImageUrl;
-
-	public Ranking(Long userId, int rankOrder, int level, int exp, String nickname, String titleName,
-				   String profileImageUrl) {
-		this.userId = userId;
-		this.rankNo = rankOrder;
-		this.level = level;
+	public Ranking(User user, int exp) {
+		this.user = user;
 		this.exp = exp;
-		this.nickname = nickname;
-		this.titleName = titleName;
-		this.profileImageUrl = profileImageUrl;
+	}
+
+	public void updateExp(int exp) {
+		this.exp = exp;
 	}
 }
-
