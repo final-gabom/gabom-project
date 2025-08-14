@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.explorer.gabom.domain.level.service.LevelService;
 import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.entity.Quest;
@@ -14,6 +15,8 @@ import com.explorer.gabom.domain.quest.repository.QuestRepository;
 import com.explorer.gabom.domain.quest.repository.UserQuestRepository;
 import com.explorer.gabom.domain.quest.type.ProgressStatus;
 import com.explorer.gabom.domain.quest.type.QuestConditionType;
+import com.explorer.gabom.domain.ranking.message.ExpEventMessage;
+import com.explorer.gabom.domain.ranking.message.ExpEventProducer;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.dto.PageResponse;
@@ -30,6 +33,8 @@ public class UserQuestServiceImpl implements UserQuestService {
 	private final UserQuestRepository userQuestRepository;
 	private final UserRepository userRepository;
 	private final QuestRepository questRepository;
+	private final LevelService levelService;
+	private final ExpEventProducer expEventProducer;
 
 	@Override
 	@Transactional
@@ -83,6 +88,16 @@ public class UserQuestServiceImpl implements UserQuestService {
 		user.addPoint(userQuest.getQuest().getRewardPoint());
 		user.addExp(userQuest.getQuest().getRewardExp());
 		user.addTitle(userQuest.getQuest().getRewardTitle());
+
+		int exp = user.getExp();
+		int level = levelService.calculateLevel(exp);
+		if (level > user.getLevel()) {
+			user.updateLevel(level);
+		}
+		expEventProducer.sendExpEvent(new ExpEventMessage(
+			userId,
+			exp
+		));
 
 		return QuestRewardResponse.toDto(userQuest.getQuest());
 	}

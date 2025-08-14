@@ -29,7 +29,7 @@ public class PlaceSummary {
 	private final UserSummaryDto writer;
 	@Schema(description = "대표 썸네일 이미지 정보")
 	private final ThumbnailDto thumbnail;
-	@Schema(description = "사용자로부터의 거리 (km)", example = "1.23")
+	@Schema(description = "사용자로부터의 거리 (km). 요청에 거리정보(위경도)가 없을 경우, 해당 필드는 null이 됩니다.", example = "1.23")
 	private final Double distance;
 	@Schema(description = "주소 정보")
 	private AddressDto address;

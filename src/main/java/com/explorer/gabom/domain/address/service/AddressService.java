@@ -39,6 +39,8 @@ public class AddressService {
 								 .addressTypeCd(request.getAddressTypeCd().name())
 								 .targetId(request.getTargetId())
 								 .emdCd(codes.getEmdCd())
+								 .sggCd(codes.getSggCd())
+								 .sdCd(codes.getSdCd())
 								 .detail(request.getAddressDetail())
 								 .lat(request.getLat())
 								 .lng(request.getLng())

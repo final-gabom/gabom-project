@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.place.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +12,7 @@ import com.explorer.gabom.domain.address.type.AddressType;
 import com.explorer.gabom.domain.place.dto.PlaceDetail;
 import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
+import com.explorer.gabom.domain.place.dto.request.PlaceSearchCond;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
 import com.explorer.gabom.domain.place.dto.response.PlaceUpdateResponse;
@@ -79,8 +79,8 @@ public class PlaceServiceImpl implements PlaceService {
 
 	@Transactional
 	@Override
-	public PageResponse<PlaceSummary> getPlaceList(String query, Double lat, Double lng, Pageable pageable) {
-		return placeRepository.findPlaceSummaries(query, lat, lng, pageable);
+	public PageResponse<PlaceSummary> getPlaceList(PlaceSearchCond cond) {
+		return placeRepository.findPlaceSummaries(cond);
 	}
 
 	@Transactional

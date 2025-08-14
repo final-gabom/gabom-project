@@ -4,4 +4,5 @@ public enum QuestConditionType {
 	MISSION_PROOF,
 	PLACE,
 	LOGIN,
+	LEVEL
 }
