@@ -4,8 +4,12 @@ import static com.explorer.gabom.global.exception.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,7 @@ import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.validator.AuthorValidator;
@@ -42,7 +47,6 @@ public class MissionProofServiceImpl implements MissionProofService {
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
-	private final MissionProofQueryRepository missionProofQueryRepository;
 
 	// 생성
 	@Override
@@ -161,43 +165,36 @@ public class MissionProofServiceImpl implements MissionProofService {
 		return MissionProofDetailResponse.toDto(missionProof, profileImages);
 	}
 
-	@Override
-	public CursorResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition) {
+	@Transactional(readOnly = true)
+	public PageResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition,
+															  Pageable pageable) {
+		// Repository에서 페이지 기반 조회
+		Page<MissionProof> results = missionProofRepository.searchByCondition(condition, pageable);
 
-		// 검색 조건에 해당하는 미션 인증 요약 리스트 조회
-		List<MissionProofSummary> results = missionProofQueryRepository.searchByCondition(condition);
-
-		// 총 데이터 개수 조회 (페이징용 메타데이터)
-		long totalElements = missionProofQueryRepository.countByCondition(condition);
-
-		// 결과 리스트를 한 번 더 가공하여 새로운 MissionProofSummary 객체로 매핑
-		// (필요 시 내부 객체나 필드에 대해 null 처리 등 후처리를 할 수 있음)
-		List<MissionProofSummary> summaries = results.stream()
+		// DTO로 변환
+		List<MissionProofSummary> summaries = results.getContent().stream()
 													 .map(mp -> new MissionProofSummary(
-														 mp.getId(),                   // 인증 ID
-														 mp.getFieldType(),           // 필드 타입
-														 new UserSummaryDto(          // 작성자 정보 재구성
-																					  mp.getWriter().getId(),
-																					  mp.getWriter().getNickname(),
-																					  mp.getWriter().getLevel(),
-
-																					  // title이 null인 경우 작성자의 title도 null로 처리
-																					  mp.getTitle() != null
-																					  ? mp.getWriter().getTitle()
-																					  : null
+														 mp.getId(),
+														 mp.getFieldType(),
+														 new UserSummaryDto(
+															 mp.getUser().getId(),
+															 mp.getUser().getNickname(),
+															 mp.getUser().getLevel(),
+															 mp.getUser().getTitle() != null ? mp.getUser()
+																								 .getTitle()
+																								 .getName() : null
 														 ),
-														 mp.getTitle(),               // 인증 제목
-														 mp.getCreatedAt(),           // 생성일
-														 mp.getUpdatedAt(),           // 수정일
-														 mp.getProfileImages()        // 이미지 목록
+														 mp.getTitle(),
+														 mp.getCreatedAt(),
+														 mp.getUpdatedAt(),
+														 mp.getImageFiles().stream()
+														   .map(AttachmentFile::getFilePath)
+														   .filter(Objects::nonNull)
+														   .toList()
 													 ))
-													 .collect(Collectors.toList()); // 최종 리스트 생성
+													 .toList();
 
-		// 커서 페이징용 lastId 추출 (가장 마지막 ID, 다음 페이지 조회에 사용)
-		Long lastId = !results.isEmpty() ? results.get(results.size() - 1).getId() : null;
-
-		// CursorResponse 객체로 응답 (데이터, 개수, 마지막 ID, 전체 개수 포함)
-		return new CursorResponse<>(summaries, summaries.size(), lastId, totalElements);
+		// PageResponse로 변환 후 반환
+		return PageResponse.toDto(new PageImpl<>(summaries, pageable, results.getTotalElements()));
 	}
-
 }

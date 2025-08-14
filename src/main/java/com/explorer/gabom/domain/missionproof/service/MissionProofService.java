@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.missionproof.service;
 
+import org.springframework.data.domain.Pageable;
+
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
@@ -8,6 +10,7 @@ import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailRes
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.dto.PageResponse;
 
 public interface MissionProofService {
 	CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser);
@@ -18,8 +21,8 @@ public interface MissionProofService {
 
 	void deleteMissionProof(Long id, Long userId);
 
-	CursorResponse<MissionProofSummary> getMissionProofs(
-		MissionProofSearchCondition condition
+	PageResponse<MissionProofSummary> getMissionProofs(
+		MissionProofSearchCondition condition, Pageable pageable
 	);
 
 }

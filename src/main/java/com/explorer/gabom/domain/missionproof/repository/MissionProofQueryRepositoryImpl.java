@@ -5,11 +5,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.explorer.gabom.domain.file.entity.QAttachmentFile;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
+import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.entity.QMissionProof;
 import com.explorer.gabom.domain.title.entity.QTitle;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
@@ -34,7 +38,7 @@ public class MissionProofQueryRepositoryImpl implements MissionProofQueryReposit
 	 * @return MissionProofSummary 리스트 (요약 정보 DTO)
 	 */
 	@Override
-	public List<MissionProofSummary> searchByCondition(MissionProofSearchCondition condition) {
+	public Page<MissionProof> searchByCondition(MissionProofSearchCondition condition, Pageable pageable) {
 		QMissionProof proof = QMissionProof.missionProof;
 		QUser user = QUser.user;
 		QAttachmentFile file = QAttachmentFile.attachmentFile;
@@ -60,42 +64,30 @@ public class MissionProofQueryRepositoryImpl implements MissionProofQueryReposit
 			.leftJoin(proof.imageFiles, file)
 			.where(buildWhereConditions(condition))
 			.orderBy(proof.id.desc())
-			.limit(condition.getSize())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
 			.fetch();
 
 		// 중복된 MissionProof ID별로 그룹화 (한 게시글에 여러 개의 이미지 파일이 있는 등의 경우 때무ㄴ에)
 		Map<Long, List<Tuple>> groupedByProofId = tuples.stream()
 														.collect(Collectors.groupingBy(tuple -> tuple.get(proof.id)));
 
-		// 그룹된 Tuple을 MissionProofSummary로 변환
-		return groupedByProofId.values().stream()
-							   .map(group -> {
-								   Tuple first = group.get(0);  // 동일한 ID의 튜플 중 첫 번째 기준
+		// 그룹된 Tuple을 MissionProof로 변환
+		List<MissionProof> results = queryFactory
+			.selectFrom(proof)
+			.join(proof.user, user).fetchJoin()
+			.leftJoin(proof.imageFiles, QAttachmentFile.attachmentFile).fetchJoin()
+			.leftJoin(user.title, QTitle.title).fetchJoin()
+			.where(buildWhereConditions(condition))
+			.orderBy(proof.id.desc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.distinct()
+			.fetch();
 
-								   List<String> imagePaths = group.stream()
-																  .map(t -> t.get(file.filePath))
-																  .filter(Objects::nonNull)
-																  .distinct()
-																  .toList();
-
-								   return new MissionProofSummary(
-									   first.get(proof.id),
-									   first.get(proof.fieldType),
-									   new UserSummaryDto(
-										   first.get(user.id),
-										   first.get(user.nickname),
-										   first.get(user.level),
-										   first.get(title.name)
-									   ),
-									   first.get(proof.title),
-									   first.get(proof.createdAt),
-									   first.get(proof.updatedAt),
-									   imagePaths
-								   );
-							   })
-							   .toList();
+		long total = countByCondition(condition);
+		return new PageImpl<>(results, pageable, total);
 	}
-
 	/**
 	 * 검색 조건에 해당하는 전체 결과의 개수를 반환하는 메서드
 	 *
@@ -135,12 +127,6 @@ public class MissionProofQueryRepositoryImpl implements MissionProofQueryReposit
 		if (condition.hasUserCondition()) {
 			builder.and(proof.user.id.eq(condition.getUserId()));
 		}
-
-		// 커서 기반 페이징 처리
-		if (condition.isCursorPaging()) {
-			builder.and(proof.id.lt(condition.getLastId()));
-		}
-
 		return builder;
 	}
 }
