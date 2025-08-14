@@ -17,10 +17,10 @@ spring:
     password: ${DEV_MYSQL_PASSWORD}
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: admin
+    host: ${RABBITMQ_HOST:rabbitmq}   # 도커 네트워크 내 서비스명 기본값
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASS:admin}
 
   # 이메일 인증 시 필요
   mail:
