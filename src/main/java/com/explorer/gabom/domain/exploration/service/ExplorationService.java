@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.exploration.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,13 +100,17 @@ public class ExplorationService {
 	}
 
 	// 탐험 중인 장소 조회
-	public ExplorationCurrentResponse getCurrentExploration(Long userId) {
-		Exploration exploration = explorationRepository
-			.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now())
-			.orElseThrow(() -> new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION));
+	@Transactional(readOnly = true)
+	public List<ExplorationCurrentResponse> getCurrentExploration(Long userId) {
+		List<Exploration> explorations = explorationRepository
+			.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now());
 
-		Place place = exploration.getPlace();
+		if (explorations.isEmpty()) {
+			throw new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION);
+		}
 
-		return ExplorationCurrentResponse.of(exploration, place);
+		return explorations.stream()
+			.map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
+			.toList();
 	}
 }
