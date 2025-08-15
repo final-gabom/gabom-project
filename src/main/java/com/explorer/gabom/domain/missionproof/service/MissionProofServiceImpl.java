@@ -23,6 +23,9 @@ import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailRes
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
+import com.explorer.gabom.domain.notification.service.NotificationService;
+import com.explorer.gabom.domain.notification.type.NotificationRefType;
+import com.explorer.gabom.domain.notification.type.NotificationType;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
@@ -42,6 +45,7 @@ public class MissionProofServiceImpl implements MissionProofService{
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
+	private final NotificationService notificationService;
 
 
 	// 생성
@@ -49,20 +53,20 @@ public class MissionProofServiceImpl implements MissionProofService{
 	@Transactional
 	public CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser) {
 
-		// 2. PLACE 타입인 경우 Place 유효성 검증
+		// PLACE 타입이면 Place 유효성 검증
 		Place place = null;
 		if (request.getFieldType() == MissionProofType.PLACE) {
 			place = placeRepository.findById(request.getTargetId())
 								   .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 		}
 
-		// 3. 이미지 파일 조회
+		// 이미지 파일 조회
 		List<String> imageIds = request.getData().getImageId();
-		List<AttachmentFile> imageFiles = imageIds != null && !imageIds.isEmpty()
+		List<AttachmentFile> imageFiles = (imageIds != null && !imageIds.isEmpty())
 										  ? attachmentFileRepository.findAllById(imageIds)
 										  : new ArrayList<>();
 
-		// 4. MissionProof 엔티티 생성
+		// 엔티티 생성
 		MissionProof missionProof = MissionProof.builder()
 												.user(loginUser)
 												.place(place)
@@ -74,8 +78,24 @@ public class MissionProofServiceImpl implements MissionProofService{
 												.imageFiles(imageFiles)
 												.build();
 
-		// 5. 저장
+		// 저장
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
+
+		// 알림: 장소 주인에게 “인증글 등록됨”
+		if (place != null && place.getUser() != null) {
+			Long receiverId = place.getUser().getId();
+			String msg  = "내 장소에 인증글이 등록되었습니다.";
+			String link = "/mission-proofs/" + savedMissionProof.getId();
+
+			notificationService.notify(
+				receiverId,
+				NotificationType.AUTH_POST_CREATED,   // 프로젝트 enum 이름에 맞게
+				msg,
+				link,
+				NotificationRefType.AUTH_POST,
+				savedMissionProof.getId()
+			);
+		}
 
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}

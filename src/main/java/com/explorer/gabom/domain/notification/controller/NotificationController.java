@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.explorer.gabom.domain.notification.dto.NotificationResponseDto;
-import com.explorer.gabom.domain.notification.dto.SocketNotificationRequest;
+import com.explorer.gabom.domain.notification.dto.response.NotificationResponseDto;
+import com.explorer.gabom.domain.notification.dto.request.SocketNotificationRequest;
 import com.explorer.gabom.domain.notification.entity.Notification;
 import com.explorer.gabom.domain.notification.service.NotificationService;
 import com.explorer.gabom.domain.notification.type.NotificationType;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/notifications/dev")
 public class NotificationController {
 	private final NotificationService notificationService;
 	private final NotificationSocketController socketController;
@@ -44,15 +44,13 @@ public class NotificationController {
 
 	@PostMapping("/send")
 	public ResponseEntity<ApiResponse<?>> sendTestNotification(@RequestBody SocketNotificationRequest request) {
-		Notification notification = notificationService.notify(
+		Notification saved = notificationService.notify(
 			request.getReceiverId(),
 			NotificationType.valueOf(request.getType()),
 			request.getMessage(),
 			request.getLink()
 		);
 
-		socketController.sendNotification(request.getReceiverId(), NotificationResponseDto.from(notification));
-
-		return ResponseEntity.ok(ApiResponse.success("알림 전송 완료", null));
+		return ResponseEntity.ok(ApiResponse.success("알림 전송 완료", NotificationResponseDto.toDto(saved)));
 	}
 }

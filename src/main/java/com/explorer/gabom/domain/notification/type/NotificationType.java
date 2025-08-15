@@ -6,5 +6,6 @@ public enum NotificationType {
 	POINT_GRANTED,         // 포인트가 지급되었을 때
 	QUEST_EXPIRED, // 퀘스트 시간이 만료되었을 때
 	QUEST_TIME_RUNNING_OUT, // 퀘스트 만료시간 임박할 때
+	AUTH_POST_CREATED,
 	ALERT // 테스트용
 }

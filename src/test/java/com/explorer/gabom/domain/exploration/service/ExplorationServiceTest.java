@@ -11,10 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
@@ -28,16 +28,27 @@ import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.scheduler.ExplorationAlarmScheduler;
+import com.explorer.gabom.global.validator.AuthorValidator;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ExplorationService 단위 테스트")
 public class ExplorationServiceTest {
 
-	@Mock private UserRepository userRepository;
-	@Mock private PlaceRepository placeRepository;
-	@Mock private ExplorationRepository explorationRepository;
+	@Mock
+	private UserRepository userRepository;
+	@Mock
+	private PlaceRepository placeRepository;
+	@Mock
+	private ExplorationRepository explorationRepository;
 
-	@InjectMocks private ExplorationService explorationService;
+	@Mock
+	private AuthorValidator authorValidator;
+	@Mock
+	private ExplorationAlarmScheduler alarmScheduler;
+
+	@InjectMocks
+	private ExplorationService explorationService;
 
 	private User mockUser;
 	private Place mockPlace;
@@ -58,10 +69,19 @@ public class ExplorationServiceTest {
 		exploration = Exploration.builder()
 								 .id(1L)
 								 .user(mockUser)
+								 .place(mockPlace)
 								 .endAt(LocalDateTime.now().plusMinutes(30))
 								 .build();
-	}
 
+		// @Value 필드 주입 대체
+		// 운영 기본 3시간, 테스트용 초는 0 (시간 기준으로 동작)
+		ReflectionTestUtils.setField(explorationService, "explorationDurationHours", 3L);
+		ReflectionTestUtils.setField(explorationService, "testDurationSeconds", 0L);
+
+		// 스케줄러는 호출만 검증하면 되므로 doNothing
+		willDoNothing().given(alarmScheduler).schedule(any(Exploration.class));
+		willDoNothing().given(alarmScheduler).reschedule(any(Exploration.class));
+	}
 
 	// 탐험 시작
 	@Test
@@ -71,10 +91,10 @@ public class ExplorationServiceTest {
 		Long placeId = 1L;
 		ExplorationStartRequest request = new ExplorationStartRequest(37.0, 127.0);
 
-		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
+		given(
+			explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
 			.willReturn(false);
-
-		given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+		given(userRepository.findById(mockUser.getId())).willReturn(Optional.of(mockUser));
 		given(placeRepository.findById(placeId)).willReturn(Optional.of(mockPlace));
 
 		given(explorationRepository.save(any(Exploration.class))).willAnswer(invocation -> {
@@ -89,7 +109,7 @@ public class ExplorationServiceTest {
 							  .build();
 		});
 
-		ExplorationStartResponse response = explorationService.startExploration(userId, placeId, request);
+		ExplorationStartResponse response = explorationService.startExploration(mockUser, placeId, request);
 
 		assertNotNull(response);
 		assertTrue(response.getRewardExp() > 0);
@@ -97,20 +117,24 @@ public class ExplorationServiceTest {
 		assertNotNull(response.getStartAt());
 		assertNotNull(response.getEndAt());
 
-		then(explorationRepository).should().existsByUserIdAndPlaceIdAndEndAtAfter(eq(userId), eq(placeId), any(LocalDateTime.class));
+		then(explorationRepository).should().existsByUserIdAndPlaceIdAndEndAtAfter(eq(userId), eq(placeId),
+																				   any(LocalDateTime.class));
 		then(userRepository).should().findById(userId);
 		then(placeRepository).should().findById(placeId);
 		then(explorationRepository).should().save(any(Exploration.class));
+		then(alarmScheduler).should().schedule(any(Exploration.class));
 	}
 
 	@Test
 	@DisplayName("탐험 시작 - 이미 진행 중인 탐험 있음 예외 발생")
 	void startExploration_alreadyStartedException() {
-		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
+		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(
+			eq(mockUser.getId()), eq(1L), any(LocalDateTime.class)))
 			.willReturn(true);
 
 		CustomException exception = assertThrows(CustomException.class, () -> {
-			explorationService.startExploration(1L, 1L, new ExplorationStartRequest(37.0, 127.0));
+			explorationService.startExploration(
+				mockUser, 1L, new ExplorationStartRequest(37.0, 127.0));
 		});
 
 		assertEquals(ErrorCode.ALREADY_STARTED_EXPLORATION, exception.getErrorCode());
@@ -119,13 +143,16 @@ public class ExplorationServiceTest {
 	@Test
 	@DisplayName("탐험 시작 - 유저 없음 예외 발생")
 	void startExploration_userNotFoundException() {
-		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
+		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(
+			eq(mockUser.getId()), eq(1L), any(LocalDateTime.class)))
 			.willReturn(false);
 
-		given(userRepository.findById(anyLong())).willReturn(Optional.empty());
+		// 서비스가 DB에서 사용자 검증을 한다면 이 스텁에 의해 USER_NOT_FOUND 발생
+		given(userRepository.findById(mockUser.getId())).willReturn(Optional.empty()); // ★ 변경
 
 		CustomException exception = assertThrows(CustomException.class, () -> {
-			explorationService.startExploration(1L, 1L, new ExplorationStartRequest(37.0, 127.0));
+			explorationService.startExploration(
+				mockUser, 1L, new ExplorationStartRequest(37.0, 127.0)); // ★ 변경
 		});
 
 		assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
@@ -134,25 +161,27 @@ public class ExplorationServiceTest {
 	@Test
 	@DisplayName("탐험 시작 - 장소 없음 예외 발생")
 	void startExploration_placeNotFoundException() {
-		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(anyLong(), anyLong(), any(LocalDateTime.class)))
-			.willReturn(false);
+		given(explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(
+			eq(mockUser.getId()), eq(1L), any(LocalDateTime.class)))
+																	 .willReturn(false);
 
-		given(userRepository.findById(anyLong())).willReturn(Optional.of(mockUser));
+		given(userRepository.findById(mockUser.getId())).willReturn(Optional.of(mockUser));
 		given(placeRepository.findById(anyLong())).willReturn(Optional.empty());
 
 		CustomException exception = assertThrows(CustomException.class, () -> {
-			explorationService.startExploration(1L, 1L, new ExplorationStartRequest(37.0, 127.0));
+			explorationService.startExploration(
+				mockUser, 1L, new ExplorationStartRequest(37.0, 127.0));
 		});
 
 		assertEquals(ErrorCode.PLACE_NOT_FOUND, exception.getErrorCode());
 	}
-
 
 	// 탐험 제한 시간 연장
 	@Test
 	@DisplayName("탐험 제한 시간 연장 - 성공")
 	void extendExplorationTime_success() {
 		given(explorationRepository.findById(1L)).willReturn(Optional.of(exploration));
+		willDoNothing().given(authorValidator).validateOwner(eq(1L), eq(1L));
 
 		ExplorationExtendTimeResponse response = explorationService.extendExplorationTime(1L, 1L);
 
@@ -160,6 +189,8 @@ public class ExplorationServiceTest {
 		assertTrue(response.getNewDeadline().isAfter(LocalDateTime.now()));
 
 		then(explorationRepository).should().findById(1L);
+		then(authorValidator).should().validateOwner(1L, 1L);
+		then(alarmScheduler).should().reschedule(any(Exploration.class));
 	}
 
 	@Test
@@ -184,6 +215,8 @@ public class ExplorationServiceTest {
 								 .build();
 
 		given(explorationRepository.findById(1L)).willReturn(Optional.of(exploration));
+		willThrow(new CustomException(ErrorCode.EXPLORATION_NO_PERMISSION))
+			.given(authorValidator).validateOwner(eq(2L), eq(1L));
 
 		CustomException exception = assertThrows(CustomException.class,
 												 () -> explorationService.extendExplorationTime(1L, 1L));
@@ -201,13 +234,13 @@ public class ExplorationServiceTest {
 								 .build();
 
 		given(explorationRepository.findById(1L)).willReturn(Optional.of(exploration));
+		willDoNothing().given(authorValidator).validateOwner(eq(1L), eq(1L));
 
 		CustomException exception = assertThrows(CustomException.class,
 												 () -> explorationService.extendExplorationTime(1L, 1L));
 
 		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
 	}
-
 
 	// 탐험 중인 장소 조회
 	@Test
@@ -237,7 +270,8 @@ public class ExplorationServiceTest {
 		assertTrue(response.getDeadline().isAfter(LocalDateTime.now()));
 		assertEquals(300, response.getRewardPoint());
 
-		then(explorationRepository).should().findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L), any(LocalDateTime.class));
+		then(explorationRepository).should().findTopByUserIdAndEndAtAfterOrderByEndAtAsc(eq(1L),
+																						 any(LocalDateTime.class));
 	}
 
 	@Test

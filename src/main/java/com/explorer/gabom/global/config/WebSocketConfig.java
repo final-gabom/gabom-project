@@ -1,4 +1,4 @@
-package com.explorer.gabom.global.websocket;
+package com.explorer.gabom.global.config;
 
 import java.util.List;
 
@@ -22,8 +22,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/queue", "/topic");           // 구독 주소 prefix
+		// 구독 프리픽스 : 유저 큐와 일반 토픽
+		config.enableSimpleBroker("/queue", "/topic");// 구독 주소 prefix
+		// 클라 -> 서버 전송 프리픽스
 		config.setApplicationDestinationPrefixes("/app");
+		// 유저 개별 큐 프리픽스
 		config.setUserDestinationPrefix("/user");
 	}
 
@@ -39,9 +42,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 			@Override
 			public Message<?> preSend(Message<?> message, MessageChannel channel) {
 				StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-				if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-					String userId = accessor.getFirstNativeHeader("userId"); // 클라이언트에서 header에 넣은 userId
-					accessor.setUser(new UsernamePasswordAuthenticationToken(userId, null, List.of())); // Principal 설정
+				if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+					// 클라가 CONNECT 프레임 헤더로 보낸 userId를 Principal로 심어줌
+					String userId = accessor.getFirstNativeHeader("userId");
+					if (userId != null && !userId.isBlank()) {
+						accessor.setUser(new UsernamePasswordAuthenticationToken(userId, null, List.of()));
+					}
 				}
 				return message;
 			}

@@ -43,16 +43,14 @@ public class ExplorationService {
 
 	// 탐험 시작
 	@Transactional
-	public ExplorationStartResponse startExploration(Long userId, Long placeId, ExplorationStartRequest request) {
+	public ExplorationStartResponse startExploration(User user, Long placeId, ExplorationStartRequest request) {
 
 		// 같은 장소에 진행 중인 탐험이 있으면 막기
-		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(userId, placeId, LocalDateTime.now())) {
+		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(user.getId(), placeId, LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION);
 		}
 
 		// 연관 엔티티 로드
-		User user = userRepository.findById(userId).orElseThrow(
-			() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Place place = placeRepository.findById(placeId).orElseThrow(
 			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
