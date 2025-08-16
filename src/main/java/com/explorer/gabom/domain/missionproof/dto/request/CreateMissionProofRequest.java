@@ -29,6 +29,10 @@ public class CreateMissionProofRequest {
 	@Schema(description = "인증글 데이터")
 	private Data data;
 
+	private Double lat;
+
+	private Double lon;
+
 	@Getter
 	@Builder
 	@AllArgsConstructor
