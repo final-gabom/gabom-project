@@ -2,7 +2,6 @@ package com.explorer.gabom.domain.exploration.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,5 +11,5 @@ public interface ExplorationRepository extends JpaRepository<Exploration, Long> 
 
 	boolean existsByUserIdAndPlaceIdAndEndAtAfter(Long userId, Long placeId, LocalDateTime now);
 
-	List<Exploration> findTopByUserIdAndEndAtAfterOrderByEndAtAsc(Long userId, LocalDateTime now);
+	List<Exploration> findByUserIdAndEndAtAfterOrderByEndAtAsc(Long userId, LocalDateTime now);
 }

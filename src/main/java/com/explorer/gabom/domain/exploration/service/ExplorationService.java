@@ -103,7 +103,7 @@ public class ExplorationService {
 	@Transactional(readOnly = true)
 	public List<ExplorationCurrentResponse> getCurrentExploration(Long userId) {
 		List<Exploration> explorations = explorationRepository
-			.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now());
+			.findByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now());
 
 		if (explorations.isEmpty()) {
 			throw new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION);
