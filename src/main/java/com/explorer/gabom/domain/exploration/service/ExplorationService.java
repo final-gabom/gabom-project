@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
@@ -107,5 +108,24 @@ public class ExplorationService {
 		Place place = exploration.getPlace();
 
 		return ExplorationCurrentResponse.of(exploration, place);
+	}
+
+	// 탐험 장소 상세 조회
+	@Transactional(readOnly = true)
+	public ExplorationDetailResponse getExplorationDetail(Long explorationId) {
+		Exploration exploration = explorationRepository.findById(explorationId)
+			.orElseThrow(() -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+
+		return new ExplorationDetailResponse(
+			exploration.getId(),
+			exploration.getUser().getId(),
+			exploration.getUser().getNickname(),
+			exploration.getPlace().getId(),
+			exploration.getPlace().getTitle(),
+			exploration.getRewardPoint(),
+			exploration.getRewardExp(),
+			exploration.getStartAt(),
+			exploration.getEndAt()
+		);
 	}
 }
