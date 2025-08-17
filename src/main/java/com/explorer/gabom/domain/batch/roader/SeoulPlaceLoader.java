@@ -23,6 +23,18 @@ public class SeoulPlaceLoader implements CommandLineRunner {
 	@Value("${place.import.enabled:false}")
 	private boolean enabled;
 
+	// 경로 프로퍼티로 분리(유연성)
+	@Value(("${place.import.seoul.path:classpath:data/seoul_restaurants_final_utf8.csv}"))
+	private String seoulCsvPath;
+
+	// 컨트롤러에서 호출할 메서드
+	public int loadAll() throws Exception {
+		log.info("[SeoulPlaceLoader] 시작 (CSV -> DB): {}", seoulCsvPath);
+		int saved = service.loadFromClasspath(seoulCsvPath);
+		log.info("[SeoulPlaceLoader] 완료. 총 {}건 저장됨", saved);
+		return saved;
+	}
+
 	@Override
 	public void run(String... args) {
 		// 1) 기능 on/off 스위치: 프로퍼티가 false면 바로 종료
@@ -30,17 +42,10 @@ public class SeoulPlaceLoader implements CommandLineRunner {
 			log.info("[SeoulPlaceLoader] 비활성화됨. 스킵");
 			return;
 		}
-
-		int saved;
 		try {
-			log.info("[SeoulPlaceLoader] 시작 (CSV → DB)");
 			long t0 = System.nanoTime();
-
-			saved = service.loadFromClasspath("classpath:data/seoul_restaurants_final_utf8.csv");
-
-			long t1 = System.nanoTime();
-
-			long durationMs = (t1 - t0) / 1_000_000; // 밀리초 단위
+			int saved = loadAll();
+			long durationMs = (System.nanoTime() - t0) / 1_000_000; // 밀리초 단위
 			log.info("[SeoulPlaceLoader] 완료. 총 {}건 저장됨. 소요 시간: {} ms (약 {}초)", saved, durationMs, durationMs / 1000.0);
 		} catch (Exception e) {
 			// 3) 배치 실패 시 전체 애플리케이션 부팅을 멈출지 여부
