@@ -1,20 +1,23 @@
 package com.explorer.gabom.domain.social.dto;
 
 import com.explorer.gabom.domain.social.type.SocialProvider;
-
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
+@Builder
 @Getter
 @AllArgsConstructor
 public class OAuthUserInfo {
-	private SocialProvider provider;
-	private String providerId;
-	private String email;
-	private String Nickname;
+    private SocialProvider provider;
+    private String providerId;
+    private String email;
 
-	// 닉네임 없이 생성 가능하도록 오버로딩
-	public OAuthUserInfo(SocialProvider provider, String providerId, String email) {
-		this(provider, providerId, email, null);
-	}
+    public OAuthUserInfo toDto(SocialProvider provider, String providerId, String email) {
+        return OAuthUserInfo.builder()
+                .provider(provider)
+                .providerId(providerId)
+                .email(email)
+                .build();
+    }
 }

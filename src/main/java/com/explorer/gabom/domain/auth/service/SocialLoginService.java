@@ -78,9 +78,7 @@ public class SocialLoginService {
 
     //소셜회원 가입
     @Transactional
-    public SocialLoginResponse signUp(SocialSignupRequest signupRequest) {
-
-
+    public SocialLoginResponse socialSignUp(SocialSignupRequest signupRequest) {
         validateNicknameNotExists(signupRequest.getNickname());
 
         // 유저 생성
@@ -161,5 +159,11 @@ public class SocialLoginService {
                 .build();
 
         return socialAccountRepository.save(account);
+    }
+
+    public boolean handleLogin(OAuthUserInfo userInfo) {
+        return socialAccountRepository
+                .findByProviderTypeAndProviderId(userInfo.getProvider(),userInfo.getProviderId())
+                .isPresent();
     }
 }

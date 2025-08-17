@@ -21,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 @Service("KAKAO")
 @RequiredArgsConstructor
-public class KakaoService implements SocialLoginService {
+public class KakaoService implements SocialService {
 
     private final RestTemplate restTemplate;
 
@@ -33,10 +33,12 @@ public class KakaoService implements SocialLoginService {
     @Value("${KAKAO_REDIRECT_URI}")
     private String kakaoRedirectUri;
 
+
     @Override
     public SocialProvider getProvider() {
         return SocialProvider.KAKAO;
     }
+
     @Override
     public String getAuthorizationUrl() {
         return UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/authorize")
@@ -47,10 +49,20 @@ public class KakaoService implements SocialLoginService {
     }
 
     @Override
-    public SocialLoginResponse login(String code) {
-        // 인가 코드로 엑세스 토큰 받기
+    public SocialLoginResponse kakaoLogin(String code) {
+        // 인가 코드로 액세스 토큰 발급
         String accessToken = getAccessToken(code);
-        // 액세스 토큰으로 카카오 사용자 정보 조회 API 호출 준비
+
+        //  액세스 토큰으로 사용자 정보 조회
+        OAuthUserInfo userInfo = getOAuthUserInfoForProvider(accessToken);
+
+        //  공통 소셜 로그인 처리
+        return socialLoginService.socialLogin(userInfo);
+    }
+
+    // 액세스 토큰을 사용해 카카오에서 사용자 정보를 조회하는 메서드
+    @Override
+    public OAuthUserInfo getOAuthUserInfoForProvider(String accessToken) {
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
         HttpHeaders headers = new HttpHeaders();
@@ -58,16 +70,17 @@ public class KakaoService implements SocialLoginService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
-        // 사용자 정보 요청
-        ResponseEntity<String> response = restTemplate.exchange(
-                userInfoUrl,
-                HttpMethod.GET,
-                request,
-                String.class
-        );
-        // 여기 로그 추가 (사용자 정보 응답 출력)
-        log.debug("카카오 사용자 정보 응답: {}", response.getBody());
+
         try {
+            // 사용자 정보 요청
+            ResponseEntity<String> response = restTemplate.exchange(
+                    userInfoUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            // 여기 로그 추가 (사용자 정보 응답 출력)
+            log.debug("카카오 사용자 정보 응답: {}", response.getBody());
             // 응답 JSON 파싱
             JsonNode root = new ObjectMapper().readTree(response.getBody());
             Long providerId = root.path("id").asLong();
@@ -76,10 +89,8 @@ public class KakaoService implements SocialLoginService {
             if (email == null) {
                 throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
             }
-            // 공통 사용자 정보 DTO 생성
-            OAuthUserInfo userInfo = new OAuthUserInfo(SocialProvider.KAKAO, String.valueOf(providerId), email);
 
-            return socialLoginService.socialLogin(userInfo);
+            return  new OAuthUserInfo(SocialProvider.KAKAO, String.valueOf(providerId), email);
 
         } catch (Exception e) {
             log.error("카카오 로그인 처리 중 오류 발생", e);

@@ -1,11 +1,12 @@
 package com.explorer.gabom.domain.social.service;
 
+import com.explorer.gabom.domain.social.dto.OAuthUserInfo;
 import com.explorer.gabom.domain.social.dto.response.SocialLoginResponse;
 import com.explorer.gabom.domain.social.type.SocialProvider;
 
-public interface SocialLoginService {
+public interface SocialService {
 
-    SocialLoginResponse login(String accessToken);
+    SocialLoginResponse kakaoLogin(String accessToken);
 
     SocialProvider getProvider();
 
@@ -13,4 +14,7 @@ public interface SocialLoginService {
 
     // 인증 URL 반환 메서드 추가
     String getAuthorizationUrl();
+
+    OAuthUserInfo getOAuthUserInfoForProvider(String accessToken);
+
 }
