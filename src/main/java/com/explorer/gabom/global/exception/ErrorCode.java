@@ -75,6 +75,7 @@ public enum ErrorCode {
 	INVALID_ADDRESS_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 법정동 코드입니다."),
 	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주소 정보를 찾을 수 없습니다."),
 	EMD_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 emdCd를 찾을 수 없습니다."),
+	INVALID_ADDRESS_PAYLOAD(HttpStatus.BAD_REQUEST, "주소 수정 시 emdCd, addressDetail, lat, lng를 모두 입력해야 합니다."),
 
 	// SQL
 	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다.");

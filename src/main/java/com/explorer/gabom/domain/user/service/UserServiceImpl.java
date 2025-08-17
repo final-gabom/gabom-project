@@ -75,7 +75,49 @@ public class UserServiceImpl implements UserService {
 			user.updateProfileImg(imgFile);
 		}
 
-		return UserDto.toDto(user);
+		// 주소 payload가 들어온 경우에만 upsert 호출
+		AddressDto updatedAddress = null;
+		if (hasAddressPayload(updateRequest)) {
+			// 4개 필드가 모두 들어왔는지 확인
+			if (!hasAllAddressFields(updateRequest)) {
+				throw new CustomException(ErrorCode.INVALID_ADDRESS_PAYLOAD);
+			}
+
+			AddressRequest addrReq = AddressRequest.builder()
+												   .emdCd(updateRequest.getEmdCd())
+												   .addressDetail(updateRequest.getAddressDetail()) // 필드명이 address라면 .addressDetail(updateRequest.getAddress())
+												   .lat(updateRequest.getLat())
+												   .lng(updateRequest.getLng())
+												   .build();
+
+			updatedAddress = updateUserAddress(user, addrReq);
+		}
+
+		// DTO 반환 — 기존 오버로드 유지 사용
+		return (updatedAddress == null)
+			   ? UserDto.toDto(user)
+			   : UserDto.toDto(user, updatedAddress);
+	}
+
+	private boolean hasAddressPayload(UserUpdateRequest r) {
+		return r.getEmdCd() != null || r.getAddressDetail() != null
+			|| r.getLat() != null || r.getLng() != null;
+	}
+
+	private boolean hasAllAddressFields(UserUpdateRequest r) {
+		return r.getEmdCd() != null
+			&& r.getAddressDetail() != null
+			&& r.getLat() != null
+			&& r.getLng() != null;
+	}
+
+	@Transactional
+	@Override
+	public AddressDto updateUserAddress(User user, AddressRequest request) {
+		request.setAddressTypeCd(AddressType.USER);
+		request.setTargetId(user.getId());
+
+		return addressService.createOrReplace(request);
 	}
 
 	@Transactional
@@ -109,14 +151,5 @@ public class UserServiceImpl implements UserService {
 
 		String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
 		user.updatePassword(encodedNewPassword);
-	}
-
-	@Transactional
-	@Override
-	public AddressDto updateUserAddress(User user, AddressRequest request) {
-		request.setAddressTypeCd(AddressType.USER);
-		request.setTargetId(user.getId());
-
-		return addressService.createOrReplace(request);
 	}
 }
