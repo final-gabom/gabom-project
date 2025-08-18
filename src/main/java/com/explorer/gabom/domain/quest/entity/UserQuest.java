@@ -71,7 +71,18 @@ public class UserQuest {
 		if (this.progressCount >= quest.getAcquireCondition()) {
 			markCompleted();
 		}
+	}
 
+	public void updateProgressToLevel(int level) {
+		if (isCompleted()) {
+			return;
+		}
+
+		this.progressCount = level;
+
+		if (this.progressCount >= quest.getAcquireCondition()) {
+			markCompleted();
+		}
 	}
 
 	public boolean isCompleted() {

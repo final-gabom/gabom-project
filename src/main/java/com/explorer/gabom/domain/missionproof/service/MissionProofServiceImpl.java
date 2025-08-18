@@ -82,7 +82,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 		// 5. 저장
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
 
-		userQuestService.updateProgress(loginUser, QuestConditionType.MISSION_PROOF, 1);
+		userQuestService.updateProgress(loginUser, QuestConditionType.MISSION_PROOF_WRITE, 1);
 
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}

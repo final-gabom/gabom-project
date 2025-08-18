@@ -32,7 +32,7 @@ public class RankingServiceImpl implements RankingService {
 	@Override
 	public PageResponse<RankingSummaryDto> getRankingPage(Pageable pageable, String nickname) {
 
-		// 1️⃣ 닉네임이 없으면 Redis에서 페이징된 userId를 가져오고 DB 조회
+		// 닉네임이 없으면 Redis에서 페이징된 userId를 가져오고 DB 조회
 		if (nickname == null || nickname.isBlank()) {
 			long start = pageable.getOffset();
 			long end = start + pageable.getPageSize() - 1;
@@ -71,14 +71,14 @@ public class RankingServiceImpl implements RankingService {
 			);
 		}
 
-		// 2️⃣ 닉네임이 있는 경우: DB에서 후보 userId 추출
+		// 닉네임이 있는 경우: DB에서 후보 userId 추출
 		List<Long> candidateIds = rankingRepository.findUserIdsByNicknameContaining(nickname);
 
 		if (candidateIds.isEmpty()) {
 			return PageResponse.toDto(new PageImpl<>(Collections.emptyList(), pageable, 0));
 		}
 
-		// 3️⃣ 후보 userId에 대해 Redis rank 가져오기
+		// 후보 userId에 대해 Redis rank 가져오기
 		List<RankingSummaryDto> dtoList = candidateIds.stream()
 													  .map(id -> {
 														  Long rank = redisTemplate.opsForZSet()
