@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;

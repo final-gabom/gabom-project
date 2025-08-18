@@ -20,12 +20,10 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
-import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
@@ -168,33 +166,11 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional(readOnly = true)
 	public PageResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition,
 															  Pageable pageable) {
-		// Repository에서 페이지 기반 조회
 		Page<MissionProof> results = missionProofRepository.searchByCondition(condition, pageable);
 
-		// DTO로 변환
-		List<MissionProofSummary> summaries = results.getContent().stream()
-													 .map(mp -> new MissionProofSummary(
-														 mp.getId(),
-														 mp.getFieldType(),
-														 new UserSummaryDto(
-															 mp.getUser().getId(),
-															 mp.getUser().getNickname(),
-															 mp.getUser().getLevel(),
-															 mp.getUser().getTitle() != null ? mp.getUser()
-																								 .getTitle()
-																								 .getName() : null
-														 ),
-														 mp.getTitle(),
-														 mp.getCreatedAt(),
-														 mp.getUpdatedAt(),
-														 mp.getImageFiles().stream()
-														   .map(AttachmentFile::getFilePath)
-														   .filter(Objects::nonNull)
-														   .toList()
-													 ))
-													 .toList();
+		// Page.map()으로 DTO 변환 및 null 방어
+		Page<MissionProofSummary> dtoPage = results.map(MissionProofSummary::toDto);
 
-		// PageResponse로 변환 후 반환
-		return PageResponse.toDto(new PageImpl<>(summaries, pageable, results.getTotalElements()));
+		return PageResponse.toDto(dtoPage);
 	}
 }
