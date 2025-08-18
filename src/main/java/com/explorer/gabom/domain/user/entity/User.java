@@ -37,73 +37,92 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 public class User extends BaseTimeEntity {
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<UserTitle> userTitles = new ArrayList<>();
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<UserTitle> userTitles = new ArrayList<>();
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+	@Column(unique = true, nullable = false)
+	private String email;
 
-    @Column(nullable = false)
-    private String password;
+	private String password;
 
-    @Column(unique = true, nullable = false)
-    private String nickname;
+	@Column(unique = true, nullable = false)
+	private String nickname;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole userRole;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserRole userRole;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_img_id")
-    private AttachmentFile profileImg;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "profile_img_id")
+	private AttachmentFile profileImg;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private UserStatus status = UserStatus.ACTIVE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "title_id")
-    private Title title;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "title_id")
+	private Title title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", insertable = false, updatable = false)
-    private Address address;
-    @Column(name = "address_id")
-    private Long addressId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "address_id", insertable = false, updatable = false)
+	private Address address;
+	@Column(name = "address_id")
+	private Long addressId;
 
-    @Column(nullable = false)
-    private Integer point;
+	@Column(nullable = false)
+	private Integer point;
 
-    @Column(nullable = false)
-    private Integer level;
+	@Column(nullable = false)
+	private Integer level;
 
-    @Column(nullable = false)
-    private Integer exp;
+	@Column(nullable = false)
+	private Integer exp;
 
+	@Builder
+	public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.userRole = userRole;
+		this.status = status;
+		this.point = 0;
+		this.level = 1;
+		this.exp = 0;
+	}
 
-    @Builder
-    public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.userRole = userRole;
-        this.status = status;
-        this.point = 0;
-        this.level = 1;
-        this.exp = 0;
-    }
+	// 일반 회원가입용
+	public static User ofRegular(String email, String encodedPassword, String nickname, UserRole role) {
+		return User.builder()
+				   .email(email)
+				   .password(encodedPassword)
+				   .nickname(nickname)
+				   .userRole(role)
+				   .status(UserStatus.ACTIVE)
+				   .build();
+	}
 
-    public void addPoint(int point) {
-        this.point += point;
-    }
+	// 소셜 회원가입용
+	public static User ofSocial(String email, String nickname) {
+		return User.builder()
+				   .email(email)
+				   .nickname(nickname)
+				   .userRole(UserRole.USER)
+				   .status(UserStatus.ACTIVE)
+				   .build();
+	}
 
-    public void addExp(int exp) {
-        this.exp += exp;
-    }
+	public void addPoint(int point) {
+		this.point += point;
+	}
+
+	public void addExp(int exp) {
+		this.exp += exp;
+	}
 
 	public void updateLevel(int newLevel) {
 		this.level = newLevel;
@@ -116,50 +135,29 @@ public class User extends BaseTimeEntity {
 		}
 	}
 
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
-    }
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
 
-    public void updateProfileImg(AttachmentFile profileImg) {
-        this.profileImg = profileImg;
-    }
+	public void updateProfileImg(AttachmentFile profileImg) {
+		this.profileImg = profileImg;
+	}
 
-    public void setTitle(Title newTitle) {
-        this.title = newTitle;
-    }
+	public void setTitle(Title newTitle) {
+		this.title = newTitle;
+	}
 
-    public void updatePassword(String encodedNewPassword) {
-        this.password = encodedNewPassword;
-    }
+	public void updatePassword(String encodedNewPassword) {
+		this.password = encodedNewPassword;
+	}
 
-    public void changePassword(String encodedPassword) {
-        this.password = encodedPassword;
-    }
+	public void changePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
 
-    public void updateAddressId(Long addressId) {
-        this.addressId = addressId;
-    }
-    // 일반 회원가입용
-    public static User ofRegular(String email, String encodedPassword, String nickname, UserRole role) {
-        return User.builder()
-                .email(email)
-                .password(encodedPassword)
-                .nickname(nickname)
-                .userRole(role)
-                .status(UserStatus.ACTIVE)
-                .build();
-    }
-
-    // 소셜 회원가입용
-    public static User ofSocial(String email, String nickname) {
-        return User.builder()
-                .email(email)
-                .password("") // 소셜로그인 비밀번호 없음
-                .nickname(nickname)
-                .userRole(UserRole.USER)
-                .status(UserStatus.ACTIVE)
-                .build();
-    }
+	public void updateAddressId(Long addressId) {
+		this.addressId = addressId;
+	}
 
 }
 

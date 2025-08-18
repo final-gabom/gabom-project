@@ -14,7 +14,7 @@ import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
 import com.explorer.gabom.domain.auth.service.AuthService;
-import com.explorer.gabom.domain.social.dto.response.TokenResponse;
+import com.explorer.gabom.global.security.jwt.JwtTokens;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.global.dto.ApiResponse;
 
@@ -53,8 +53,8 @@ public class AuthController implements AuthControllerDocs {
 	}
 
 	@PostMapping("/reissue")
-	public ResponseEntity<ApiResponse<TokenResponse>> reissue(@RequestBody String refreshToken) {
-		TokenResponse tokenResponse = authService.reissue(refreshToken);
+	public ResponseEntity<ApiResponse<JwtTokens>> reissue(@RequestBody String refreshToken) {
+		JwtTokens tokenResponse = authService.reissue(refreshToken);
 		return ResponseEntity.ok(ApiResponse.success("토큰 재발급 성공", tokenResponse));
 	}
 

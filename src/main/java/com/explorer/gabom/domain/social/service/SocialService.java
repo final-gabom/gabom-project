@@ -6,9 +6,7 @@ import com.explorer.gabom.domain.social.type.SocialProvider;
 
 public interface SocialService {
 
-    SocialLoginResponse kakaoLogin(String accessToken);
-
-    SocialProvider getProvider();
+	SocialProvider getProvider();
 
     String getAccessToken(String code);
 

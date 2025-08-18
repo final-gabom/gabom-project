@@ -65,4 +65,8 @@ public class SocialAccount {
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public void setUser(User user) {
+		this.user = user;
+	}
+
 }

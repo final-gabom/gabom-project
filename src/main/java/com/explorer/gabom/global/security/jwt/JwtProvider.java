@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.redis.service.RedisTokenService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,13 +23,17 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
 	private static final String BEARER_PREFIX = "Bearer ";
+
+	private final RedisTokenService redisTokenService;
 
 	@Value("${jwt.secret}")
 	private String secretKey;
@@ -195,8 +200,14 @@ public class JwtProvider {
 		return this.getClaims(token).getSubject();
 	}
 
-	public long getRefreshTokenExpiration() {
-		return refreshTokenExpiration;
-	}
+	// JWT 토큰 생성만 담당
+	public JwtTokens generateTokens(Long userId, UserRole role) {
+		String accessToken = createAccessToken(userId, role);
+		String refreshToken = createRefreshToken(userId, role);
 
+		// Redis에 refresh token 저장
+		redisTokenService.saveRefreshToken(userId, refreshToken, refreshTokenExpiration);
+
+		return new JwtTokens(accessToken, refreshToken);
+	}
 }
