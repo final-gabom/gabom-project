@@ -94,21 +94,21 @@ class UserQuestServiceTest {
 		when(userQuest.isCompleted()).thenReturn(true);
 		when(userQuest.isRewardClaimed()).thenReturn(false);
 		when(userQuest.getQuest()).thenReturn(quest);
-		when(quest.getRewardExp()).thenReturn(100);
-		when(quest.getRewardPoint()).thenReturn(50);
+		when(quest.getRewardExp()).thenReturn(100L);
+		when(quest.getRewardPoint()).thenReturn(50L);
 		when(quest.getRewardTitle()).thenReturn(null);
 
-		when(user.getExp()).thenReturn(200);
+		when(user.getExp()).thenReturn(200L);
 		when(user.getLevel()).thenReturn(1);
-		when(levelService.calculateLevel(200)).thenReturn(2);
+		when(levelService.calculateLevel(200L)).thenReturn(2);
 
 		doNothing().when(expEventProducer).sendExpEvent(any(ExpEventMessage.class));
 
 		QuestRewardResponse response = userQuestService.claimReward(USER_ID, USER_QUEST_ID);
 
 		verify(userQuest).markRewardClaimed();
-		verify(user).addExp(100);
-		verify(user).addPoint(50);
+		verify(user).addExp(100L);
+		verify(user).addPoint(50L);
 		verify(user).updateLevel(2);
 		verify(expEventProducer).sendExpEvent(any(ExpEventMessage.class));
 		assertThat(response).isNotNull();

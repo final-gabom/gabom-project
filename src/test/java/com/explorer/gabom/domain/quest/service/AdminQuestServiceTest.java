@@ -41,8 +41,8 @@ class AdminQuestServiceTest {
 	private static final String QUEST_DESCRIPTION = "퀘스트 설명";
 	private static final QuestConditionType QUEST_CONDITION_TYPE = QuestConditionType.PLACE;
 	private static final int QUEST_ACQUIRE_CONDITION = 5;
-	private static final int REWARD_POINT = 100;
-	private static final int REWARD_EXP = 50;
+	private static final Long REWARD_POINT = 100;
+	private static final Long REWARD_EXP = 50;
 
 	private static final String UPDATED_TITLE = "수정된 제목";
 	private static final String UPDATED_DESCRIPTION = "수정된 설명";

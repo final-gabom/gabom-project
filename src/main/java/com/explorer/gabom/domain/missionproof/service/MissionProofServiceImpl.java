@@ -20,16 +20,16 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
-import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
+import com.explorer.gabom.domain.quest.service.UserQuestService;
+import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.PageResponse;
@@ -47,6 +47,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
+	private final UserQuestService userQuestService;
 
 	// 생성
 	@Override
@@ -80,6 +81,8 @@ public class MissionProofServiceImpl implements MissionProofService {
 
 		// 5. 저장
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
+
+		userQuestService.updateProgress(loginUser, QuestConditionType.MISSION_PROOF, 1);
 
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}

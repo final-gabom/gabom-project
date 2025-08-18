@@ -27,13 +27,11 @@ public class QuestUpdateRequest {
 	@Schema(description = "퀘스트 달성 조건 수치", example = "3", minimum = "1")
 	private Integer acquireCondition;
 
-	@Min(value = 1, message = "포인트는 1 이상이어야 합니다.")
 	@Schema(description = "퀘스트 완료 시 지급할 포인트", example = "500", minimum = "1")
-	private Integer rewardPoint;
+	private @Min(value = 1, message = "포인트는 1 이상이어야 합니다.") Long rewardPoint;
 
-	@Min(value = 1, message = "경험치는 1 이상이어야 합니다.")
 	@Schema(description = "퀘스트 완료 시 지급할 경험치", example = "100", minimum = "1")
-	private Integer rewardExp;
+	private @Min(value = 1, message = "경험치는 1 이상이어야 합니다.") Long rewardExp;
 
 	@Schema(description = "퀘스트 완료 시 지급할 칭호 ID", example = "1")
 	private Long rewardTitleId;

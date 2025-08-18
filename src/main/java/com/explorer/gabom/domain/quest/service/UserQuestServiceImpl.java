@@ -89,7 +89,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 		user.addExp(userQuest.getQuest().getRewardExp());
 		user.addTitle(userQuest.getQuest().getRewardTitle());
 
-		int exp = user.getExp();
+		Long exp = user.getExp();
 		int level = levelService.calculateLevel(exp);
 		if (level > user.getLevel()) {
 			user.updateLevel(level);

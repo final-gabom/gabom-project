@@ -35,14 +35,14 @@ public class Ranking {
 	private User user;
 
 	@Column(nullable = false)
-	private int exp;
+	private Long exp;
 
-	public Ranking(User user, int exp) {
+	public Ranking(User user, Long exp) {
 		this.user = user;
 		this.exp = exp;
 	}
 
-	public void updateExp(int exp) {
+	public void updateExp(Long exp) {
 		this.exp = exp;
 	}
 }

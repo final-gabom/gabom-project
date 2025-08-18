@@ -18,8 +18,8 @@ public class QuestUpdateResponse implements TargetIdentifiable {
 	private String description;
 	private QuestConditionType questConditionType;
 	private int acquireCondition;
-	private int rewardPoint;
-	private int rewardExp;
+	private Long rewardPoint;
+	private Long rewardExp;
 	private Long rewardTitleId;
 	private LocalDateTime updatedAt;
 

@@ -35,10 +35,10 @@ public class UserDto {
 	private final Integer level;
 
 	@Schema(description = "경험치", example = "1234")
-	private final Integer exp;
+	private final Long exp;
 
 	@Schema(description = "포인트", example = "5000")
-	private final Integer point;
+	private final Long point;
 
 	public static UserDto toDto(User user) {
 		return UserDto.builder()

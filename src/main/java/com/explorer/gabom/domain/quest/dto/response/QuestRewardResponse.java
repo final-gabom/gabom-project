@@ -8,8 +8,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class QuestRewardResponse {
-	private int rewardPoint;
-	private int rewardExp;
+	private Long rewardPoint;
+	private Long rewardExp;
 	private Long rewardTitleId;
 
 	public static QuestRewardResponse toDto(Quest quest) {

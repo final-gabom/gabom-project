@@ -75,13 +75,13 @@ public class User extends BaseTimeEntity {
 	private Long addressId;
 
 	@Column(nullable = false)
-	private Integer point;
+	private Long point;
 
 	@Column(nullable = false)
 	private Integer level;
 
 	@Column(nullable = false)
-	private Integer exp;
+	private Long exp;
 
 	@Builder
 	public User(Long id, String email, String password, String nickname, UserRole userRole) {
@@ -91,16 +91,16 @@ public class User extends BaseTimeEntity {
 		this.nickname = nickname;
 		this.userRole = userRole;
 		this.status = UserStatus.ACTIVE;
-		this.point = 0;
+		this.point = 0L;
 		this.level = 1;
-		this.exp = 0;
+		this.exp = 0L;
 	}
 
-	public void addPoint(int point) {
+	public void addPoint(Long point) {
 		this.point += point;
 	}
 
-	public void addExp(int exp) {
+	public void addExp(Long exp) {
 		this.exp += exp;
 	}
 
