@@ -37,6 +37,15 @@ public class SocialLoginController {
 	private final SocialLoginServiceFactory socialLoginServiceFactory;
 	private final SocialLoginService socialLoginService;
 
+	/**
+	 * 소셜 로그인 진입점 (로그인 페이지 리다이렉트)
+	 * - 사용자가 특정 소셜 로그인 (KAKAO, GOOGLE 등)을 시도할 때 호출되는 엔드포인트
+	 * - 요청된 provider 에 맞는 소셜 로그인 인증 URL(Authorization URL)을 생성하여
+	 *   클라이언트를 해당 소셜 로그인 페이지로 리다이렉트 시킨다.
+	 *
+	 * @param provider 소셜 로그인 제공자 (KAKAO, GOOGLE 등)
+	 * @param response HttpServletResponse (리다이렉트 응답을 전송하기 위해 사용)
+	 */
 	// 로그인 페이지로 이동 (리다이렉트)
 	@GetMapping("/{provider}")
 	public void redirectToProvider(
@@ -51,7 +60,15 @@ public class SocialLoginController {
 		log.info("➡️  {} 로그인 페이지로 리다이렉트: {}", provider, authorizationUrl);
 		response.sendRedirect(authorizationUrl);
 	}
-
+	/**
+	 * 소셜 로그인 콜백 엔드포인트
+	 * - 사용자가 소셜 로그인(카카오, 구글 등) 후 리다이렉트되는 콜백 URL을 처리한다.
+	 * - 인가 코드를 받아 액세스 토큰 발급 → 사용자 정보 조회 → 회원가입/로그인 절차 수행
+	 *
+	 * @param provider 소셜 로그인 제공자 (KAKAO, GOOGLE 등)
+	 * @param code 소셜 로그인 후 전달받은 인가 코드 (Authorization Code)
+	 * @return 로그인 결과 (SocialLoginResponse) 를 담은 ApiResponse
+	 */
 	@GetMapping("/{provider}/callback")
 	public ResponseEntity<ApiResponse<SocialLoginResponse>> socialLogin(
 		@PathVariable SocialProvider provider,
