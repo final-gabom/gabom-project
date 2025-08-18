@@ -11,5 +11,5 @@ public interface ExplorationRepository extends JpaRepository<Exploration, Long> 
 
 	boolean existsByUserIdAndPlaceIdAndEndAtAfter(Long userId, Long placeId, LocalDateTime now);
 
-	List<Exploration> findByUserIdAndEndAtAfterOrderByEndAtAsc(Long userId, LocalDateTime now);
+	List<Exploration> findAllByUserIdAndEndAtAfterOrderByEndAtAsc(Long userId, LocalDateTime now);
 }
