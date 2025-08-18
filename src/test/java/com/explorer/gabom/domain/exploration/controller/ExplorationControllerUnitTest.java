@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -219,31 +220,44 @@ class ExplorationControllerUnitTest {
 
 	// 탐험 중인 장소 조회
 	@Test
-	@DisplayName("탐험 중인 장소 조회 - 성공")
+	@DisplayName("탐험 중인 장소 목록 조회 - 성공")
 	void getCurrentExploration_success() {
 		// given
-		ExplorationCurrentResponse dto = ExplorationCurrentResponse.builder()
-																   .explorationId(100L)
-																   .placeId(5L)
-																   .placeTitle("숨은 명소")
-																   .startedAt(LocalDateTime.now().minusHours(1))
-																   .deadline(LocalDateTime.now().plusHours(2))
-																   .rewardPoint(300)
-																   .build();
+		List<ExplorationCurrentResponse> dtoList = List.of(
+			ExplorationCurrentResponse.builder()
+									  .explorationId(100L)
+									  .placeId(5L)
+									  .placeTitle("숨은 명소")
+									  .startedAt(LocalDateTime.now().minusHours(1))
+									  .deadline(LocalDateTime.now().plusHours(2))
+									  .rewardPoint(300)
+									  .build(),
+			ExplorationCurrentResponse.builder()
+									  .explorationId(101L)
+									  .placeId(6L)
+									  .placeTitle("비밀의 숲")
+									  .startedAt(LocalDateTime.now().minusHours(2))
+									  .deadline(LocalDateTime.now().plusHours(1))
+									  .rewardPoint(500)
+									  .build()
+		);
+
 		given(explorationService.getCurrentExploration(userDetails.getUserId()))
-			.willReturn(dto);
+			.willReturn(dtoList);
 
 		// when
-		ResponseEntity<ApiResponse<ExplorationCurrentResponse>> resp =
+		ResponseEntity<ApiResponse<List<ExplorationCurrentResponse>>> resp =
 			controller.getCurrentExploration(userDetails);
 
 		// then
 		assertEquals(HttpStatus.OK, resp.getStatusCode());
-		ApiResponse<ExplorationCurrentResponse> body = resp.getBody();
+
+		ApiResponse<List<ExplorationCurrentResponse>> body = resp.getBody();
 		assertNotNull(body);
 		assertTrue(body.isSuccess());
 		assertEquals("현재 탐험 중인 장소 조회에 성공했습니다.", body.getMessage());
-		assertEquals(dto, body.getData());
+		assertEquals(dtoList.size(), body.getData().size());
+		assertEquals(dtoList, body.getData());
 	}
 
 	@Test
