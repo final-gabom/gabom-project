@@ -70,6 +70,9 @@ public enum ErrorCode {
 	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
 	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
 	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 삭제 권한이 없습니다."),
+	INVALID_PROOF_LOCATION(HttpStatus.BAD_REQUEST, "장소 근처(200m 이내)에서만 인증할 수 있습니다."),
+	LAT_LON_REQUIRED(HttpStatus.BAD_REQUEST, "PLACE 타입에서는 위도와 경도가 필수입니다."),
+	PLACE_COORDINATE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장소의 좌표 정보를 찾을 수 없습니다."),
 
 	// Address
 	INVALID_ADDRESS_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 법정동 코드입니다."),
