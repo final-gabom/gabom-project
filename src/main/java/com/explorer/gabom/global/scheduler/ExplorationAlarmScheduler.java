@@ -50,6 +50,7 @@ public class ExplorationAlarmScheduler {
 		long almostDelay = millisUntil(almostAt);
 		long expireDelay = millisUntil(endAt);
 
+		// 임박 알림
 		if (almostDelay > 0 && e.isActive() && !e.isAlmostNotified()) {
 			var f = scheduler.schedule(() -> {
 				explorationRepository.findById(e.getId()).ifPresent(cur -> {
@@ -65,6 +66,7 @@ public class ExplorationAlarmScheduler {
 						);
 						cur.markAlmostNotified();
 						explorationRepository.save(cur);
+						log.info("[ALMOST] pushed user={}, exp={}, at={}", cur.getUser().getId(), cur.getId(), LocalDateTime.now());
 					}
 				});
 			}, almostDelay, TimeUnit.MILLISECONDS);
@@ -72,17 +74,22 @@ public class ExplorationAlarmScheduler {
 			log.debug("Scheduled ALMOST for exploration={} at={}", e.getId(), almostAt);
 		}
 
-		if (expireDelay > 0 && e.isActive()) {
+		//만료 알림 (중복 방지)
+		if (expireDelay > 0 && !e.isExpiredNotified()) {
 			var f = scheduler.schedule(() -> {
 				explorationRepository.findById(e.getId()).ifPresent(cur -> {
-					if (cur.isActive()) {
-						cur.markExpired();
+					if (!cur.isExpiredNotified()) {
+						if (cur.isActive()) {
+							cur.markExpired();
+						}
+						cur.markExpiredNotified();
 						explorationRepository.save(cur);
+
 						notificationService.notify(
 							cur.getUser().getId(),
 							NotificationType.QUEST_EXPIRED,
 							"퀘스트 시간이 만료되었습니다.",
-							"/places/" + cur.getPlace(),
+							"/explorations/" + cur.getId(),
 							NotificationRefType.EXPLORATION,
 							cur.getId()
 						);

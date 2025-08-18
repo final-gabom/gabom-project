@@ -31,7 +31,7 @@ public class NotificationController {
 	private final NotificationService notificationService;
 	private final NotificationSocketController socketController;
 
-	// 🔔 [1] 알림 목록 조회 (페이징 지원)
+	// [1] 알림 목록 조회 (페이징 지원)
 	@GetMapping
 	public ResponseEntity<ApiResponse<?>> getMyNotifications(
 		@AuthenticationPrincipal CustomUserDetails userDetails,

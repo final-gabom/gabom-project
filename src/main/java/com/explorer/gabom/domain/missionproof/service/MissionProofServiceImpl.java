@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,14 +21,13 @@ import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
-import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
-import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
+import com.explorer.gabom.domain.notification.event.MissionProofCreatedEvent;
 import com.explorer.gabom.domain.notification.service.NotificationService;
 import com.explorer.gabom.domain.notification.type.NotificationRefType;
 import com.explorer.gabom.domain.notification.type.NotificationType;
@@ -41,9 +41,11 @@ import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MissionProofServiceImpl implements MissionProofService {
 
 	private final MissionProofRepository missionProofRepository;
@@ -51,6 +53,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
 	private final NotificationService notificationService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	// 생성
 	@Override
@@ -90,6 +93,17 @@ public class MissionProofServiceImpl implements MissionProofService {
 			Long receiverId = place.getUser().getId();
 			String msg  = "내 장소에 인증글이 등록되었습니다.";
 			String link = "/mission-proofs/" + savedMissionProof.getId();
+
+			var event = new MissionProofCreatedEvent(
+				receiverId,
+				"내 장소에 인증글이 등록되었습니다.",
+				link,
+				NotificationRefType.AUTH_POST,
+				savedMissionProof.getId()
+			);
+			eventPublisher.publishEvent(event);
+			log.info("[AUTH_POST] published event AFTER_COMMIT → receiver={}, refId={}", receiverId, savedMissionProof.getId());
+
 
 			notificationService.notify(
 				receiverId,
