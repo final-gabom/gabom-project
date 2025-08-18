@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 		log.warn("[{}] {} (status: {})",
 				 errorCode.name(),
 				 errorCode.getMessage(),
-				 errorCode.getHttpStatus().value());
+				 errorCode.getHttpStatus().value(),e);
 
 		return ResponseEntity
 			.status(errorCode.getHttpStatus()) // 예외에 정의된 상태 코드로 응답

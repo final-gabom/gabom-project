@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
+import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
@@ -26,6 +27,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -45,7 +47,8 @@ public class Place extends BaseTimeEntity {
 	@OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("orderIdx ASC")
 	private final List<PlaceFile> files = new ArrayList<>(); // TODO: 이미지 연동 후 구현 예정
-
+	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
+	private final List<MissionProof> missionProofs = new ArrayList<>();
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -57,17 +60,14 @@ public class Place extends BaseTimeEntity {
 	@Column(nullable = false, length = 100)
 	private String title;
 
-	@Column(nullable = false, length = 255)
-	private String address;
-
-	@Column(nullable = false)
-	private Double lat;
-
-	@Column(nullable = false)
-	private Double lng;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "address_id", insertable = false, updatable = false)
+	private Address address;
+	@Column(name = "address_id")
+	private Long addressId;
 
 	@Lob
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "TEXT")
 	private String content;
 
 	@Column(nullable = false)
@@ -80,15 +80,9 @@ public class Place extends BaseTimeEntity {
 	@Column(nullable = false)
 	private PlaceStatus status;
 
-	@OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
-	private final List<MissionProof> missionProofs = new ArrayList<>();
-
 	public Place(PlaceCreateRequest request, User user) {
 		this.user = user;
 		this.title = request.getTitle();
-		this.address = request.getAddress();
-		this.lat = request.getLat();
-		this.lng = request.getLng();
 		this.proofMethod = request.getProofMethod();
 		this.content = request.getContent();
 		this.viewCount = 0; // 기본값
@@ -114,14 +108,23 @@ public class Place extends BaseTimeEntity {
 					.orElse(null);
 	}
 
-	public Place update(PlaceUpdateRequest request) {
-		this.title = request.getTitle();
-		this.address = request.getAddress();
-		this.lat = request.getLat();
-		this.lng = request.getLng();
-		this.proofMethod = request.getProofMethod();
-		this.content = request.getContent();
+	public void update(PlaceUpdateRequest request) {
+		if (request.getTitle() != null) {
+			this.title = request.getTitle();
+		}
+		if (request.getProofMethod() != null) {
+			this.proofMethod = request.getProofMethod();
+		}
+		if (request.getContent() != null) {
+			this.content = request.getContent();
+		}
+	}
 
-		return this;
+	public void setAddressId(Long addressId) {
+		this.addressId = addressId;
+	}
+
+	public void linkAddress(Address addr) {
+		this.addressId = addr.getId();
 	}
 }

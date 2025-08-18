@@ -22,6 +22,12 @@ spring:
       port: 6379
       host: localhost
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+
   # 이메일 인증 시 필요
   mail:
     host: smtp.gmail.com
@@ -37,7 +43,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO_POLICY}
     properties:
       hibernate:
         show_sql: true
@@ -56,6 +62,13 @@ spring:
         bucket: ${AWS_BUCKET_NAME}
         key:
           prefix: test/
+
+place:
+  import:
+    enabled: ${PLACE_IMPORT_ENABLED:false} # 기본값 false
+address:
+  import:
+    enabled: ${ADDRESS_IMPORT_ENABLED:false}
 
 jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"

@@ -1,9 +1,14 @@
 package com.explorer.gabom.domain.title.repository;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.explorer.gabom.domain.title.entity.Title;
 
 public interface TitleRepository extends JpaRepository<Title, Long>, TitleRepositoryCustom {
 	boolean existsByName(String name);
+
+	List<Title> findByIdIn(Collection<Long> ids);
 }

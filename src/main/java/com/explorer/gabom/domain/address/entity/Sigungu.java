@@ -7,10 +7,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "sigungu")
 public class Sigungu {
 
@@ -23,7 +29,7 @@ public class Sigungu {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sdCd", nullable = false, updatable = false, insertable = false)
 	private Sido sido;
-	@Column(nullable = false)
+	@Column(nullable = false, length=2)
 	private String sdCd;
 
 	/** 시군구명 */

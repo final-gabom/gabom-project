@@ -2,19 +2,14 @@ package com.explorer.gabom.domain.place.repository;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
-
-import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
-import com.explorer.gabom.domain.place.entity.Place;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.request.PlaceSearchCond;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.querydsl.core.Tuple;
 
 public interface PlaceRepositoryCustom {
 
-	Place updatePlace(Long placeId, Long userId, PlaceUpdateRequest request);
-
-	PageResponse<PlaceSummary> findPlaceSummaries(String keyword, Double lat, Double lng, Pageable pageable);
+	PageResponse<PlaceSummary> findPlaceSummaries(PlaceSearchCond cond);
 
 	/**
 	 * 주어진 위도(lat), 경도(lon) 기준으로

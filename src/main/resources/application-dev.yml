@@ -17,6 +17,12 @@ spring:
     username: ${DEV_MYSQL_USERNAME}
     password: ${DEV_MYSQL_PASSWORD}
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+
   # 이메일 인증 시 필요
   mail:
     host: smtp.gmail.com
@@ -40,7 +46,7 @@ spring:
         use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect
 
-# AWS 설정
+  # AWS 설정
   cloud:
     aws:
       credentials:

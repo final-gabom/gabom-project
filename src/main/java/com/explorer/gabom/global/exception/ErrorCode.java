@@ -24,9 +24,9 @@ public enum ErrorCode {
 
 	// User
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
-	CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST,"자신을 차단할 수 없습니다."),
-	ALREADY_BLOCKED_USER(HttpStatus.CONFLICT,"이미 차단된 유저입니다."),
-	NOT_BLOCKED_USER(HttpStatus.BAD_REQUEST,"차단 목록에 존재하지 않는 유저입니다." ),
+	CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST, "자신을 차단할 수 없습니다."),
+	ALREADY_BLOCKED_USER(HttpStatus.CONFLICT, "이미 차단된 유저입니다."),
+	NOT_BLOCKED_USER(HttpStatus.BAD_REQUEST, "차단 목록에 존재하지 않는 유저입니다."),
 	// Auth
 	INVALID_TOKEN(HttpStatus.BAD_REQUEST, "잘못된 토큰 값입니다."),
 	EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "JWT 토큰이 비어 있습니다."),
@@ -39,11 +39,11 @@ public enum ErrorCode {
 	INCORRECT_PASSWORD(HttpStatus.FORBIDDEN, "비밀번호가 일치하지 않습니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-	EXPIRED_CODE(HttpStatus.UNAUTHORIZED,"만료된 인증코드입니다."),
+	EXPIRED_CODE(HttpStatus.UNAUTHORIZED, "만료된 인증코드입니다."),
 	CODE_NOT_MATCH(HttpStatus.FORBIDDEN, "인증코드가 일치하지 않습니다."),
-	EMAIL_ALREADY_VERIFIED(HttpStatus.CONFLICT,"이미 인증된 이메일입니다." ),
-	EMAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED,"인증되지 않은 이메일입니다." ),
-	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 이메일입니다."),
+	EMAIL_ALREADY_VERIFIED(HttpStatus.CONFLICT, "이미 인증된 이메일입니다."),
+	EMAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED, "인증되지 않은 이메일입니다."),
+	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
 
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
@@ -69,10 +69,15 @@ public enum ErrorCode {
 	// MissionProof
 	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
 	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
-	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN,"미션 인증글 삭제 권한이 없습니다."),
+	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 삭제 권한이 없습니다."),
 
 	// Address
 	INVALID_ADDRESS_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 법정동 코드입니다."),
+	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주소 정보를 찾을 수 없습니다."),
+	EMD_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 emdCd를 찾을 수 없습니다."),
+
+	// SQL
+	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다."),
 
 
 	// Notification
@@ -80,6 +85,5 @@ public enum ErrorCode {
 	UNAUTHORIZED_NOTIFICATION_ACCESS(HttpStatus.FORBIDDEN, "해당 알림에 접근할 권한이 없습니다.");
 	private final HttpStatus httpStatus;
 	private final String message;
-
 
 }

@@ -1,6 +1,6 @@
 spring:
   config:
-    import: "optional:classpath:/application-${spring.profiles.active}.yml"
+    import: optional:file:.env[.properties]
   profiles:
     group:
       dev: dev

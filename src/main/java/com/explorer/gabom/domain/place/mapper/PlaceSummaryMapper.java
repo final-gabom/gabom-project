@@ -1,8 +1,10 @@
 package com.explorer.gabom.domain.place.mapper;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
+import com.explorer.gabom.domain.address.entity.QAddress;
 import com.explorer.gabom.domain.file.dto.ThumbnailDto;
 import com.explorer.gabom.domain.file.entity.QAttachmentFile;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.entity.QPlace;
 import com.explorer.gabom.domain.title.entity.QTitle;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
@@ -20,6 +22,8 @@ public class PlaceSummaryMapper {
 		QPlace place = QPlace.place;
 		QUser user = QUser.user;
 		QTitle title = QTitle.title;
+		QAddress address = QAddress.address;
+
 		QAttachmentFile file = QAttachmentFile.attachmentFile;
 		NumberPath<Double> dist = Expressions.numberPath(Double.class, "distance");
 
@@ -34,9 +38,7 @@ public class PlaceSummaryMapper {
 		return PlaceSummary.builder()
 						   .placeId(t.get(place.id))
 						   .title(t.get(place.title))
-						   .address(t.get(place.address))
-						   .latitude(t.get(place.lat))
-						   .longitude(t.get(place.lng))
+						   .address(AddressDto.toDto(t.get(address)))
 						   .viewCount(t.get(place.viewCount))
 						   .missionProofCount(0)
 						   .avgRating(0.0)

@@ -1,7 +1,11 @@
 package com.explorer.gabom.domain.place.repository;
 
+import static com.explorer.gabom.domain.address.entity.QAddress.*;
+import static com.explorer.gabom.domain.place.entity.QPlace.*;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -9,21 +13,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.file.entity.QAttachmentFile;
-import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.missionproof.entity.QMissionProof;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.request.PlaceSearchCond;
 import com.explorer.gabom.domain.place.entity.Place;
-import com.explorer.gabom.domain.place.entity.QPlace;
 import com.explorer.gabom.domain.place.entity.QPlaceFile;
 import com.explorer.gabom.domain.place.mapper.PlaceSummaryMapper;
 import com.explorer.gabom.domain.title.entity.QTitle;
 import com.explorer.gabom.domain.user.entity.QUser;
 import com.explorer.gabom.global.dto.PageResponse;
-import com.explorer.gabom.global.exception.CustomException;
-import com.explorer.gabom.global.exception.ErrorCode;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -31,7 +34,6 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.jpa.impl.JPAUpdateClause;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,78 +43,38 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 	protected final JPAQueryFactory queryFactory;
 
+	@Transactional(readOnly = true)
 	@Override
-	public Place updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
-		QPlace place = QPlace.place;
-
-		// 동적 업데이트
-		JPAUpdateClause update = queryFactory.update(place);
-		int setCount = 0;
-
-		if (request.getTitle() != null) {
-			update.set(place.address, request.getAddress());
-			setCount++;
-		}
-		if (request.getAddress() != null) {
-			update.set(place.address, request.getAddress());
-			setCount++;
-		}
-		if (request.getLat() != null) {
-			update.set(place.lat, request.getLat());
-			setCount++;
-		}
-		if (request.getLng() != null) {
-			update.set(place.lng, request.getLng());
-			setCount++;
-		}
-		if (request.getProofMethod() != null) {
-			update.set(place.proofMethod, request.getProofMethod());
-			setCount++;
-		}
-		if (request.getContent() != null) {
-			update.set(place.content, request.getContent());
-			setCount++;
-		}
-
-		// 수정할 값이 하나도 없으면 예외
-		if (setCount == 0) {
-			throw new CustomException(ErrorCode.NO_FIELDS_TO_UPDATE);
-		}
-
-		long updated = update.where(place.id.eq(placeId), place.user.id.eq(userId)).execute();
-
-		// 서비스에서 PLACE_NO_PERMISSION 처리
-		if (updated == 0) {
-			return null;
-		}
-
-		// 최종 상태 재조회 후 반환
-		return queryFactory.selectFrom(place).where(place.id.eq(placeId)).fetchOne();
-	}
-
-	@Override
-	public PageResponse<PlaceSummary> findPlaceSummaries(String keyword, Double lat, Double lng, Pageable pageable) {
-		QPlace place = QPlace.place;
+	public PageResponse<PlaceSummary> findPlaceSummaries(PlaceSearchCond cond) {
 		QPlaceFile placeFile = QPlaceFile.placeFile;
 		QAttachmentFile file = QAttachmentFile.attachmentFile;
 		QUser writer = QUser.user;
 		QAttachmentFile subFile = new QAttachmentFile("sf");
 		QTitle title = new QTitle("title");
 
-		BooleanBuilder builder = getKeywordFilter(keyword).and(place.deletedAt.isNull());
+		// soft delete & 주소 필터 & 키워드 검색 필터
+		BooleanBuilder where = new BooleanBuilder()
+			.and(place.deletedAt.isNull())
+			.and(getAddressFilter(cond))
+			.and(getKeywordFilter(cond.getKeyword()));
 
-		NumberExpression<Double> distanceExpr = (lat != null && lng != null)
-												? getDistanceExpression(lat, lng, place.lat, place.lng)
-													.divide(1000.0)        // ➜ km 단위
-												: null;
+		// 거리 계산 (Address의 위경도 기준, km 단위). 위치 미제공 시 null
+		NumberExpression<Double> distanceExpr = null;
+		if (cond.getLat() != null && cond.getLng() != null) {
+			distanceExpr = getDistanceExpression(cond.getLat(), cond.getLng(), address.lat, address.lng).divide(
+				1000.0); // km 단위
+		}
 
+		NumberExpression<Long> proofCountExpr = getProofCountExpr();
+
+		// 본문 쿼리
 		JPAQuery<Tuple> query = queryFactory
 			.select(
 				place.id,
 				place.title,
-				place.address,
-				place.lat,
-				place.lng,
+				address,
+				address.lat,
+				address.lng,
 				place.viewCount,
 				writer.id,
 				writer.nickname,
@@ -120,11 +82,13 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 				writer.title.name,
 				file.fileId,
 				file.filePath,
-				distanceExpr.as("distance")
+				distanceExpr != null ? distanceExpr.as("distance") : Expressions.nullExpression(Double.class),
+				proofCountExpr.as("proofCount")
 			)
 			.from(place)
 			.join(place.user, writer)
 			.leftJoin(writer.title, title)
+			.leftJoin(address).on(place.addressId.eq(address.id))
 			.leftJoin(placeFile).on(placeFile.place.eq(place))
 			.leftJoin(file).on(file.eq(placeFile.file),
 							   file.fileId.eq(JPAExpressions.select(subFile.fileId)
@@ -133,18 +97,27 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 															.where(placeFile.place.eq(place), subFile.deleted.isFalse())
 															.orderBy(subFile.orderIdx.asc())
 															.limit(1)))
-			.where(builder);
+			.where(where);
 
-		applySort(query, pageable, distanceExpr);
+		// 정렬 조건 적용
+		Pageable pageable = cond.getPageable();
+		applySort(query, pageable, distanceExpr, proofCountExpr);
+
+		// 카운트 쿼리
 		Long total = Optional.ofNullable(queryFactory
 											 .select(place.count())
 											 .from(place)
 											 .join(place.user, writer)
-											 .where(builder)
+											 .leftJoin(address).on(place.addressId.eq(address.id))
+											 .where(where)
 											 .fetchOne()).orElse(0L);
 
-		List<Tuple> tuples = query.offset(pageable.getOffset()).limit(pageable.getPageSize()).fetch();
+		// 페이징 처리
+		List<Tuple> tuples = query.offset(pageable.getOffset())
+								  .limit(pageable.getPageSize())
+								  .fetch();
 
+		// 결과 매핑
 		List<PlaceSummary> content = tuples.stream()
 										   .map(PlaceSummaryMapper::fromTuple)
 										   .toList();
@@ -154,14 +127,12 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 	@Override
 	public List<Tuple> findWithinRadius(double lat, double lon, double minKm, double maxKm) {
-		QPlace p = QPlace.place;
-
 		// 1) 기준점 <-> 장소 간 거리를 미터 단위로 계산
 		NumberExpression<Double> distMeter = Expressions.numberTemplate(
 			Double.class,
 			"ST_Distance_Sphere(POINT({1}, {0}), POINT({3}, {2}))",
 			lat, lon,                      // {0}=lat, {1}=lon
-			p.lat, p.lng                   // {2}=place.lat, {3}=place.lng
+			address.lat, address.lng       // {2}=place.lat, {3}=place.lng
 		);
 
 		// 2) 필터용 경계값 (km -> m 단위)
@@ -170,37 +141,70 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 		return queryFactory
 			.select(
-				p.id,
+				place.id,
 				distMeter.divide(1_000.0)  // km 단위로 변환
 			)
-			.from(p)
-			.where(distMeter.between(minMeters, maxMeters))
+			.from(place)
+			.leftJoin(address).on(place.addressId.eq(address.id))
+			.where(
+				place.deletedAt.isNull(),
+				address.lat.isNotNull(),
+				address.lng.isNotNull(),
+				distMeter.between(minMeters, maxMeters))
 			.fetch();
 	}
 
-	private void applySort(JPAQuery<Tuple> query, Pageable pageable, NumberExpression<Double> distanceExpr) {
+	private void applySort(JPAQuery<Tuple> query, Pageable pageable,
+						   NumberExpression<Double> distanceExpr, NumberExpression<Long> proofCountExpr) {
 		PathBuilder<Place> entityPath = new PathBuilder<>(Place.class, "place");
+		Set<String> allowedSortFields = Set.of("viewCount", "createdAt", "updatedAt");
 
 		for (Sort.Order order : pageable.getSort()) {
-			if (order.getProperty().equals("distance") && distanceExpr != null) {
-				query.orderBy(order.isAscending() ? distanceExpr.asc() : distanceExpr.desc());
-			} else {
-				query.orderBy(new OrderSpecifier<>(
-					order.isAscending() ? Order.ASC : Order.DESC,
-					entityPath.getComparable(order.getProperty(), Comparable.class)
-				));
+			String property = order.getProperty();
+			boolean asc = order.isAscending();
+
+			switch (property) {
+				case "distance" -> {
+					if (distanceExpr != null)
+						query.orderBy(asc ? distanceExpr.asc() : distanceExpr.desc());
+				}
+				case "proofCount" -> {
+					if (proofCountExpr != null)
+						query.orderBy(asc ? proofCountExpr.asc() : proofCountExpr.desc());
+				}
+				default -> {
+					if (!allowedSortFields.contains(property)) continue;
+					query.orderBy(new OrderSpecifier<>(
+						asc ? Order.ASC : Order.DESC,
+						entityPath.getComparable(property, Comparable.class)
+					));
+				}
 			}
 		}
+
+		query.orderBy(place.id.asc());
 	}
 
-	private BooleanBuilder getKeywordFilter(String keyword) {
-		QPlace place = QPlace.place;
-		if (keyword == null || keyword.isBlank())
-			return new BooleanBuilder();
-		return new BooleanBuilder().and(
-			place.title.containsIgnoreCase(keyword)
-					   .or(place.address.containsIgnoreCase(keyword))
-		);
+	/** 주소 필터: emd > sgg > sd (하나만 적용) */
+	private BooleanExpression getAddressFilter(PlaceSearchCond cond) {
+		if (cond.getEmdCd() != null && !cond.getEmdCd().isBlank()) {
+			return address.emdCd.eq(cond.getEmdCd());
+		}
+		if (cond.getSggCd() != null && !cond.getSggCd().isBlank()) {
+			return address.sggCd.eq(cond.getSggCd());
+		}
+		if (cond.getSdCd() != null && !cond.getSdCd().isBlank()) {
+			return address.sdCd.eq(cond.getSdCd());
+		}
+		return null;
+	}
+
+	private BooleanExpression getKeywordFilter(String keyword) {
+		if (keyword == null || keyword.isBlank()) {
+			return null;
+		}
+		return place.title.containsIgnoreCase(keyword)
+						  .or(address.detail.containsIgnoreCase(keyword));
 	}
 
 	private NumberExpression<Double> getDistanceExpression(double lat, double lng, NumberPath<Double> targetLat,
@@ -212,6 +216,18 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			"ST_Distance_Sphere(point({1}, {0}), point({3}, {2}))",
 			lat, lng,        // {0}: refLat  {1}: refLng
 			targetLat, targetLng   // {2}: place.lat {3}: place.lng
+		);
+	}
+
+	private NumberExpression<Long> getProofCountExpr() {
+		QMissionProof mp = QMissionProof.missionProof;
+
+		return Expressions.numberTemplate(Long.class,
+										  "({0})",
+										  JPAExpressions
+											  .select(mp.count())
+											  .from(mp)
+											  .where(mp.place.eq(place), mp.deletedAt.isNull())
 		);
 	}
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
 import com.explorer.gabom.domain.notification.service.NotificationService;
+import com.explorer.gabom.domain.notification.type.NotificationRefType;
 import com.explorer.gabom.domain.notification.type.NotificationType;
 
 import lombok.RequiredArgsConstructor;
@@ -57,8 +58,10 @@ public class ExplorationAlarmScheduler {
 						notificationService.notify(
 							cur.getUser().getId(),
 							NotificationType.QUEST_TIME_RUNNING_OUT,
-							"퀘스트 제한 시간이 " + remain + " 남았습니다! 서둘러 인증해주세요.",
-							"/places/" + cur.getPlace().getId()
+							"퀘스트 제한 시간이" + remain + "남았습니다! 서둘러 인증해주세요.",
+							"/explorations/" + cur.getId(),
+							NotificationRefType.EXPLORATION,
+							cur.getId()
 						);
 						cur.markAlmostNotified();
 						explorationRepository.save(cur);
@@ -79,7 +82,9 @@ public class ExplorationAlarmScheduler {
 							cur.getUser().getId(),
 							NotificationType.QUEST_EXPIRED,
 							"퀘스트 시간이 만료되었습니다.",
-							"/places/" + cur.getPlace().getId()
+							"/places/" + cur.getPlace(),
+							NotificationRefType.EXPLORATION,
+							cur.getId()
 						);
 					}
 				});

@@ -16,20 +16,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.place.dto.PlaceDetail;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
+import com.explorer.gabom.domain.place.dto.request.PlaceSearchCond;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetail;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.response.PlaceUpdateResponse;
 import com.explorer.gabom.domain.place.service.PlaceService;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/places")
 public class PlaceController implements PlaceControllerDocs {
@@ -40,18 +45,30 @@ public class PlaceController implements PlaceControllerDocs {
 	@PostMapping
 	public ResponseEntity<ApiResponse<PlaceCreateResponse>> createPlace(@RequestBody @Valid PlaceCreateRequest request,
 																		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		PlaceCreateResponse response = placeService.createPlace(request, userDetails.getUserId());
+		log.info("[POST] /api/places - Place 생성 요청 by userId={} with title={}", userDetails.getUserId(),
+				 request.getTitle());
+		PlaceCreateResponse response = placeService.createPlace(request, userDetails.getUser());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("장소 등록이 완료되었습니다.", response));
 	}
 
 	// 탐험 장소 리스트 조회(검색)
 	@GetMapping
 	public ResponseEntity<ApiResponse<PageResponse<PlaceSummary>>> getPlaceList(
-		@RequestParam Double lat,
-		@RequestParam Double lng,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false) Double lng,
 		@RequestParam(required = false) String keyword,
-		@PageableDefault(page = 0, size = 10, sort = "distance", direction = Sort.Direction.ASC) Pageable pageable) {
-		PageResponse<PlaceSummary> response = placeService.getPlaceList(keyword, lat, lng, pageable);
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+		@PageableDefault(
+			page = 0, size = 10,
+			sort = {"viewCount", "proofCount"},
+			direction = Sort.Direction.DESC) Pageable pageable) {
+		log.info("[GET] 탐험 장소 리스트 조회 /api/places lat={}, lng={}, keyword={}, sdCd={}, sggCd={}, emdCd={}, page={}",
+				 lat, lng, keyword, sdCd, sggCd, emdCd, pageable.getPageNumber());
+
+		PlaceSearchCond cond = new PlaceSearchCond(lat, lng, sdCd, sggCd, emdCd, pageable, keyword);
+		PageResponse<PlaceSummary> response = placeService.getPlaceList(cond);
 		return ResponseEntity.ok(ApiResponse.success("장소 리스트 조회 성공", response));
 	}
 
@@ -60,16 +77,18 @@ public class PlaceController implements PlaceControllerDocs {
 	public ResponseEntity<ApiResponse<PlaceDetail>> getPlaceDetail(
 		@PathVariable Long placeId
 	) {
+		log.info("[GET] /api/places/{} - Place 상세 조회 요청", placeId);
 		PlaceDetail response = placeService.getPlaceDetail(placeId);
 		return ResponseEntity.ok(ApiResponse.success("탐험 장소 상세 조회 성공", response));
 	}
 
 	// 탐험 장소 수정
 	@PatchMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<PlaceDetail>> updatePlace(@PathVariable Long placeId,
-																@RequestBody PlaceUpdateRequest request,
-																@AuthenticationPrincipal CustomUserDetails userDetails) {
-		PlaceDetail response = placeService.updatePlace(placeId, userDetails.getUserId(), request);
+	public ResponseEntity<ApiResponse<PlaceUpdateResponse>> updatePlace(@PathVariable Long placeId,
+																		@RequestBody PlaceUpdateRequest request,
+																		@AuthenticationPrincipal CustomUserDetails userDetails) {
+		log.info("[PATCH] /api/places/{} - Place 수정 요청 by userId={}", placeId, userDetails.getUserId());
+		PlaceUpdateResponse response = placeService.updatePlace(placeId, userDetails.getUserId(), request);
 		return ResponseEntity.ok(ApiResponse.success("장소가 수정되었습니다.", response));
 	}
 
@@ -77,8 +96,8 @@ public class PlaceController implements PlaceControllerDocs {
 	@DeleteMapping("/{placeId}")
 	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable Long placeId,
 														 @AuthenticationPrincipal CustomUserDetails userDetails) {
-		Long userId = userDetails.getUserId();
-		Long deletePlaceId = placeService.deletePlace(placeId, userId);
+		log.info("[DELETE] /api/places/{} - 삭제 요청 by userId={}", placeId, userDetails.getUserId());
+		Long deletePlaceId = placeService.deletePlace(placeId, userDetails.getUserId());
 		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다.", deletePlaceId));
 	}
 }

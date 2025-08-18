@@ -37,6 +37,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 public class User extends BaseTimeEntity {
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<UserTitle> userTitles = new ArrayList<>();
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -67,8 +69,9 @@ public class User extends BaseTimeEntity {
 	private Title title;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "addressId", insertable = false, updatable = false)
+	@JoinColumn(name = "address_id", insertable = false, updatable = false)
 	private Address address;
+	@Column(name = "address_id")
 	private Long addressId;
 
 	@Column(nullable = false)
@@ -79,9 +82,6 @@ public class User extends BaseTimeEntity {
 
 	@Column(nullable = false)
 	private Integer exp;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private final List<UserTitle> userTitles = new ArrayList<>();
 
 	@Builder
 	public User(Long id, String email, String password, String nickname, UserRole userRole) {
@@ -102,6 +102,10 @@ public class User extends BaseTimeEntity {
 
 	public void addExp(int exp) {
 		this.exp += exp;
+	}
+
+	public void updateLevel(int newLevel) {
+		this.level = newLevel;
 	}
 
 	public void addTitle(Title title) {

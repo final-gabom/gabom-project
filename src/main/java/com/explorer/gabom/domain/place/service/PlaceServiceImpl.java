@@ -2,21 +2,24 @@ package com.explorer.gabom.domain.place.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
+import com.explorer.gabom.domain.address.dto.request.AddressRequest;
+import com.explorer.gabom.domain.address.service.AddressService;
+import com.explorer.gabom.domain.address.type.AddressType;
+import com.explorer.gabom.domain.place.dto.PlaceDetail;
+import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
+import com.explorer.gabom.domain.place.dto.request.PlaceSearchCond;
 import com.explorer.gabom.domain.place.dto.request.PlaceUpdateRequest;
 import com.explorer.gabom.domain.place.dto.response.PlaceCreateResponse;
-import com.explorer.gabom.domain.place.dto.response.PlaceDetail;
-import com.explorer.gabom.domain.place.dto.response.PlaceSummary;
+import com.explorer.gabom.domain.place.dto.response.PlaceUpdateResponse;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.PlaceStatus;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
-import com.explorer.gabom.domain.user.repository.UserRepository;
-import com.explorer.gabom.domain.user.type.UserStatus;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
@@ -29,20 +32,34 @@ import lombok.RequiredArgsConstructor;
 public class PlaceServiceImpl implements PlaceService {
 
 	private final PlaceRepository placeRepository;
-	private final UserRepository userRepository;
 	private final AuthorValidator authorValidator;
+	private final AddressService addressService;
 
 	@Override
 	@Transactional
-	public PlaceCreateResponse createPlace(PlaceCreateRequest request, Long userId) {
-		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+	public PlaceCreateResponse createPlace(PlaceCreateRequest request, User user) {
+		// 1. Place 먼저 저장 → placeId 확보
 		Place place = new Place(request, user);
-		place.approve(); // 기본 승인 처리, 추후 로직에 따라 변경 필요
+		place.approve();    // 초기 설정 무조건 등록
+		placeRepository.save(place); // 이 시점에서 place.getId() 사용 가능
 
-		Place savedPlace = placeRepository.save(place);
-		return PlaceCreateResponse.toDto(savedPlace);
+		// 2. Address 추가 요청 Dto 생성
+		AddressRequest addressRequest = AddressRequest.builder()
+													  .addressTypeCd(AddressType.PLACE)
+													  .targetId(place.getId())
+													  .emdCd(request.getEmdCd())
+													  .addressDetail(request.getAddressDetail())
+													  .lat(request.getLat())
+													  .lng(request.getLng())
+													  .build();
+
+		AddressDto savedAddr = addressService.createOrReplace(addressRequest);
+
+		// 3. addressId 세팅하고 Place 다시 저장
+		place.setAddressId(savedAddr.getId());
+		Place saved = placeRepository.save(place);
+
+		return PlaceCreateResponse.toDto(saved, savedAddr);
 	}
 
 	// 탐험 장소 상세 조회
@@ -62,24 +79,39 @@ public class PlaceServiceImpl implements PlaceService {
 
 	@Transactional
 	@Override
-	public PageResponse<PlaceSummary> getPlaceList(String query, Double lat, Double lng, Pageable pageable) {
-		return placeRepository.findPlaceSummaries(query, lat, lng, pageable);
+	public PageResponse<PlaceSummary> getPlaceList(PlaceSearchCond cond) {
+		return placeRepository.findPlaceSummaries(cond);
 	}
 
 	@Transactional
 	@Override
-	public PlaceDetail updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
+	public PlaceUpdateResponse updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
 		Place place = placeRepository.findById(placeId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
-		authorValidator.validateOwner(
-			place.getUser().getId(),
-			userId
-		);
 
-		Place updatedPlace = place.update(request);
-		Place savedPlace = placeRepository.save(updatedPlace);
+		// 작성자 검증
+		authorValidator.validateOwner(place.getUser().getId(), userId);
 
-		return PlaceDetail.toDto(savedPlace);
+		place.update(request);
+
+		// 주소 처리
+		AddressDto addressDto;
+		if (request.getAddress() != null) {
+			AddressRequest address = request.getAddress();
+			address.setAddressTypeCd(AddressType.PLACE);
+			address.setTargetId(place.getId());
+
+			AddressDto savedAddr = addressService.createOrReplace(address);
+			place.setAddressId(savedAddr.getId());
+
+			addressDto = savedAddr;
+		} else {
+			// 기존 addressId 기반으로 Address 조회
+			addressDto = addressService.getByTypeAndTargetId(AddressType.PLACE, place.getId());
+		}
+
+		Place savedPlace = placeRepository.save(place);
+		return PlaceUpdateResponse.toDto(savedPlace, addressDto);
 	}
 
 	@Transactional

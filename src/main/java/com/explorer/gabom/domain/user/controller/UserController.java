@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
-import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.user.dto.UserDto;
 import com.explorer.gabom.domain.user.dto.request.PasswordUpdateRequest;
 import com.explorer.gabom.domain.user.dto.request.UpdateMainTitleRequest;
@@ -82,11 +82,11 @@ public class UserController implements UserControllerDocs {
 	}
 
 	@PutMapping("/me/address")
-	public ResponseEntity<ApiResponse<AddressCreateResponse>> updateAddress(
+	public ResponseEntity<ApiResponse<AddressDto>> updateAddress(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody @Valid AddressRequest request) {
 		log.info("주소 변경 요청: userId={}", userDetails.getUser().getId());
-		AddressCreateResponse response = userService.updateUserAddress(userDetails.getUser(), request);
+		AddressDto response = userService.updateUserAddress(userDetails.getUser(), request);
 		return ResponseEntity.ok(ApiResponse.success("주소 등록을 성공했습니다.", response));
 	}
 }

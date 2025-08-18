@@ -1,13 +1,15 @@
 package com.explorer.gabom.domain.missionproof.service;
 
-
-
 import static com.explorer.gabom.global.exception.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +18,14 @@ import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.file.type.FileType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
-
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.CursorResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSearchCondition;
+import com.explorer.gabom.domain.missionproof.dto.response.MissionProofSummary;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
+import com.explorer.gabom.domain.missionproof.repository.MissionProofQueryRepository;
 import com.explorer.gabom.domain.missionproof.repository.MissionProofRepository;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.notification.service.NotificationService;
@@ -30,6 +35,7 @@ import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.validator.AuthorValidator;
@@ -38,15 +44,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
-public class MissionProofServiceImpl implements MissionProofService{
+public class MissionProofServiceImpl implements MissionProofService {
 
 	private final MissionProofRepository missionProofRepository;
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
 	private final NotificationService notificationService;
-
 
 	// 생성
 	@Override
@@ -100,7 +104,6 @@ public class MissionProofServiceImpl implements MissionProofService{
 		return CreateMissionProofResponse.toDto(savedMissionProof);
 	}
 
-
 	// 미션 인증글 수정
 	@Override
 	@Transactional
@@ -110,10 +113,9 @@ public class MissionProofServiceImpl implements MissionProofService{
 													  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
 
 		// 2. 작성자 검증
-		authorValidator.validateOwner(
-			existing.getUser().getId(),
-			userId
-		);
+		if (!existing.getUser().getId().equals(userId)) {
+			throw new CustomException(FORBIDDEN_UPDATE_MISSION_PROOF);
+		}
 
 		// 3. 이미지 파일 연관 조회
 		List<AttachmentFile> imageFiles = attachmentFileRepository
@@ -157,11 +159,11 @@ public class MissionProofServiceImpl implements MissionProofService{
 	@Transactional
 	public void deleteMissionProof(Long id, Long userId) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(NOT_FOUND_MISSION_PROOF));
-		authorValidator.validateOwner(
-			missionProof.getUser().getId(),
-			userId
-		);
+														  .orElseThrow(
+															  () -> new CustomException(NOT_FOUND_MISSION_PROOF));
+		if (!missionProof.getUser().getId().equals(userId)) {
+			throw new CustomException(FORBIDDEN_DELETE_MISSION_PROOF);
+		}
 
 		missionProof.delete();
 	}
@@ -170,14 +172,49 @@ public class MissionProofServiceImpl implements MissionProofService{
 	@Transactional(readOnly = true)
 	public MissionProofDetailResponse getMissionProofDetail(Long id) {
 		MissionProof missionProof = missionProofRepository.findByIdAndDeletedAtIsNull(id)
-														  .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MISSION_PROOF));
+														  .orElseThrow(() -> new CustomException(
+															  ErrorCode.NOT_FOUND_MISSION_PROOF));
 
-		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id, FileType.MISSION_PROOF);
+		List<AttachmentFile> imageFiles = attachmentFileRepository.findAllByRefIdAndFileType(id,
+																							 FileType.MISSION_PROOF);
 
 		List<FileResponseDto> profileImages = imageFiles.stream()
 														.map(FileResponseDto::toDto)
 														.collect(Collectors.toList());
 
 		return MissionProofDetailResponse.toDto(missionProof, profileImages);
+	}
+
+	@Transactional(readOnly = true)
+	public PageResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition,
+															  Pageable pageable) {
+		// Repository에서 페이지 기반 조회
+		Page<MissionProof> results = missionProofRepository.searchByCondition(condition, pageable);
+
+		// DTO로 변환
+		List<MissionProofSummary> summaries = results.getContent().stream()
+													 .map(mp -> new MissionProofSummary(
+														 mp.getId(),
+														 mp.getFieldType(),
+														 new UserSummaryDto(
+															 mp.getUser().getId(),
+															 mp.getUser().getNickname(),
+															 mp.getUser().getLevel(),
+															 mp.getUser().getTitle() != null ? mp.getUser()
+																								 .getTitle()
+																								 .getName() : null
+														 ),
+														 mp.getTitle(),
+														 mp.getCreatedAt(),
+														 mp.getUpdatedAt(),
+														 mp.getImageFiles().stream()
+														   .map(AttachmentFile::getFilePath)
+														   .filter(Objects::nonNull)
+														   .toList()
+													 ))
+													 .toList();
+
+		// PageResponse로 변환 후 반환
+		return PageResponse.toDto(new PageImpl<>(summaries, pageable, results.getTotalElements()));
 	}
 }

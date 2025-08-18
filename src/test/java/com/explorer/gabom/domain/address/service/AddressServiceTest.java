@@ -12,8 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
-import com.explorer.gabom.domain.address.dto.response.AddressCreateResponse;
 import com.explorer.gabom.domain.address.entity.Address;
 import com.explorer.gabom.domain.address.entity.Eupmyeondong;
 import com.explorer.gabom.domain.address.repository.AddressRepository;
@@ -56,8 +56,6 @@ class AddressServiceTest {
 									  .id(100L)
 									  .addressTypeCd("USER")
 									  .targetId(1L)
-									  .sdCd("11")
-									  .sggCd("11010")
 									  .emdCd("1101050000")
 									  .detail("와르르멘션 204호")
 									  .lat(37.498095)
@@ -68,7 +66,7 @@ class AddressServiceTest {
 		given(addressRepository.save(any(Address.class))).willReturn(savedAddress);
 
 		// when
-		AddressCreateResponse result = addressService.createOrReplace(request);
+		AddressDto result = addressService.createOrReplace(request);
 
 		// then
 		assertThat(result.getId()).isEqualTo(100L);
