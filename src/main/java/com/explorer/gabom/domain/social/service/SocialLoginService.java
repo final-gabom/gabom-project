@@ -31,12 +31,13 @@ public class SocialLoginService {
 	private final UserRepository userRepository;
 	private final JwtProvider jwtProvider;
 	private final UserService userService;
-
+	private final FirstLoginService firstLoginService;
 
 	/**
 	 * 소셜 계정 기반 로그인 처리
 	 * - 소셜 계정과 연결된 사용자(User)를 확인하고, 로그인 가능한 상태인지 검증 후 JWT 토큰을 발급한다.
 	 * - 만약 연결된 유저가 없거나 비활성화 상태라면 회원가입이 필요함을 응답한다.
+	 * - 로그인 유저가 첫 로그인인지 아닌지 (redis)에서 확인한다.
 	 *
 	 * @param account 소셜 계정 정보 (소셜 로그인 후 조회된 SocialAccount 엔티티)
 	 * @return 로그인 결과를 담은 SocialLoginResponse
@@ -50,18 +51,20 @@ public class SocialLoginService {
 			log.warn("소셜 계정은 있으나 연결된 유저 없음 or 비활성화됨: accountId={}", account.getId());
 			return SocialLoginResponse.signupRequired(account.getId());
 		}
-
-		// 3. 정상적으로 로그인 가능한 경우 → JWT 토큰 생성
+		// 3. 이번이 첫 로그인인지 Redis에서 소비(삭제)하며 판별
+		boolean newUser = firstLoginService.consumeFirstLogin(user.getId());
+		// 4. 정상적으로 로그인 가능한 경우 → JWT 토큰 생성
 		JwtTokens tokens = jwtProvider.generateTokens(user.getId(), user.getUserRole());
-		log.info("로그인 성공: userId={}", user.getId());
+		log.info("로그인 성공: userId={}", user.getId(),newUser);
 
-		return SocialLoginResponse.loginSuccess(tokens.getAccessToken(), tokens.getRefreshToken());
+		return SocialLoginResponse.loginSuccess(tokens.getAccessToken(), tokens.getRefreshToken(),newUser);
 	}
 
 	/**
 	 * 소셜 회원 가입 처리
 	 * - 소셜 로그인 시 기존 유저가 없어 회원가입이 필요한 경우 호출됨
 	 * - 임시 소셜 계정(tempAccount)와 입력받은 정보를 기반으로 User를 생성하고 소셜 계정과 연결한다.
+	 * - 회원가입시 첫 로그인인지 설정
 	 *
 	 * @param signupRequest 클라이언트에서 전달된 회원가입 요청 DTO (tempId, nickname 등 포함)
 	 * @return 회원가입 완료된 사용자 정보를 담은 SignupResponse DTO
@@ -85,7 +88,9 @@ public class SocialLoginService {
 
 		// 5. 생성된 User와 소셜 계정 연결
 		createAndLinkSocialAccount(savedUser, tempAccount);
-		// 6. 회원가입 완료 후 응답 DTO 반환
+		// 6. 첫 로그인 설정
+		firstLoginService.markFirstLogin(savedUser.getId());
+		// 7. 회원가입 완료 후 응답 DTO 반환
 		return SignupResponse.toDto(savedUser);
 	}
 	/**
@@ -118,7 +123,7 @@ public class SocialLoginService {
 	 * - 실제 회원가입이 완료되어야 User ↔ SocialAccount 매핑이 이루어짐
 	 *
 	 *  * @param userInfo 소셜 로그인 제공자로부터 조회한 사용자 정보 DTO
-	 *  * @return DB에서 조회한 기존 SocialAccount, 없으면 새로 생성된 SocialAccount
+	 *  * @return DB 조회한 기존 SocialAccount, 없으면 새로 생성된 SocialAccount
 	 *  */
 	public SocialAccount handleLogin(OAuthUserInfo userInfo) {
 		// 카카오, 구글 등 소셜 제공자
