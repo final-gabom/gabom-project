@@ -96,11 +96,11 @@ public class User extends BaseTimeEntity {
 	}
 
 	// 일반 회원가입용
-	public static User ofRegular(String email, String encodedPassword, String nickname, UserRole role) {
+	public static User ofRegular(String email, String nickname, String encodedPassword, UserRole role) {
 		return User.builder()
 				   .email(email)
-				   .password(encodedPassword)
 				   .nickname(nickname)
+				   .password(encodedPassword)
 				   .userRole(role)
 				   .status(UserStatus.ACTIVE)
 				   .build();

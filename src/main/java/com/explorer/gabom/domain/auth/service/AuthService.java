@@ -54,6 +54,7 @@ public class AuthService {
 			encodedPassword,
 			request.getRole()
 		);
+		userRepository.save(user);
 		// 첫 로그인 Redis 마킹
 		firstLoginService.markFirstLogin(user.getId());
 
@@ -74,6 +75,7 @@ public class AuthService {
 			encodedPassword,
 			request.getRole()
 		);
+		userRepository.save(user);
 		// 첫 로그인 Redis 마킹
 		firstLoginService.markFirstLogin(user.getId());
 
@@ -103,6 +105,7 @@ public class AuthService {
 		return new CheckNicknameResponse(true);
 	}
 
+	// TODO 위치 이동해야함
 	public JwtTokens reissue(String refreshToken) {
 		// 1. Refresh Token 유효성 검사
 		if (!jwtProvider.validateToken(refreshToken)) {
