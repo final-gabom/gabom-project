@@ -62,11 +62,7 @@ public class UserQuestServiceImpl implements UserQuestService {
 	}
 
 	private UserQuest createUserQuest(User user, QuestConditionType type, Quest quest) {
-		int baseProgress = userQuestRepository.findMaxProgressByUserAndQuestType(
-												  user.getId(), type)
-											  .orElse(0);
 		UserQuest newUserQuest = new UserQuest(user, quest);
-		newUserQuest.setProgressCount(baseProgress);
 		return userQuestRepository.save(newUserQuest);
 	}
 

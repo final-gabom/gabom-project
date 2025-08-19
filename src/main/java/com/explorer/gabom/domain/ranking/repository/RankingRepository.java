@@ -16,6 +16,6 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 	@EntityGraph(attributePaths = {"user", "user.title", "user.profileImg"})
 	List<Ranking> findAllByUser_IdIn(List<Long> userIds);
 
-	@Query("SELECT r.user.id FROM Ranking r WHERE LOWER(r.user.nickname) LIKE LOWER(CONCAT('%', :nickname, '%'))")
+	@Query("SELECT r.user.id FROM Ranking r WHERE r.user.nickname LIKE CONCAT(:nickname, '%')")
 	List<Long> findUserIdsByNicknameContaining(String nickname);
 }
