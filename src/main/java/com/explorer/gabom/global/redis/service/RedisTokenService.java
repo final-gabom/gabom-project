@@ -10,10 +10,12 @@ import java.util.concurrent.TimeUnit;
 public class RedisTokenService {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
+    private static final long EXPIRATION_MILLIS = 7 * 24 * 60 * 60 * 1000L; // 7일
 
-    public void saveRefreshToken(Long userId, String refreshToken, long expirationMillis) {
+
+    public void saveRefreshToken(Long userId, String refreshToken) {
         String key = REFRESH_TOKEN_PREFIX + userId;
-        redisTemplate.opsForValue().set(key, refreshToken, expirationMillis, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(key, refreshToken, EXPIRATION_MILLIS, TimeUnit.MILLISECONDS);
     }
 
 

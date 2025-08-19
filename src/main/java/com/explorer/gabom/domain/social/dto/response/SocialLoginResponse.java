@@ -13,12 +13,14 @@ public class SocialLoginResponse {
 	private final Long tempId;
 	private final String accessToken;
 	private final String refreshToken;
+	private final Boolean newUser;
 
-	public static SocialLoginResponse loginSuccess(String accessToken, String refreshToken) {
+	public static SocialLoginResponse loginSuccess(String accessToken, String refreshToken, boolean newUser) {
 		return SocialLoginResponse.builder()
 								  .signedUp(true)
 								  .accessToken(accessToken)
 								  .refreshToken(refreshToken)
+								  .newUser(newUser)
 								  .build();
 	}
 
