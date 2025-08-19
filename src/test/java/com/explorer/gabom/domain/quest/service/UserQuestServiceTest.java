@@ -74,12 +74,12 @@ class UserQuestServiceTest {
 	@Test
 	@DisplayName("퀘스트 진행도 업데이트 - 기존 UserQuest가 있을 때")
 	void updateProgress_existingUserQuest() {
-		when(questRepository.findByQuestConditionTypeAndDeletedFalse(QuestConditionType.PLACE))
+		when(questRepository.findByQuestConditionTypeAndDeletedFalse(QuestConditionType.PLACE_REGISTER))
 			.thenReturn(List.of(quest));
 		when(userQuestRepository.findByUserAndQuest(user, quest))
 			.thenReturn(Optional.of(userQuest));
 
-		userQuestService.updateProgress(user, QuestConditionType.PLACE, 1);
+		userQuestService.updateProgress(user, QuestConditionType.PLACE_REGISTER, 1);
 
 		verify(userQuest, times(1)).increaseProgress(1);
 	}

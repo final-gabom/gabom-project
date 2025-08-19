@@ -63,6 +63,16 @@ public class UserQuest {
 		this.quest = quest;
 	}
 
+	public void setProgressCount(int progress) {
+		if (isCompleted())
+			return;
+
+		this.progressCount = progress;
+		if (this.progressCount >= quest.getAcquireCondition()) {
+			markCompleted();
+		}
+	}
+
 	public void increaseProgress(int step) {
 		if (isCompleted())
 			return;
