@@ -116,16 +116,6 @@ public class ExplorationService {
 		Exploration exploration = explorationRepository.findById(explorationId)
 			.orElseThrow(() -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
 
-		return new ExplorationDetailResponse(
-			exploration.getId(),
-			exploration.getUser().getId(),
-			exploration.getUser().getNickname(),
-			exploration.getPlace().getId(),
-			exploration.getPlace().getTitle(),
-			exploration.getRewardPoint(),
-			exploration.getRewardExp(),
-			exploration.getStartAt(),
-			exploration.getEndAt()
-		);
+		return ExplorationDetailResponse.toDto(exploration);
 	}
 }

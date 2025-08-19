@@ -1,9 +1,13 @@
 package com.explorer.gabom.domain.exploration.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+import com.explorer.gabom.domain.exploration.entity.Exploration;
+
+@AllArgsConstructor
 @Getter
 public class ExplorationDetailResponse {
 	private final Long explorationId;
@@ -16,23 +20,17 @@ public class ExplorationDetailResponse {
 	private final LocalDateTime startAt;
 	private final LocalDateTime endAt;
 
-	public ExplorationDetailResponse(Long explorationId,
-									 Long userId,
-									 String userNickname,
-									 Long placeId,
-									 String placeTitle,
-									 int rewardPoint,
-									 int rewardExp,
-									 LocalDateTime startAt,
-									 LocalDateTime endAt) {
-		this.explorationId = explorationId;
-		this.userId = userId;
-		this.userNickname = userNickname;
-		this.placeId = placeId;
-		this.placeTitle = placeTitle;
-		this.rewardPoint = rewardPoint;
-		this.rewardExp = rewardExp;
-		this.startAt = startAt;
-		this.endAt = endAt;
+	public static ExplorationDetailResponse toDto(Exploration exploration) {
+		return new ExplorationDetailResponse(
+			exploration.getId(),
+			exploration.getUser().getId(),
+			exploration.getUser().getNickname(),
+			exploration.getPlace().getId(),
+			exploration.getPlace().getTitle(),
+			exploration.getRewardPoint(),
+			exploration.getRewardExp(),
+			exploration.getStartAt(),
+			exploration.getEndAt()
+		);
 	}
 }
