@@ -33,11 +33,15 @@ public class QuestCreateRequest {
 	@Schema(description = "퀘스트 달성 조건 수치", example = "3", minimum = "1")
 	private Integer acquireCondition;
 
+	@NotNull(message = "포인트는 필수입니다.")
+	@Min(value = 1, message = "포인트는 1 이상이어야 합니다.")
 	@Schema(description = "퀘스트 완료 시 지급할 포인트", example = "500", minimum = "1")
-	private @NotNull(message = "포인트는 필수입니다.") @Min(value = 1, message = "포인트는 1 이상이어야 합니다.") Long rewardPoint;
+	private Long rewardPoint;
 
+	@NotNull(message = "경험치는 필수입니다.")
+	@Min(value = 1, message = "경험치는 1 이상이어야 합니다.")
 	@Schema(description = "퀘스트 완료 시 지급할 경험치", example = "100", minimum = "1")
-	private @NotNull(message = "경험치는 필수입니다.") @Min(value = 1, message = "경험치는 1 이상이어야 합니다.") Long rewardExp;
+	private Long rewardExp;
 
 	@NotNull(message = "보상 칭호 ID는 필수입니다.")
 	@Schema(description = "퀘스트 완료 시 지급할 칭호 ID", example = "1")
