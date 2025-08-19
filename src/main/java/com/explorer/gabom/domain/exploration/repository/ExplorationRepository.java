@@ -16,4 +16,5 @@ public interface ExplorationRepository extends JpaRepository<Exploration, Long> 
 
 	// 앱 부팅 시 복구용: 아직 진행 중이고 endAt이 미래인 탐험들
 	List<Exploration> findAllByStatusAndEndAtAfter(Exploration.Status status, LocalDateTime now);
+	List<Exploration> findAllByUserIdAndEndAtAfterOrderByEndAtAsc(Long userId, LocalDateTime now);
 }

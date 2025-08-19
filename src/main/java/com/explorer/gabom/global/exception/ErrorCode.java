@@ -45,6 +45,10 @@ public enum ErrorCode {
 	EMAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED, "인증되지 않은 이메일입니다."),
 	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
 
+	// OAuth 소셜로그인
+	OAUTH_PROVIDER_ERROR(HttpStatus.BAD_REQUEST,"해당 소셜 로그인 제공자에서 사용자 정보를 가져오는데 실패했습니다."),
+	SOCIAL_ACCOUNT_NOT_LINKED(HttpStatus.FORBIDDEN,"소셜 계정과 연결이 되지 않았습니다." ),
+	DUPLICATED_SOCIAL_ACCOUNT(HttpStatus.CONFLICT,"이미 등록된 계정입니다." ),
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 	INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),

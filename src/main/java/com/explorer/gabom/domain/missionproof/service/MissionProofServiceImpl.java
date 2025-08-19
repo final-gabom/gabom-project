@@ -206,34 +206,12 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional(readOnly = true)
 	public PageResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition,
 															  Pageable pageable) {
-		// Repository에서 페이지 기반 조회
 		Page<MissionProof> results = missionProofRepository.searchByCondition(condition, pageable);
 
-		// DTO로 변환
-		List<MissionProofSummary> summaries = results.getContent().stream()
-													 .map(mp -> new MissionProofSummary(
-														 mp.getId(),
-														 mp.getFieldType(),
-														 new UserSummaryDto(
-															 mp.getUser().getId(),
-															 mp.getUser().getNickname(),
-															 mp.getUser().getLevel(),
-															 mp.getUser().getTitle() != null ? mp.getUser()
-																								 .getTitle()
-																								 .getName() : null
-														 ),
-														 mp.getTitle(),
-														 mp.getCreatedAt(),
-														 mp.getUpdatedAt(),
-														 mp.getImageFiles().stream()
-														   .map(AttachmentFile::getFilePath)
-														   .filter(Objects::nonNull)
-														   .toList()
-													 ))
-													 .toList();
+		// Page.map()으로 DTO 변환 및 null 방어
+		Page<MissionProofSummary> dtoPage = results.map(MissionProofSummary::toDto);
 
-		// PageResponse로 변환 후 반환
-		return PageResponse.toDto(new PageImpl<>(summaries, pageable, results.getTotalElements()));
+		return PageResponse.toDto(dtoPage);
 	}
 
 	/**

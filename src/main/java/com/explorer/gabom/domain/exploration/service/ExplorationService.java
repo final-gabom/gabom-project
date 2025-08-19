@@ -1,6 +1,7 @@
 package com.explorer.gabom.domain.exploration.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,14 +44,12 @@ public class ExplorationService {
 
 	// 탐험 시작
 	@Transactional
-	public ExplorationStartResponse startExploration(User user, Long placeId, ExplorationStartRequest request) {
-
-		// 같은 장소에 진행 중인 탐험이 있으면 막기
-		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(user.getId(), placeId, LocalDateTime.now())) {
+	public ExplorationStartResponse startExploration(Long userId, Long placeId, ExplorationStartRequest request) {
+		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(userId, placeId, LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION);
 		}
 
-		// 연관 엔티티 로드
+		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Place place = placeRepository.findById(placeId).orElseThrow(
 			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
@@ -110,7 +109,8 @@ public class ExplorationService {
 			userId
 		);
 
-		if (!exploration.isActive() || exploration.getEndAt().isBefore(LocalDateTime.now())) {
+		// 이미 종료된 탐험인 경우
+		if (exploration.getEndAt().isBefore(LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.EXPLORATION_ALREADY_ENDED);
 		}
 
@@ -124,14 +124,17 @@ public class ExplorationService {
 
 	// 탐험 중인 장소 조회
 	@Transactional(readOnly = true)
-	public ExplorationCurrentResponse getCurrentExploration(Long userId) {
-		Exploration exploration = explorationRepository
-			.findTopByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now())
-			.orElseThrow(() -> new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION));
+	public List<ExplorationCurrentResponse> getCurrentExploration(Long userId) {
+		List<Exploration> explorations = explorationRepository
+			.findAllByUserIdAndEndAtAfterOrderByEndAtAsc(userId, LocalDateTime.now());
 
-		Place place = exploration.getPlace();
+		if (explorations.isEmpty()) {
+			throw new CustomException(ErrorCode.NO_ACTIVE_EXPLORATION);
+		}
 
-		return ExplorationCurrentResponse.of(exploration, place);
+		return explorations.stream()
+			.map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
+			.toList();
 	}
 }
 
