@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ExpEventMessage {
 	private Long userId;
-	private int exp;
+	private Long exp;
 }

@@ -74,13 +74,13 @@ public class User extends BaseTimeEntity {
 	private Long addressId;
 
 	@Column(nullable = false)
-	private Integer point;
+	private Long point;
 
 	@Column(nullable = false)
 	private Integer level;
 
 	@Column(nullable = false)
-	private Integer exp;
+	private Long exp;
 
 	@Builder
 	public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
@@ -90,9 +90,9 @@ public class User extends BaseTimeEntity {
 		this.nickname = nickname;
 		this.userRole = userRole;
 		this.status = status;
-		this.point = 0;
+		this.point = 0L;
 		this.level = 1;
-		this.exp = 0;
+		this.exp = 0L;
 	}
 
 	// 일반 회원가입용
@@ -116,11 +116,11 @@ public class User extends BaseTimeEntity {
 				   .build();
 	}
 
-	public void addPoint(int point) {
+	public void addPoint(Long point) {
 		this.point += point;
 	}
 
-	public void addExp(int exp) {
+	public void addExp(Long exp) {
 		this.exp += exp;
 	}
 

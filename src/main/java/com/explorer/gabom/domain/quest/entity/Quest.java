@@ -44,10 +44,10 @@ public class Quest extends BaseTimeEntity {
 	private int acquireCondition;
 
 	@Column(name = "reward_point", nullable = false)
-	private int rewardPoint;
+	private Long rewardPoint;
 
 	@Column(name = "reward_exp", nullable = false)
-	private int rewardExp;
+	private Long rewardExp;
 
 	@ManyToOne
 	@JoinColumn(name = "title_id")
@@ -63,7 +63,7 @@ public class Quest extends BaseTimeEntity {
 	private Integer timeLimitSeconds = 1800; // 기본 30분
 
 	public Quest(String title, String description, QuestConditionType questConditionType,
-				 int acquireCondition, int rewardPoint, int rewardExp, Title rewardTitle) {
+				 int acquireCondition, Long rewardPoint, Long rewardExp, Title rewardTitle) {
 		this.title = title;
 		this.description = description;
 		this.questConditionType = questConditionType;

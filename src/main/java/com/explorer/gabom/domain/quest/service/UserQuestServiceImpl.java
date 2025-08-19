@@ -53,17 +53,16 @@ public class UserQuestServiceImpl implements UserQuestService {
 			if (userQuest.getProgressStatus() == ProgressStatus.NOT_STARTED) {
 				userQuest.markInProgress();
 			}
-
-			userQuest.increaseProgress(step);
+			if (type == QuestConditionType.LEVEL_UP) {
+				userQuest.updateProgressToLevel(user.getLevel());
+			} else {
+				userQuest.increaseProgress(step);
+			}
 		}
 	}
 
 	private UserQuest createUserQuest(User user, QuestConditionType type, Quest quest) {
-		int baseProgress = userQuestRepository.findMaxProgressByUserAndQuestType(
-												  user.getId(), type)
-											  .orElse(0);
 		UserQuest newUserQuest = new UserQuest(user, quest);
-		newUserQuest.increaseProgress(baseProgress);
 		return userQuestRepository.save(newUserQuest);
 	}
 
@@ -89,10 +88,11 @@ public class UserQuestServiceImpl implements UserQuestService {
 		user.addExp(userQuest.getQuest().getRewardExp());
 		user.addTitle(userQuest.getQuest().getRewardTitle());
 
-		int exp = user.getExp();
+		Long exp = user.getExp();
 		int level = levelService.calculateLevel(exp);
 		if (level > user.getLevel()) {
 			user.updateLevel(level);
+			updateProgress(user, QuestConditionType.LEVEL_UP, level);
 		}
 		expEventProducer.sendExpEvent(new ExpEventMessage(
 			userId,

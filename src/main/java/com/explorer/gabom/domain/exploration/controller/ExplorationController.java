@@ -40,7 +40,7 @@ public class ExplorationController implements ExplorationControllerDocs {
 		@RequestBody ExplorationStartRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		User user = userRepository.getReferenceById(userDetails.getUserId());
+		User user = userDetails.getUser();
 		ExplorationStartResponse response = explorationService.startExploration(user, placeId, request);
 		return ResponseEntity.ok(ApiResponse.success("탐험이 시작되었습니다.", response));
 	}

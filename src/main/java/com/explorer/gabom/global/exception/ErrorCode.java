@@ -46,9 +46,9 @@ public enum ErrorCode {
 	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
 
 	// OAuth 소셜로그인
-	OAUTH_PROVIDER_ERROR(HttpStatus.BAD_REQUEST,"해당 소셜 로그인 제공자에서 사용자 정보를 가져오는데 실패했습니다."),
-	SOCIAL_ACCOUNT_NOT_LINKED(HttpStatus.FORBIDDEN,"소셜 계정과 연결이 되지 않았습니다." ),
-	DUPLICATED_SOCIAL_ACCOUNT(HttpStatus.CONFLICT,"이미 등록된 계정입니다." ),
+	OAUTH_PROVIDER_ERROR(HttpStatus.BAD_REQUEST, "해당 소셜 로그인 제공자에서 사용자 정보를 가져오는데 실패했습니다."),
+	SOCIAL_ACCOUNT_NOT_LINKED(HttpStatus.FORBIDDEN, "소셜 계정과 연결이 되지 않았습니다."),
+	DUPLICATED_SOCIAL_ACCOUNT(HttpStatus.CONFLICT, "이미 등록된 계정입니다."),
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 	INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
@@ -84,13 +84,16 @@ public enum ErrorCode {
 	EMD_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 emdCd를 찾을 수 없습니다."),
 	INVALID_ADDRESS_PAYLOAD(HttpStatus.BAD_REQUEST, "주소 수정 시 emdCd, addressDetail, lat, lng를 모두 입력해야 합니다."),
 
+	// Ranking
+	RANKING_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 랭킹을 찾을 수 없습니다."),
+
 	// SQL
 	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다."),
-
 
 	// Notification
 	NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
 	UNAUTHORIZED_NOTIFICATION_ACCESS(HttpStatus.FORBIDDEN, "해당 알림에 접근할 권한이 없습니다.");
+
 	private final HttpStatus httpStatus;
 	private final String message;
 

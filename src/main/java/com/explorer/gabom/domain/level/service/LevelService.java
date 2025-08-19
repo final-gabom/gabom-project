@@ -15,7 +15,7 @@ public class LevelService {
 
 	private final LevelRepository levelRepository;
 
-	public int calculateLevel(int currentExp) {
+	public int calculateLevel(Long currentExp) {
 		List<Level> levels = levelRepository.findAllByOrderByRequiredExpAsc();
 		int userLevel = 1;
 
