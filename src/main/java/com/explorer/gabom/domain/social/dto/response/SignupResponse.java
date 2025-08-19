@@ -1,4 +1,4 @@
-package com.explorer.gabom.domain.auth.dto.response;
+package com.explorer.gabom.domain.social.dto.response;
 
 import com.explorer.gabom.domain.user.entity.User;
 
@@ -10,10 +10,11 @@ public class SignupResponse {
 	@Schema(description = "회원가입된 ID")
 	private final Long id;
 
-	public SignupResponse(Long id){
+	public SignupResponse(Long id) {
 		this.id = id;
 	}
-	public static SignupResponse toDto(User user){
+
+	public static SignupResponse toDto(User user) {
 		return new SignupResponse(user.getId());
 	}
 }

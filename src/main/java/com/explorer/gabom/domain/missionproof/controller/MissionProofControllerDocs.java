@@ -1,14 +1,19 @@
 package com.explorer.gabom.domain.missionproof.controller;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
 import com.explorer.gabom.domain.missionproof.dto.response.MissionProofDetailResponse;
+import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,5 +77,31 @@ public interface MissionProofControllerDocs {
 	})
 	ResponseEntity<?> getMissionProofDetail(
 		@PathVariable Long id
+	);
+
+	@Operation(
+		summary = "미션 인증글 리스트 조회",
+		description = "조건에 맞는 미션 인증글 목록을 조회합니다.\n\n"
+			+ "- type: 인증글 타입 (PLACE / EVENT) 선택적으로 필터링\n"
+			+ "- id: 특정 장소 또는 이벤트 ID 선택적으로 필터링\n"
+			+ "- userId: 작성자 ID 선택적으로 필터링\n"
+			+ "- 페이징 및 정렬 가능 (page, size, sort)"
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "조회 성공"),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터")
+	})
+	ResponseEntity<?> getMissionProofList(
+		@Parameter(description = "인증글 타입 (PLACE / EVENT), 선택 사항")
+		@RequestParam(value = "type", required = false) MissionProofType type,
+
+		@Parameter(description = "대상 장소 또는 이벤트 ID, 선택 사항")
+		@RequestParam(value = "id", required = false) Long targetId,
+
+		@Parameter(description = "작성자 ID, 선택 사항")
+		@RequestParam(value = "userId", required = false) Long userId,
+
+		@Parameter(description = "페이징 정보")
+		@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
 	);
 }
