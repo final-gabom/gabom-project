@@ -12,6 +12,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     services:
       mysql:
@@ -49,7 +50,7 @@ jobs:
       REDIS_PORT: 6379
 
       # JWT
-      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret'}}
 
       # 외부 연동 더미
       AWS_ACCESS_KEY: dummy
@@ -82,22 +83,50 @@ jobs:
       # MySQL 컨테이너가 기동될 때까지 대기 후 다음 단계 진행
       - name: Wait for MySQL
         run: |
-          for i in {1..30}; do
-            (echo > /dev/tcp/127.0.0.1/3306) >/dev/null 2>&1 && echo "MySQL up" && break
-            echo "⏳ waiting mysql... $i"; sleep 2
+          for i in {1..60}; do
+            if mysqladmin ping -h 127.0.0.1 -u"$DEV_MYSQL_USERNAME" -p"$DEV_MYSQL_PASSWORD" --silent; then
+              echo "MySQL healthy"; exit 0;
+            fi
+            echo "⏳ waiting mysql health... $i"; sleep 2
           done
+          echo "MySQL did not become healthy in time" >&2
+          exit 1
+
 
       # Gradle로 전체 테스트를 실행해 코드 동작과 기능을 검증
       - name: Run tests
         run: ./gradlew clean test --no-daemon --info
 
       # 테스트 실패 시, HTML/JUnit 리포트를 워크플로우 아티팩트로 업로드해 다운로드 가능하게 함
-      - name: Upload test reports (if failed)
+      - name: Debug containers on failure
         if: failure()
-        continue-on-error: true  # 경로가 없어도 실패로 처리하지 않음
+        run: |
+          echo "== docker ps -a =="
+          docker ps -a || true
+          echo "== mysql logs (last 200) =="
+          docker logs --tail 200 $(docker ps -aqf "name=mysql") || true
+          echo "== redis logs (last 200) =="
+          docker logs --tail 200 $(docker ps -aqf "name=redis") || true
+          mkdir -p debug
+          docker ps -a > debug/docker-ps.txt || true
+          docker logs --tail 500 $(docker ps -aqf "name=mysql") > debug/mysql.log 2>&1 || true
+          docker logs --tail 500 $(docker ps -aqf "name=redis") > debug/redis.log 2>&1 || true
+
+      - name: Upload test reports (always)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: junit-test-reports
+          if-no-files-found: ignore
           path: |
             **/reports/tests/**
             **/test-results/test/**
+
+      - name: Upload debug logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          if-no-files-found: ignore
+          path: |
+            debug/**
