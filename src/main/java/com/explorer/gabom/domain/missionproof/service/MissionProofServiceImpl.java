@@ -35,6 +35,7 @@ import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.util.DistanceCalculator;
 import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -54,11 +55,14 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional
 	public CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser) {
 
-		// 2. PLACE 타입인 경우 Place 유효성 검증
+		// 1. PLACE 타입인 경우 Place 유효성 검증
 		Place place = null;
 		if (request.getFieldType() == MissionProofType.PLACE) {
 			place = placeRepository.findById(request.getTargetId())
 								   .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
+
+			// 2. PLACE 타입인 경우 200m 근처에서 인증글을 올렸는지 확인
+			validateProofLocation(request, place);
 		}
 
 		// 3. 이미지 파일 조회
@@ -171,33 +175,49 @@ public class MissionProofServiceImpl implements MissionProofService {
 	@Transactional(readOnly = true)
 	public PageResponse<MissionProofSummary> getMissionProofs(MissionProofSearchCondition condition,
 															  Pageable pageable) {
-		// Repository에서 페이지 기반 조회
 		Page<MissionProof> results = missionProofRepository.searchByCondition(condition, pageable);
 
-		// DTO로 변환
-		List<MissionProofSummary> summaries = results.getContent().stream()
-													 .map(mp -> new MissionProofSummary(
-														 mp.getId(),
-														 mp.getFieldType(),
-														 new UserSummaryDto(
-															 mp.getUser().getId(),
-															 mp.getUser().getNickname(),
-															 mp.getUser().getLevel(),
-															 mp.getUser().getTitle() != null ? mp.getUser()
-																								 .getTitle()
-																								 .getName() : null
-														 ),
-														 mp.getTitle(),
-														 mp.getCreatedAt(),
-														 mp.getUpdatedAt(),
-														 mp.getImageFiles().stream()
-														   .map(AttachmentFile::getFilePath)
-														   .filter(Objects::nonNull)
-														   .toList()
-													 ))
-													 .toList();
+		// Page.map()으로 DTO 변환 및 null 방어
+		Page<MissionProofSummary> dtoPage = results.map(MissionProofSummary::toDto);
 
-		// PageResponse로 변환 후 반환
-		return PageResponse.toDto(new PageImpl<>(summaries, pageable, results.getTotalElements()));
+		return PageResponse.toDto(dtoPage);
+	}
+
+	/**
+	 * 사용자가 인증을 시도한 위치가 해당 장소의 반경 내에 있는지 확인합니다.
+	 * - 하버사인 공식을 이용하여 사용자 위치와 장소 간 거리(m)를 계산합니다.
+	 * - 설정된 반경(기본 200m)을 초과하면 인증할 수 없습니다.
+	 *
+	 * @param request 인증글 생성 요청 (사용자 위치 포함)
+	 * @param place   인증 대상 장소
+	 * @throws CustomException LAT_LON_REQUIRED, PLACE_COORDINATE_NOT_FOUND, INVALID_PROOF_LOCATION
+	 */
+	private void validateProofLocation(CreateMissionProofRequest request, Place place) {
+		// 1) 요청 좌표 필수
+		if (request.getLat() == null || request.getLon() == null) {
+			throw new CustomException(LAT_LON_REQUIRED);
+		}
+
+		// 2) 장소 좌표 존재 여부 체크
+		if (place.getAddress() == null
+			|| place.getAddress().getLat() == null
+			|| place.getAddress().getLng() == null) {
+			throw new CustomException(PLACE_COORDINATE_NOT_FOUND);
+		}
+
+		// 3) 거리 계산
+		double userLat = request.getLat();
+		double userLng = request.getLon();
+		double placeLat = place.getAddress().getLat();
+		double placeLng = place.getAddress().getLng();
+
+		double distance = DistanceCalculator.calculateMeters(userLat, userLng, placeLat, placeLng);
+
+		final int ALLOWED_RADIUS_METERS = 200;
+
+		// 4) 반경 검증
+		if (distance > ALLOWED_RADIUS_METERS) {
+			throw new CustomException(ErrorCode.INVALID_PROOF_LOCATION);
+		}
 	}
 }

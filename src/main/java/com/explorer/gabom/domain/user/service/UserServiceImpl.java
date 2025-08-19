@@ -25,6 +25,7 @@ import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
 import com.explorer.gabom.global.validator.PasswordValidator;
 
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -118,5 +119,19 @@ public class UserServiceImpl implements UserService {
 		request.setTargetId(user.getId());
 
 		return addressService.createOrReplace(request);
+	}
+
+	@Override
+	public void validateEmailNotExists(@Email String email) {
+		if (userRepository.findByEmailAndStatus(email, UserStatus.ACTIVE).isPresent()) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+		}
+	}
+
+	@Override
+	public void validateNicknameNotExists(String nickname) {
+		if (userRepository.existsByNickname(nickname)) {
+			throw new CustomException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+		}
 	}
 }

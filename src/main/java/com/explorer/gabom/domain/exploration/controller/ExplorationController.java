@@ -1,5 +1,7 @@
 package com.explorer.gabom.domain.exploration.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,10 +43,11 @@ public class ExplorationController implements ExplorationControllerDocs {
 
 	// 탐험 중인 장소 조회
 	@GetMapping("/current")
-	public ResponseEntity<ApiResponse<ExplorationCurrentResponse>> getCurrentExploration(
+	public ResponseEntity<ApiResponse<List<ExplorationCurrentResponse>>> getCurrentExploration(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		ExplorationCurrentResponse response = explorationService.getCurrentExploration(userDetails.getUserId());
+		List<ExplorationCurrentResponse> response = explorationService.getCurrentExploration(userDetails.getUserId());
+
 		return ResponseEntity.ok(ApiResponse.success("현재 탐험 중인 장소 조회에 성공했습니다.", response));
 	}
 

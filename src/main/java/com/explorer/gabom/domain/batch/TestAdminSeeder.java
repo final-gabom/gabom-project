@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserRole;
+import com.explorer.gabom.domain.user.type.UserStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * - email = "admin@test" 가 없으면 새로 생성
  * - 있으면 아무 것도 하지 않고 로그만 남김
  */
-@Profile({"local","test"})        // 운영(prod)에서 실수로 돌아가지 않게 프로필 제한
+@Profile({"local", "test"})        // 운영(prod)에서 실수로 돌아가지 않게 프로필 제한
 @Order(0)                         // 다른 로더들보다 가장 먼저 실행되어, admin 참조가 항상 가능하게 함
 @Slf4j
 @Component
@@ -42,6 +43,7 @@ public class TestAdminSeeder implements CommandLineRunner {
 								 .password("{noop}admin1234")   // 로컬/테스트에서만 사용. 운영에선 반드시 인코딩 사용!
 								 .nickname("ADMIN")
 								 .userRole(UserRole.ADMIN)
+								 .status(UserStatus.ACTIVE)
 								 .build();
 
 				// save() 호출 시 JPA가 PK 할당 → 메서드 종료 시 @Transactional에 의해 커밋

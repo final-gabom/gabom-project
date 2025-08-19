@@ -45,6 +45,10 @@ public enum ErrorCode {
 	EMAIL_NOT_VERIFIED(HttpStatus.UNAUTHORIZED, "인증되지 않은 이메일입니다."),
 	EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
 
+	// OAuth 소셜로그인
+	OAUTH_PROVIDER_ERROR(HttpStatus.BAD_REQUEST, "해당 소셜 로그인 제공자에서 사용자 정보를 가져오는데 실패했습니다."),
+	SOCIAL_ACCOUNT_NOT_LINKED(HttpStatus.FORBIDDEN, "소셜 계정과 연결이 되지 않았습니다."),
+	DUPLICATED_SOCIAL_ACCOUNT(HttpStatus.CONFLICT, "이미 등록된 계정입니다."),
 	// File
 	FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 	INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
@@ -70,6 +74,9 @@ public enum ErrorCode {
 	NOT_FOUND_MISSION_PROOF(HttpStatus.NOT_FOUND, "존재하지 않는 미션 인증글입니다."),
 	FORBIDDEN_UPDATE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 수정 권한이 없습니다."),
 	FORBIDDEN_DELETE_MISSION_PROOF(HttpStatus.FORBIDDEN, "미션 인증글 삭제 권한이 없습니다."),
+	INVALID_PROOF_LOCATION(HttpStatus.BAD_REQUEST, "장소 근처(200m 이내)에서만 인증할 수 있습니다."),
+	LAT_LON_REQUIRED(HttpStatus.BAD_REQUEST, "PLACE 타입에서는 위도와 경도가 필수입니다."),
+	PLACE_COORDINATE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 장소의 좌표 정보를 찾을 수 없습니다."),
 
 	// Address
 	INVALID_ADDRESS_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 법정동 코드입니다."),
@@ -80,7 +87,9 @@ public enum ErrorCode {
 	RANKING_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 유저의 랭킹을 찾을 수 없습니다."),
 
 	// SQL
-	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다.");
+	SQL_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "SQL 파일 실행 중 오류가 발생했습니다."),
+
+	;
 
 	private final HttpStatus httpStatus;
 	private final String message;
