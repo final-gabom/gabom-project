@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
@@ -61,5 +62,14 @@ public class ExplorationController implements ExplorationControllerDocs {
 		ExplorationExtendTimeResponse response = explorationService.extendExplorationTime(userId,
 																						  explorationId);
 		return ResponseEntity.ok(ApiResponse.success("탐험 제한 시간이 연장되었습니다.", response));
+	}
+
+	// 탐험 장소 상세 조회
+	@GetMapping("/{explorationId}")
+	public ResponseEntity<ApiResponse<ExplorationDetailResponse>> getExplorationDetail(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long explorationId) {
+		ExplorationDetailResponse response = explorationService.getExplorationDetail(explorationId);
+		return ResponseEntity.ok(ApiResponse.success("탐험 상세 조회에 성공했습니다.", response));
 	}
 }

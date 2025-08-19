@@ -2,10 +2,12 @@ package com.explorer.gabom.domain.exploration.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface ExplorationControllerDocs {
 
 	@Operation(
-		summary     = "탐험 시작",
+		summary = "탐험 시작",
 		description = "지정된 장소에서 새로운 탐험을 시작합니다.  \n"
 			+ "- 장소 ID를 기반으로 탐험을 생성하며,  \n"
 			+ "- 중복된 탐험이 존재할 경우 예외가 발생합니다.  \n"
@@ -45,7 +47,7 @@ public interface ExplorationControllerDocs {
 	);
 
 	@Operation(
-		summary     = "진행 중인 탐험 조회",
+		summary = "진행 중인 탐험 조회",
 		description = "현재 로그인한 사용자의 진행 중인 탐험 정보를 조회합니다.  \n"
 			+ "- 탐험 중이 아닐 경우 404 에러를 반환합니다.  \n"
 			+ "- 탐험 정보와 남은 시간을 포함해 응답합니다."
@@ -60,7 +62,7 @@ public interface ExplorationControllerDocs {
 	);
 
 	@Operation(
-		summary     = "탐험 제한 시간 연장",
+		summary = "탐험 제한 시간 연장",
 		description = "지정된 탐험의 제한 시간을 3시간 연장합니다.  \n"
 			+ "- 연장은 한 번만 가능하며,  \n"
 			+ "- 이미 연장된 탐험일 경우 예외가 발생합니다."
@@ -76,6 +78,25 @@ public interface ExplorationControllerDocs {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 
 		@Parameter(description = "제한 시간을 연장할 탐험 ID", required = true)
+		@PathVariable Long explorationId
+	);
+
+	@Operation(
+		summary = "탐험 상세 조회",
+		description = "특정 탐험 ID를 기반으로 탐험 상세 정보를 조회합니다.  \n"
+			+ "- 탐험 장소, 보상 정보, 시간 정보 등을 포함합니다.  \n"
+			+ "- 본인의 탐험이 아닐 경우 접근이 제한됩니다."
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "탐험 상세 조회 성공"),
+		@ApiResponse(responseCode = "403", description = "본인의 탐험이 아님"),
+		@ApiResponse(responseCode = "404", description = "존재하지 않는 탐험 ID")
+	})
+	ResponseEntity<?> getExplorationDetail(
+		@Parameter(hidden = true)
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+
+		@Parameter(description = "조회할 탐험 ID", required = true)
 		@PathVariable Long explorationId
 	);
 }

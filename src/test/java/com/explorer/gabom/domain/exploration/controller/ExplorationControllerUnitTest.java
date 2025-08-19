@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
@@ -52,7 +53,6 @@ class ExplorationControllerUnitTest {
 						.build();
 		userDetails = CustomUserDetails.from(user);
 	}
-
 
 	// 탐험 시작
 	@Test
@@ -141,7 +141,6 @@ class ExplorationControllerUnitTest {
 		assertEquals(ErrorCode.PLACE_NOT_FOUND, exception.getErrorCode());
 	}
 
-
 	// 탐험 제한 시간 연장
 	@Test
 	@DisplayName("탐험 제한 시간 연장 - 성공")
@@ -217,7 +216,6 @@ class ExplorationControllerUnitTest {
 		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
 	}
 
-
 	// 탐험 중인 장소 조회
 	@Test
 	@DisplayName("탐험 중인 장소 목록 조회 - 성공")
@@ -274,5 +272,57 @@ class ExplorationControllerUnitTest {
 
 		// then
 		assertEquals(ErrorCode.EXPLORATION_ALREADY_ENDED, exception.getErrorCode());
+	}
+
+	// 탐험 상세 조회 - 성공
+	@Test
+	@DisplayName("탐험 상세 조회 - 성공")
+	void getExplorationDetail_success() {
+		// given
+		long explorationId = 200L;
+		ExplorationDetailResponse dto = new ExplorationDetailResponse(
+			explorationId,
+			10L,
+			"지동이",
+			10L,
+			"비밀의 숲",
+			300,
+			300,
+			LocalDateTime.now().minusHours(1),
+			LocalDateTime.now().plusHours(2)
+		);
+
+		given(explorationService.getExplorationDetail(explorationId))
+			.willReturn(dto);
+
+		// when
+		ResponseEntity<ApiResponse<ExplorationDetailResponse>> resp =
+			controller.getExplorationDetail(userDetails, explorationId);
+
+		// then
+		assertEquals(HttpStatus.OK, resp.getStatusCode());
+		ApiResponse<ExplorationDetailResponse> body = resp.getBody();
+		assertNotNull(body);
+		assertTrue(body.isSuccess());
+		assertEquals("탐험 상세 조회에 성공했습니다.", body.getMessage());
+		assertEquals(dto, body.getData());
+	}
+
+	// 탐험 상세 조회 - 탐험 없음 예외 발생
+	@Test
+	@DisplayName("탐험 상세 조회 - 탐험 없음 예외 발생")
+	void getExplorationDetail_explorationNotFoundException() {
+		// given
+		long explorationId = 999L;
+		given(explorationService.getExplorationDetail(explorationId))
+			.willThrow(new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+
+		// when
+		CustomException exception = assertThrows(CustomException.class, () -> {
+			controller.getExplorationDetail(userDetails, explorationId);
+		});
+
+		// then
+		assertEquals(ErrorCode.EXPLORATION_NOT_FOUND, exception.getErrorCode());
 	}
 }
