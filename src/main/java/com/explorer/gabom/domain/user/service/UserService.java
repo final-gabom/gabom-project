@@ -10,6 +10,7 @@ import com.explorer.gabom.domain.user.dto.response.UpdateMainTitleResponse;
 import com.explorer.gabom.domain.user.entity.User;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 
 public interface UserService {
 	UserDto getUser(User user);
@@ -25,4 +26,9 @@ public interface UserService {
 	void updatePassword(User user, @Valid PasswordUpdateRequest passwordUpdateRequest);
 
 	AddressDto updateUserAddress(User user, AddressRequest request);
+
+	void validateEmailNotExists(@Email String email);
+
+	void validateNicknameNotExists(String nickname);
+
 }

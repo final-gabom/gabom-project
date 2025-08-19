@@ -1,11 +1,12 @@
-package com.explorer.gabom.domain.user.entity;
+package com.explorer.gabom.domain.social.entity;
 
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.explorer.gabom.domain.user.type.SocialProvider;
+import com.explorer.gabom.domain.social.type.SocialProvider;
+import com.explorer.gabom.domain.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(
@@ -37,13 +46,16 @@ public class SocialAccount {
 
 	// 사용자 연관
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id", nullable = true)
 	private User user;
+
+	@Column(nullable = false)
+	private String email;
 
 	// 소셜 제공자
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private SocialProvider provider;
+	private SocialProvider providerType;
 
 	// 소셜 제공자의 고유 식별자 (예: sub, id)
 	@Column(nullable = false, length = 255)
@@ -52,5 +64,9 @@ public class SocialAccount {
 	@CreatedDate
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
+
+	public void setUser(User user) {
+		this.user = user;
+	}
 
 }

@@ -46,7 +46,6 @@ public class User extends BaseTimeEntity {
 	@Column(unique = true, nullable = false)
 	private String email;
 
-	@Column(nullable = false)
 	private String password;
 
 	@Column(unique = true, nullable = false)
@@ -62,7 +61,7 @@ public class User extends BaseTimeEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private UserStatus status;
+	private UserStatus status = UserStatus.ACTIVE;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "title_id")
@@ -84,16 +83,37 @@ public class User extends BaseTimeEntity {
 	private Integer exp;
 
 	@Builder
-	public User(Long id, String email, String password, String nickname, UserRole userRole) {
+	public User(Long id, String email, String password, String nickname, UserRole userRole, UserStatus status) {
 		this.id = id;
 		this.email = email;
 		this.password = password;
 		this.nickname = nickname;
 		this.userRole = userRole;
-		this.status = UserStatus.ACTIVE;
+		this.status = status;
 		this.point = 0;
 		this.level = 1;
 		this.exp = 0;
+	}
+
+	// 일반 회원가입용
+	public static User ofRegular(String email, String encodedPassword, String nickname, UserRole role) {
+		return User.builder()
+				   .email(email)
+				   .password(encodedPassword)
+				   .nickname(nickname)
+				   .userRole(role)
+				   .status(UserStatus.ACTIVE)
+				   .build();
+	}
+
+	// 소셜 회원가입용
+	public static User ofSocial(String email, String nickname) {
+		return User.builder()
+				   .email(email)
+				   .nickname(nickname)
+				   .userRole(UserRole.USER)
+				   .status(UserStatus.ACTIVE)
+				   .build();
 	}
 
 	public void addPoint(int point) {
@@ -138,5 +158,6 @@ public class User extends BaseTimeEntity {
 	public void updateAddressId(Long addressId) {
 		this.addressId = addressId;
 	}
+
 }
 
