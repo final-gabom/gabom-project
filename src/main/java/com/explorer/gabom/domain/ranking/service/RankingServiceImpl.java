@@ -32,7 +32,6 @@ public class RankingServiceImpl implements RankingService {
 	@Override
 	public PageResponse<RankingSummaryDto> getRankingPage(Pageable pageable, String nickname) {
 
-		// 닉네임이 없으면 Redis에서 페이징된 userId를 가져오고 DB 조회
 		if (nickname == null || nickname.isBlank()) {
 			long start = pageable.getOffset();
 			long end = start + pageable.getPageSize() - 1;
@@ -61,7 +60,7 @@ public class RankingServiceImpl implements RankingService {
 														  return RankingSummaryDto.toDto(r, rankNo + 1);
 													  })
 													  .sorted(Comparator.comparingLong(
-														  RankingSummaryDto::getRankNo)) // Redis 기준 정렬
+														  RankingSummaryDto::getRankNo))
 													  .toList();
 
 			Long totalCount = redisTemplate.opsForZSet().size(RANKING_KEY);
@@ -71,27 +70,24 @@ public class RankingServiceImpl implements RankingService {
 			);
 		}
 
-		// 닉네임이 있는 경우: DB에서 후보 userId 추출
 		List<Long> candidateIds = rankingRepository.findUserIdsByNicknameContaining(nickname);
 
 		if (candidateIds.isEmpty()) {
 			return PageResponse.toDto(new PageImpl<>(Collections.emptyList(), pageable, 0));
 		}
 
-		// 후보 userId에 대해 Redis rank 가져오기
 		List<RankingSummaryDto> dtoList = candidateIds.stream()
 													  .map(id -> {
 														  Long rank = redisTemplate.opsForZSet()
 																				   .reverseRank(RANKING_KEY,
 																								String.valueOf(id));
 														  if (rank == null) {
-															  // Redis에 없으면 정합성 문제로 예외 처리
 															  throw new CustomException(ErrorCode.RANKING_NOT_FOUND);
 														  }
 														  return new Object[] {id, rank + 1};
 													  })
 													  .sorted((a, b) -> Long.compare((Long)a[1],
-																					 (Long)b[1])) // rankNo 기준 정렬
+																					 (Long)b[1]))
 													  .skip(pageable.getOffset())
 													  .limit(pageable.getPageSize())
 													  .map(a -> {
@@ -105,7 +101,7 @@ public class RankingServiceImpl implements RankingService {
 													  })
 													  .toList();
 
-		Long totalCount = (long)candidateIds.size();
+		long totalCount = candidateIds.size();
 
 		return PageResponse.toDto(
 			new PageImpl<>(dtoList, pageable, totalCount)
