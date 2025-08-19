@@ -4,12 +4,10 @@ import static com.explorer.gabom.global.exception.ErrorCode.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +31,8 @@ import com.explorer.gabom.domain.notification.type.NotificationRefType;
 import com.explorer.gabom.domain.notification.type.NotificationType;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
+import com.explorer.gabom.domain.quest.service.UserQuestService;
+import com.explorer.gabom.domain.quest.type.QuestConditionType;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.global.dto.PageResponse;
@@ -53,6 +53,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	private final PlaceRepository placeRepository;
 	private final AttachmentFileRepository attachmentFileRepository;
 	private final AuthorValidator authorValidator;
+	private final UserQuestService userQuestService;
 	private final NotificationService notificationService;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -92,10 +93,12 @@ public class MissionProofServiceImpl implements MissionProofService {
 		// 저장
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
 
+		userQuestService.updateProgress(loginUser, QuestConditionType.MISSION_PROOF_WRITE, 1);
+
 		// 알림: 장소 주인에게 “인증글 등록됨”
 		if (place != null && place.getUser() != null) {
 			Long receiverId = place.getUser().getId();
-			String msg  = "내 장소에 인증글이 등록되었습니다.";
+			String msg = "내 장소에 인증글이 등록되었습니다.";
 			String link = "/mission-proofs/" + savedMissionProof.getId();
 
 			var event = new MissionProofCreatedEvent(
@@ -106,8 +109,8 @@ public class MissionProofServiceImpl implements MissionProofService {
 				savedMissionProof.getId()
 			);
 			eventPublisher.publishEvent(event);
-			log.info("[AUTH_POST] published event AFTER_COMMIT → receiver={}, refId={}", receiverId, savedMissionProof.getId());
-
+			log.info("[AUTH_POST] published event AFTER_COMMIT → receiver={}, refId={}", receiverId,
+					 savedMissionProof.getId());
 
 			notificationService.notify(
 				receiverId,

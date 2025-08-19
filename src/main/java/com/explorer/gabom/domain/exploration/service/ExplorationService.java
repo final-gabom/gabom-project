@@ -45,12 +45,11 @@ public class ExplorationService {
 
 	// 탐험 시작
 	@Transactional
-	public ExplorationStartResponse startExploration(Long userId, Long placeId, ExplorationStartRequest request) {
-		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(userId, placeId, LocalDateTime.now())) {
+	public ExplorationStartResponse startExploration(User user, Long placeId, ExplorationStartRequest request) {
+		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(user.getId(), placeId, LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION);
 		}
 
-		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Place place = placeRepository.findById(placeId).orElseThrow(
 			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
@@ -134,15 +133,16 @@ public class ExplorationService {
 		}
 
 		return explorations.stream()
-			.map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
-			.toList();
+						   .map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
+						   .toList();
 	}
 
 	// 탐험 장소 상세 조회
 	@Transactional(readOnly = true)
 	public ExplorationDetailResponse getExplorationDetail(Long explorationId) {
 		Exploration exploration = explorationRepository.findById(explorationId)
-			.orElseThrow(() -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+													   .orElseThrow(
+														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
 
 		return ExplorationDetailResponse.toDto(exploration);
 	}

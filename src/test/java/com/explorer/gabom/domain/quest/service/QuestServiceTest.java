@@ -34,10 +34,10 @@ class QuestServiceTest {
 	private static final Long QUEST_ID = 1L;
 	private static final String QUEST_TITLE = "테스트 퀘스트";
 	private static final String QUEST_DESCRIPTION = "퀘스트 설명";
-	private static final QuestConditionType QUEST_CONDITION_TYPE = QuestConditionType.PLACE;
+	private static final QuestConditionType QUEST_CONDITION_TYPE = QuestConditionType.PLACE_REGISTER;
 	private static final int QUEST_ACQUIRE_CONDITION = 5;
-	private static final int REWARD_POINT = 100;
-	private static final int REWARD_EXP = 50;
+	private static final Long REWARD_POINT = 100L;
+	private static final Long REWARD_EXP = 50L;
 	private Title title;
 	private static final String TITLE_NAME = "테스트 칭호";
 	private static final String TITLE_DESCRIPTION = "칭호 설명";

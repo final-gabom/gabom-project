@@ -3,6 +3,7 @@ package com.explorer.gabom.domain.ranking.message;
 import java.util.Optional;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,9 @@ public class ExpEventConsumer {
 
 	private final RankingRepository rankingRepository;
 	private final UserRepository userRepository;
+	private final StringRedisTemplate redisTemplate;
+
+	private static final String RANKING_KEY = "ranking:exp";
 
 	@RabbitListener(queues = RabbitMQConfig.RANKING_QUEUE)
 	@Transactional
@@ -34,5 +38,8 @@ public class ExpEventConsumer {
 		} else {
 			rankingRepository.save(new Ranking(user, message.getExp()));
 		}
+
+		redisTemplate.opsForZSet()
+					 .add(RANKING_KEY, String.valueOf(message.getUserId()), message.getExp());
 	}
 }

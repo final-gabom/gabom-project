@@ -17,5 +17,5 @@ public class Level {
 	private int level;
 
 	@Column(nullable = false)
-	private int requiredExp;
+	private Long requiredExp;
 }
