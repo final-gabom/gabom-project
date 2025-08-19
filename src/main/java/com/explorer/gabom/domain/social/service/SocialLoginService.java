@@ -90,6 +90,7 @@ public class SocialLoginService {
 		createAndLinkSocialAccount(savedUser, tempAccount);
 		// 6. 첫 로그인 설정
 		firstLoginService.markFirstLogin(savedUser.getId());
+		log.info("첫 로그인");
 		// 7. 회원가입 완료 후 응답 DTO 반환
 		return SignupResponse.toDto(savedUser);
 	}
