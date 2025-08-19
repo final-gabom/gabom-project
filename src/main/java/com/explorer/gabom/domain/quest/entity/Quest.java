@@ -59,6 +59,9 @@ public class Quest extends BaseTimeEntity {
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
+	@Column(name = "time_limit_seconds", nullable = false)
+	private Integer timeLimitSeconds = 1800; // 기본 30분
+
 	public Quest(String title, String description, QuestConditionType questConditionType,
 				 int acquireCondition, Long rewardPoint, Long rewardExp, Title rewardTitle) {
 		this.title = title;
@@ -68,6 +71,7 @@ public class Quest extends BaseTimeEntity {
 		this.rewardPoint = rewardPoint;
 		this.rewardExp = rewardExp;
 		this.rewardTitle = rewardTitle;
+
 	}
 
 	public void update(QuestUpdateRequest dto, Title rewardTitle) {
@@ -85,10 +89,10 @@ public class Quest extends BaseTimeEntity {
 			this.rewardExp = dto.getRewardExp();
 		if (rewardTitle != null)
 			this.rewardTitle = rewardTitle;
+
 	}
 
-	public void markAsDeleted() {
-		this.deleted = true;
-		this.deletedAt = LocalDateTime.now();
+	public int timeLimitOrDefault() {
+		return (timeLimitSeconds == null || timeLimitSeconds <= 0) ? 1800 : timeLimitSeconds;
 	}
 }

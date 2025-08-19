@@ -34,74 +34,81 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final UserDetailsService userDetailsService;
 	private final ObjectMapper objectMapper;
 
-	/**
-	 * HTTP 요청을 처리하는 필터로, 요청에 포함된 JWT 토큰을 검증하고 유효한 경우 인증 정보를 SecurityContext에 설정합니다.
-	 * <p>
-	 * 이 메서드는 Spring Security에서 요청을 처리하기 전에 호출되며, 사용자의 인증 상태를 설정합니다.
-	 * 유효한 JWT 토큰이 있을 경우, 해당 토큰에서 사용자 ID를 추출하고, 이를 통해 사용자의 정보를 로드한 후 인증 정보를 설정합니다.
-	 * </p>
-	 *
-	 * @param request HTTP 요청 객체
-	 * @param response HTTP 응답 객체
-	 * @param filterChain 필터 체인, 다음 필터를 호출할 때 사용
-	 * @throws ServletException 서블릿 처리 중 발생한 예외
-	 * @throws IOException 입출력 관련 예외
-	 */
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 									FilterChain filterChain) throws ServletException, IOException {
-		try{
-			log.debug("🔐 JWT 인증 필터 시작");
-			// 요청에서 JWT 토큰을 추출
-			String token = this.getJwtFromRequest(request);
 
-			// 토큰이 있으면 유효성 검증 후 인증 처리
-			if (jwtProvider.validateToken(token)) {
-				// 유효한 토큰이라면, 토큰에서 사용자 ID를 추출
-				String userId = jwtProvider.getUserIdFromToken(token);
-				// 사용자 ID를 기반으로 사용자 정보를 로드
-				UserDetails userDetails = this.userDetailsService.loadUserByUsername(userId);
-				// 사용자 정보와 권한을 기반으로 인증 토큰 생성
-				UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-					userDetails, null, userDetails.getAuthorities());
-				// 인증 토큰에 요청 정보를 설정 (추후 세션에서 사용할 수 있도록 설정)
-				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				// SecurityContext에 인증 정보를 설정하여 후속 요청에서 사용할 수 있도록 함
-				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-				log.debug("✅ 인증 완료 - userId: {}", userId);
-			}
+		// 1) 정적/WS/문서 경로는 인증 필터 스킵
+		String uri = request.getRequestURI();
+		if (uri.startsWith("/ws")
+			|| "/favicon.ico".equals(uri)
+			|| uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")
+			|| uri.endsWith(".html") || uri.endsWith(".css") || uri.endsWith(".js")
+			|| uri.endsWith(".png") || uri.endsWith(".jpg") || uri.endsWith(".svg") || uri.endsWith(".ico")
+			|| "/error".equals(uri)) {
 			filterChain.doFilter(request, response);
-		} catch (CustomException e) {
-			setErrorResponse(response, e.getErrorCode());
-		} catch (Exception e) {
-			setErrorResponse(response, INTERNAL_SERVER_ERROR);
+			return;
 		}
+
+		// 2) 헤더에서 토큰 추출
+		String token = this.getJwtFromRequest(request);
+
+		// 3) 토큰 없으면 그냥 통과 (보호된 API는 이후 Security가 401 처리)
+		if (!StringUtils.hasText(token)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		// 4) 토큰 처리만 try/catch로 감싸고, 체인 호출은 밖으로 뺀다
+		try {
+			log.debug("🔐 JWT 인증 필터 시작");
+
+			// 유효하지 않으면 CustomException을 던짐(아래 catch에서 응답 종료)
+			jwtProvider.validateToken(token);
+
+			// 유효 → 인증 세팅
+			String userId = jwtProvider.getUserIdFromToken(token);
+			UserDetails userDetails = this.userDetailsService.loadUserByUsername(userId);
+
+			UsernamePasswordAuthenticationToken authenticationToken =
+				new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+			authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+			SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			log.debug("✅ 인증 완료 - userId: {}", userId);
+
+		} catch (CustomException e) {
+			// 토큰 이슈만 여기서 응답하고 종료
+			log.warn("[JWT-CUSTOM] code={}, msg={}", e.getErrorCode(), e.getMessage(), e);
+			setErrorResponse(response, e.getErrorCode());
+			return;
+		} catch (Exception e) {
+			log.error("[JWT-ERROR] {}", e.getMessage(), e);
+			setErrorResponse(response, INTERNAL_SERVER_ERROR);
+			return;
+		}
+
+		// 5) 다운스트림 예외는 전역 예외 핸들러가 처리하도록 넘김
+		filterChain.doFilter(request, response);
 	}
 
 	/**
 	 * 요청 헤더에서 JWT 토큰을 추출합니다.
-	 * <p>
-	 * "Authorization" 헤더가 존재하지만 "Bearer "로 시작하지 않으면 예외를 발생시킵니다.
-	 * </p>
-	 *
-	 * @param request HTTP 요청 객체
-	 * @return "Bearer " 접두사를 제거한 JWT 토큰 문자열. 헤더가 없으면 null 반환.
-	 * @throws CustomException 토큰 형식이 올바르지 않을 경우
+	 * "Authorization" 헤더가 존재하지만 "Bearer "로 시작하지 않으면 CustomException 발생.
 	 */
 	private String getJwtFromRequest(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 
-		// 1. Authorization 헤더가 아예 없는 경우
+		// Authorization 헤더가 아예 없는 경우
 		if (!StringUtils.hasText(bearerToken)) {
 			return null;
 		}
 
-		// 2. 형식이 잘못된 경우 → 예외 발생
+		// 형식이 잘못된 경우 → 예외 발생
 		if (!bearerToken.startsWith("Bearer ")) {
 			throw new CustomException(INVALID_TOKEN);
 		}
 
-		// 3. 정상적인 Bearer 토큰이면 파싱
+		// 정상적인 Bearer 토큰이면 파싱
 		return bearerToken.substring(7);
 	}
 

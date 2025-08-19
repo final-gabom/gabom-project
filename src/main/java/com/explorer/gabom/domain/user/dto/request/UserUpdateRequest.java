@@ -13,4 +13,12 @@ public class UserUpdateRequest {
 	private final String nickname;
 	@Schema(description = "프로필 이미지 파일 ID", example = "file-123456")
 	private final String profileImgId;
+	@Schema(description = "법정동 코드")
+	private final String emdCd;
+	@Schema(description = "상세 주소")
+	private final String addressDetail;
+	@Schema(description = "위도")
+	private final Double lat;
+	@Schema(description = "경도")
+	private final Double lng;
 }

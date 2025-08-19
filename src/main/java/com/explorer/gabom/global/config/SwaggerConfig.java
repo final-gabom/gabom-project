@@ -12,10 +12,10 @@ import io.swagger.v3.oas.models.info.Info;
 
 @Configuration
 @SecurityScheme(
-	name                = "bearerAuth",
-	type                = SecuritySchemeType.HTTP,
-	scheme              = "bearer",
-	bearerFormat        = "JWT"
+	name = "bearerAuth",
+	type = SecuritySchemeType.HTTP,
+	scheme = "bearer",
+	bearerFormat = "JWT"
 )
 public class SwaggerConfig {
 
@@ -43,7 +43,6 @@ public class SwaggerConfig {
 							 .packagesToScan("com.explorer.gabom.domain.auth") // auth 관련 컨트롤러 있는 패키지
 							 .build();
 	}
-
 
 	@Bean
 	public GroupedOpenApi placeApi() {
@@ -122,6 +121,22 @@ public class SwaggerConfig {
 		return GroupedOpenApi.builder()
 							 .group("user")
 							 .packagesToScan("com.explorer.gabom.domain.user") // auth 관련 컨트롤러 있는 패키지
+							 .build();
+	}
+
+	@Bean
+	public GroupedOpenApi notificationApi() {
+		return GroupedOpenApi.builder()
+							 .group("notification")
+							 .packagesToScan("com.explorer.gabom.domain.notification") // notification 관련 컨트롤러 있는 패키지
+							 .build();
+	}
+
+	@Bean
+	public GroupedOpenApi socialLoginApi() {
+		return GroupedOpenApi.builder()
+							 .group("social login")
+							 .packagesToScan("com.explorer.gabom.domain.social") // social login 관련 컨트롤러 있는 패키지
 							 .build();
 	}
 }

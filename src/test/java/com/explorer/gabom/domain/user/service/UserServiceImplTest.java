@@ -10,12 +10,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.explorer.gabom.domain.address.dto.AddressDto;
+import com.explorer.gabom.domain.address.dto.request.AddressRequest;
 import com.explorer.gabom.domain.address.service.AddressService;
+import com.explorer.gabom.domain.address.type.AddressType;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
 import com.explorer.gabom.domain.file.type.FileType;
@@ -78,8 +83,8 @@ class UserServiceImplTest {
 				   .build();
 	}
 
-	private UserUpdateRequest createUpdateRequest(String nickname, String profileImgId) {
-		return new UserUpdateRequest(nickname, profileImgId);
+	private UserUpdateRequest createUpdateRequest(String nickname, String profileImgId, String emdCd, String addressDetail, Double lat, Double lng) {
+		return new UserUpdateRequest(nickname, profileImgId, emdCd,  addressDetail, lat, lng);
 	}
 
 	private AttachmentFile createAttachmentFile(String fileId) {
@@ -132,8 +137,7 @@ class UserServiceImplTest {
 		void it_updates_nickname_address_and_profileImage() {
 			// given
 			UserUpdateRequest req = createUpdateRequest(
-				NEW_NICKNAME, PROFILE_IMG_ID
-			);
+				NEW_NICKNAME, PROFILE_IMG_ID, null, null, null, null);
 			AttachmentFile mockFile = createAttachmentFile(PROFILE_IMG_ID);
 
 			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
@@ -152,7 +156,7 @@ class UserServiceImplTest {
 		void it_throws_when_duplicate_nickname() {
 			String dupNick = "existNick";
 			UserUpdateRequest req = createUpdateRequest(
-				dupNick, null
+				dupNick, null, null,  null, null, null
 			);
 			given(userRepository.existsByNickname(dupNick)).willReturn(true);
 
@@ -168,7 +172,7 @@ class UserServiceImplTest {
 			// given
 			String badFileId = "no-such-file";
 			UserUpdateRequest req = createUpdateRequest(
-				NEW_NICKNAME, badFileId
+				NEW_NICKNAME, badFileId, null,  null, null, null
 			);
 
 			given(userRepository.existsByNickname(NEW_NICKNAME)).willReturn(false);
@@ -180,6 +184,71 @@ class UserServiceImplTest {
 				.isInstanceOf(CustomException.class)
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.FILE_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("성공: 주소 4필드 모두 전달 시 addressService.createOrReplace 호출")
+		void it_updates_address_when_full_payload_provided() {
+			// given
+			String emdCd = "1101050000";
+			String addressDetail = "서울특별시 서초구 반포동 115-5";
+			Double lat = 37.498095;
+			Double lng = 127.027610;
+
+			UserUpdateRequest req = new UserUpdateRequest(
+				null,               // nickname
+				null,               // profileImgId
+				emdCd,
+				addressDetail,
+				lat,
+				lng
+			);
+
+			// AddressService가 무엇을 리턴하든 관계없음 → mock으로 충분
+			AddressDto mockedAddress = Mockito.mock(AddressDto.class);
+			given(addressService.createOrReplace(any(AddressRequest.class))).willReturn(mockedAddress);
+
+			// when
+			UserDto updated = userService.updateUser(user, req);
+
+			// then
+			// 호출 여부/인자 검증
+			ArgumentCaptor<AddressRequest> captor = ArgumentCaptor.forClass(AddressRequest.class);
+			verify(addressService, times(1)).createOrReplace(captor.capture());
+			AddressRequest passed = captor.getValue();
+
+			assertThat(passed.getEmdCd()).isEqualTo(emdCd);
+			assertThat(passed.getAddressDetail()).isEqualTo(addressDetail);
+			assertThat(passed.getLat()).isEqualTo(lat);
+			assertThat(passed.getLng()).isEqualTo(lng);
+			assertThat(passed.getAddressTypeCd()).isEqualTo(AddressType.USER);
+			assertThat(passed.getTargetId()).isEqualTo(USER_ID);
+
+			// 정상 반환
+			assertThat(updated).isNotNull();
+		}
+
+		@Test
+		@DisplayName("실패: 주소 필드 일부만 전달 시 INVALID_ADDRESS_PAYLOAD 예외")
+		void it_throws_when_address_payload_is_incomplete() {
+			// given: emdCd만 들어오고 나머지 누락
+			UserUpdateRequest req = new UserUpdateRequest(
+				null,               // nickname
+				null,               // profileImgId
+				"1101050000",       // emdCd
+				null,               // addressDetail (누락)
+				null,               // lat (누락)
+				null                // lng (누락)
+			);
+
+			// when & then
+			assertThatThrownBy(() -> userService.updateUser(user, req))
+				.isInstanceOf(CustomException.class)
+				.extracting("errorCode")
+				.isEqualTo(ErrorCode.INVALID_ADDRESS_PAYLOAD);
+
+			// addressService는 호출되지 않아야 함
+			verify(addressService, never()).createOrReplace(any(AddressRequest.class));
 		}
 	}
 }

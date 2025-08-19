@@ -3,23 +3,26 @@ package com.explorer.gabom.domain.exploration.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
+import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
-import com.explorer.gabom.global.util.RewardCalculator;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.repository.PlaceRepository;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.exception.CustomException;
 import com.explorer.gabom.global.exception.ErrorCode;
+import com.explorer.gabom.global.scheduler.ExplorationAlarmScheduler;
 import com.explorer.gabom.global.util.DistanceCalculator;
+import com.explorer.gabom.global.util.RewardCalculator;
 import com.explorer.gabom.global.validator.AuthorValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -32,18 +35,25 @@ public class ExplorationService {
 	private final PlaceRepository placeRepository;
 	private final ExplorationRepository explorationRepository;
 	private final AuthorValidator authorValidator;
+	private final ExplorationAlarmScheduler alarmScheduler;
+	// 운영 기본 만료시간(시간)
+	@Value("${spring.exploration.duration.hours:3}")
+	private long explorationDurationHours;
+	// 로컬 즉시 확인용(초) – 설정되면 hours 대신 이 값 우선
+	@Value("${spring.exploration.test.duration-seconds:0}")
+	private long testDurationSeconds;
 
 	// 탐험 시작
 	@Transactional
-	public ExplorationStartResponse startExploration(Long userId, Long placeId, ExplorationStartRequest request) {
-		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(userId, placeId, LocalDateTime.now())) {
+	public ExplorationStartResponse startExploration(User user, Long placeId, ExplorationStartRequest request) {
+		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(user.getId(), placeId, LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION);
 		}
 
-		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Place place = placeRepository.findById(placeId).orElseThrow(
 			() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));
 
+		// 리워드 계산
 		double userLat = request.getLat();
 		double userLng = request.getLng();
 
@@ -54,9 +64,13 @@ public class ExplorationService {
 		int rewardExp = RewardCalculator.calculate(distance);
 		int rewardPoint = RewardCalculator.calculate(distance);
 
+		// 시간 설정 (로컬 테스트면 초 단위, 운영은 시간 단위)
 		LocalDateTime startAt = LocalDateTime.now();
-		LocalDateTime endAt = startAt.plusHours(3);
+		LocalDateTime endAt = (testDurationSeconds > 0)
+							  ? startAt.plusSeconds(testDurationSeconds)
+							  : startAt.plusHours(explorationDurationHours);
 
+		// 엔티티 생성 및 저장 (상태는 IN_PROGRESS 보장)
 		Exploration exploration = Exploration.builder()
 											 .user(user)
 											 .place(place)
@@ -64,9 +78,13 @@ public class ExplorationService {
 											 .rewardPoint(rewardPoint)
 											 .startAt(startAt)
 											 .endAt(endAt)
+											 .status(Exploration.Status.IN_PROGRESS)
 											 .build();
 
 		explorationRepository.save(exploration);
+
+		// 제한시간 알림 스케줄
+		alarmScheduler.schedule(exploration);
 
 		return ExplorationStartResponse.builder()
 									   .explorationId(exploration.getId())
@@ -82,7 +100,8 @@ public class ExplorationService {
 	public ExplorationExtendTimeResponse extendExplorationTime(Long userId, Long explorationId) {
 		Exploration exploration = explorationRepository.findById(explorationId)
 													   .orElseThrow(
-														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+														   () -> new CustomException(
+															   ErrorCode.EXPLORATION_NOT_FOUND));
 
 		// 탐험 권한이 없는 경우
 		authorValidator.validateOwner(
@@ -96,6 +115,10 @@ public class ExplorationService {
 		}
 
 		exploration.extendDeadline();
+
+		explorationRepository.save(exploration);
+		// 알림 스케줄 갱신
+		alarmScheduler.reschedule(exploration);
 		return new ExplorationExtendTimeResponse(exploration.getId(), exploration.getEndAt());
 	}
 
@@ -110,7 +133,18 @@ public class ExplorationService {
 		}
 
 		return explorations.stream()
-			.map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
-			.toList();
+						   .map(exploration -> ExplorationCurrentResponse.of(exploration, exploration.getPlace()))
+						   .toList();
+	}
+
+	// 탐험 장소 상세 조회
+	@Transactional(readOnly = true)
+	public ExplorationDetailResponse getExplorationDetail(Long explorationId) {
+		Exploration exploration = explorationRepository.findById(explorationId)
+													   .orElseThrow(
+														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
+
+		return ExplorationDetailResponse.toDto(exploration);
 	}
 }
+

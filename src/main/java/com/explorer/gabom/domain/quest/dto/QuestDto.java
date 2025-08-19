@@ -19,6 +19,7 @@ public class QuestDto {
 	private Long rewardExp;
 	private Long rewardTitleId;
 
+
 	public static QuestDto toDto(Quest quest) {
 		return QuestDto.builder()
 					   .questId(quest.getId())
