@@ -77,7 +77,7 @@ class AuthControllerTest {
 		LoginRequest loginRequest = new LoginRequest(EMAIL, PASSWORD);
 
 		// 로그인 성공 시 AuthService에서 반환할 DTO
-		LoginResponse loginResponse = LoginResponse.toDto(ACCESS_TOKEN, REFRESH_TOKEN);
+		LoginResponse loginResponse = LoginResponse.toDto(ACCESS_TOKEN, REFRESH_TOKEN, true);
 
 		when(authService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
