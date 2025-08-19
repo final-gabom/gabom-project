@@ -9,6 +9,7 @@ import com.explorer.gabom.domain.auth.dto.request.LoginRequest;
 import com.explorer.gabom.domain.auth.dto.request.SignupRequest;
 import com.explorer.gabom.domain.auth.dto.response.CheckNicknameResponse;
 import com.explorer.gabom.domain.auth.dto.response.LoginResponse;
+import com.explorer.gabom.domain.social.service.FirstLoginService;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
 import com.explorer.gabom.domain.user.entity.User;
 import com.explorer.gabom.domain.user.repository.UserRepository;
@@ -33,6 +34,7 @@ public class AuthService {
 	private final EmailCodeStorageService emailCodeStorageService;
 	private final RedisTokenService redisTokenService;
 	private final UserService userService;
+	private final FirstLoginService firstLoginService;
 
 	// 일반 회원가입
 	@Transactional
@@ -52,6 +54,9 @@ public class AuthService {
 			encodedPassword,
 			request.getRole()
 		);
+		// 첫 로그인 Redis 마킹
+		firstLoginService.markFirstLogin(user.getId());
+
 		return UserSummaryDto.toDto(user);
 	}
 
@@ -69,6 +74,9 @@ public class AuthService {
 			encodedPassword,
 			request.getRole()
 		);
+		// 첫 로그인 Redis 마킹
+		firstLoginService.markFirstLogin(user.getId());
+
 		return UserSummaryDto.toDto(user);
 	}
 
@@ -80,11 +88,12 @@ public class AuthService {
 								  .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		// 비밀번호 일치 확인
 		passwordValidator.verifyMatch(request.getPassword(), user.getPassword());
-
+		// 로그인 여부 판별 (Redis에서 삭제하며 확인)
+		boolean newUser = firstLoginService.consumeFirstLogin(user.getId());
 		//토큰을 생성
 		JwtTokens jwtTokens = jwtProvider.generateTokens(user.getId(), user.getUserRole());
 
-		return LoginResponse.toDto(jwtTokens.getAccessToken(), jwtTokens.getRefreshToken(), false);
+		return LoginResponse.toDto(jwtTokens.getAccessToken(), jwtTokens.getRefreshToken(), newUser);
 	}
 
 	// 닉네임 중복 확인
