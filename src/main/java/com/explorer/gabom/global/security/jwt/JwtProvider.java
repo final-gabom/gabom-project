@@ -206,7 +206,7 @@ public class JwtProvider {
 		String refreshToken = createRefreshToken(userId, role);
 
 		// Redis에 refresh token 저장
-		redisTokenService.saveRefreshToken(userId, refreshToken, refreshTokenExpiration);
+		redisTokenService.saveRefreshToken(userId, refreshToken);
 
 		return new JwtTokens(accessToken, refreshToken);
 	}
