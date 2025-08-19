@@ -39,11 +39,14 @@ public interface UserControllerDocs {
 
 	@Operation(
 		summary = "프로필 수정",
-		description = "현재 로그인된 사용자의 프로필 정보를 수정합니다. \n"
+		description = "현재 로그인된 사용자의 프로필 정보(닉네임, 프로필 이미지, 주소)를 수정합니다. \n"
 			+ "해당 api에서는 프로필 이미지과 닉네임만 수정이 가능합니다.\n"
-			+ "칭호와 주소는 각 별도의 api를 사용하여 수정할 수 있습니다."
+			+ "칭호는 별도의 api를 사용하여 수정할 수 있습니다."
+			+ "주소는 4개 필드가 모두 전달될 때에만 업데이트됩니다.(부분 입력 시 400)"
+			+ "주소: 법정동 코드, 상세주소, 위도, 경도"
 	)
 	@ApiResponse(responseCode = "200", description = "프로필 수정을 성공했습니다.")
+	@ApiResponse(responseCode = "400", description = "잘못된 주소 입력(필드 누락 등)")
 	@ApiResponse(responseCode = "409", description = "이미 등록된 닉네임입니다.")
 	@ApiResponse(responseCode = "404", description = "파일을 찾을 수 없습니다.")
 	ResponseEntity<?> updateUser(
@@ -78,15 +81,4 @@ public interface UserControllerDocs {
 	ResponseEntity<?> updatePassword(
 		@Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody PasswordUpdateRequest passwordUpdateRequest);
-
-    @Operation(
-        summary = "주소 등록",
-        description = "현재 로그인된 사용자의 주소를 등록합니다."
-    )
-    @ApiResponse(responseCode = "200", description = "주소 등록을 성공했습니다.")
-    @ApiResponse(responseCode = "404", description = "해당 주소 코드를 찾을 수 없습니다.")
-    @ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없습니다.")
-    ResponseEntity<?> updateAddress(
-        @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestBody AddressRequest addressRequest);
 }

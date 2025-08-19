@@ -80,13 +80,4 @@ public class UserController implements UserControllerDocs {
 		userService.updatePassword(userDetails.getUser(), passwordUpdateRequest);
 		return ResponseEntity.ok(ApiResponse.success("비밀번호가 성공적으로 변경되었습니다."));
 	}
-
-	@PutMapping("/me/address")
-	public ResponseEntity<ApiResponse<AddressDto>> updateAddress(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody @Valid AddressRequest request) {
-		log.info("주소 변경 요청: userId={}", userDetails.getUser().getId());
-		AddressDto response = userService.updateUserAddress(userDetails.getUser(), request);
-		return ResponseEntity.ok(ApiResponse.success("주소 등록을 성공했습니다.", response));
-	}
 }
