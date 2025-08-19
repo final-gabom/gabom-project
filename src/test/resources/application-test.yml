@@ -1,3 +1,7 @@
+KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID:dummy}
+KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:dummy}
+KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:http://localhost/dummy}
+
 server:
   port: 8080
   error:
@@ -61,13 +65,14 @@ spring:
         key:
           prefix: test/
 
+# redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# jwt
 jwt:
   secret: "localsecretkeylocalsecretkeylocalsecretkeylocalsecretkey"
   access-expiration: 3600000  # 1시간
   refresh-expiration: 1209600000  # 14일
-
-
-  # redis 설정
-  redis:
-    host: localhost
-    port: 6379
