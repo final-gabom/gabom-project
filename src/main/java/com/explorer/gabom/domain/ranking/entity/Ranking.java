@@ -8,7 +8,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -16,12 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-	name = "ranking",
-	indexes = {
-		@Index(name = "idx_exp_id", columnList = "exp DESC, id ASC")
-	}
-)
+@Table(name = "ranking")
 @Getter
 @NoArgsConstructor
 public class Ranking {
