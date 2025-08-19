@@ -1,5 +1,6 @@
 package com.explorer.gabom.global.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,14 +40,19 @@ public class SecurityConfig {
 				.authenticationEntryPoint(authenticationEntryPoint)
 				.accessDeniedHandler(accessDeniedHandler)
 			)
+			// 정적/문서/WS 경로 인증 제외로 500/401 해소
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 				.requestMatchers(
 					"/api/auth/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html",
-					"/swagger-ui/index.html"
+					"/swagger-ui/index.html",
+					"/ws-test.html", // Websocket html
+					"/ws/**" // Websocket
 				).permitAll()
+
 				.requestMatchers("/api/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated()
 			)

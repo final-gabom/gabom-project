@@ -18,6 +18,8 @@ import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailRespo
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
+import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class ExplorationController implements ExplorationControllerDocs {
 
 	private final ExplorationService explorationService;
+	private final UserRepository userRepository;
 
 	// 탐험 시작
 	@PostMapping("/{placeId}/start")
@@ -37,8 +40,8 @@ public class ExplorationController implements ExplorationControllerDocs {
 		@RequestBody ExplorationStartRequest request,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Long userId = userDetails.getUserId();
-		ExplorationStartResponse response = explorationService.startExploration(userId, placeId, request);
+		User user = userRepository.getReferenceById(userDetails.getUserId());
+		ExplorationStartResponse response = explorationService.startExploration(user, placeId, request);
 		return ResponseEntity.ok(ApiResponse.success("탐험이 시작되었습니다.", response));
 	}
 

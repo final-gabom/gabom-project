@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Notification Tester (User Queue)</title>
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        fieldset { margin-bottom: 16px; }
+        label { display: inline-block; width: 180px; vertical-align: top; }
+        input[type="text"], input[type="number"], select { width: 420px; }
+        .row { margin: 6px 0; }
+        #log, #messages { white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; height: 220px; overflow: auto; background: #fafafa; }
+        .ok { color: #0a7; }
+        .err { color: #c00; }
+        .msg { margin: 6px 0; padding: 6px; border-left: 4px solid #ccc; background:#fff; }
+        .pill { display:inline-block; padding:2px 6px; border-radius:12px; background:#eee; margin-left:6px; font-size:12px; }
+    </style>
+</head>
+<body>
+<h2>📬 WebSocket 실시간 알림 테스트 (STOMP /user/queue/notifications)</h2>
+
+<!-- 1) 연결 -->
+<fieldset>
+    <legend>연결 설정</legend>
+    <div class="row">
+        <label>SockJS URL</label>
+        <input id="wsUrl" type="text" value="http://localhost:8080/ws" />
+    </div>
+    <div class="row">
+        <label>STOMP Header userId (필수)</label>
+        <input id="stompUserId" type="text" placeholder="예: 1 (현재 로그인 유저의 ID)" />
+    </div>
+    <div class="row">
+        <label>Authorization (선택)</label>
+        <input id="jwtToken" type="text" placeholder="Bearer 없이 토큰만(백엔드가 안쓰면 비워둬도 됨)" />
+    </div>
+    <div class="row">
+        <button id="btnConnect">🔌 Connect</button>
+        <button id="btnDisconnect" disabled>❌ Disconnect</button>
+    </div>
+</fieldset>
+
+<!-- 2) 구독 -->
+<fieldset>
+    <legend>구독</legend>
+    <div class="row">
+        <label>구독 경로</label>
+        <input id="subPath" type="text" value="/user/queue/notifications" readonly />
+    </div>
+    <div class="row">
+        <button id="btnSubscribe" disabled>👂 Subscribe</button>
+        <button id="btnUnsubscribe" disabled>🛑 Unsubscribe</button>
+    </div>
+    <div class="row">
+        <small>※ 백엔드가 <code>convertAndSendToUser(userId, "/queue/notifications", ...)</code> 를 쓰므로 반드시 여기만 구독</small>
+    </div>
+</fieldset>
+
+<!-- 3) 테스트 전송 (/app/notifications 로 서버에 메시지 보내서 저장+푸시 확인) -->
+<fieldset>
+    <legend>테스트 알림 보내기 (/app/notifications)</legend>
+    <div class="row">
+        <label>receiverId (수신자 유저 ID)</label>
+        <input id="sendReceiverId" type="number" placeholder="예: 1 (내 userId와 같게 두면 내가 바로 받음)" />
+    </div>
+    <div class="row">
+        <label>type (NotificationType.name)</label>
+        <input id="sendType" type="text" list="typeList" placeholder="예: QUEST_TIME_RUNNING_OUT" />
+        <datalist id="typeList">
+            <option>QUEST_TIME_RUNNING_OUT</option>
+            <option>QUEST_EXPIRED</option>
+            <option>AUTH_POST_CREATED</option>
+        </datalist>
+    </div>
+    <div class="row">
+        <label>message</label>
+        <input id="sendMessage" type="text" value="테스트 알림입니다." />
+    </div>
+    <div class="row">
+        <label>link</label>
+        <input id="sendLink" type="text" value="/places/1" />
+    </div>
+    <div class="row">
+        <label>refType (선택)</label>
+        <input id="sendRefType" type="text" list="refList" placeholder="예: EXPLORATION / AUTH_POST / SYSTEM ..." />
+        <datalist id="refList">
+            <option>EXPLORATION</option>
+            <option>AUTH_POST</option>
+            <option>COMMENT</option>
+            <option>PLACE</option>
+            <option>USER</option>
+            <option>SYSTEM</option>
+        </datalist>
+    </div>
+    <div class="row">
+        <label>refId (선택)</label>
+        <input id="sendRefId" type="number" placeholder="예: 123" />
+    </div>
+    <div class="row">
+        <button id="btnSend" disabled>🚀 Send to /app/notifications</button>
+    </div>
+    <div class="row">
+        <small>※ 서버 <code>@MessageMapping("/notifications")</code> → <code>NotificationService</code>가 DB 저장 후
+            <code>/user/queue/notifications</code> 로 즉시 푸시합니다.</small>
+    </div>
+</fieldset>
+
+<!-- 4) 로그/메시지 -->
+<fieldset>
+    <legend>로그</legend>
+    <div id="log"></div>
+</fieldset>
+
+<fieldset>
+    <legend>수신 메시지</legend>
+    <div id="messages"></div>
+</fieldset>
+
+<script>
+    let stompClient = null;
+    let subscription = null;
+
+    const $ = id => document.getElementById(id);
+    const log = (msg, cls='') => {
+        const line = document.createElement('div');
+        if (cls) line.className = cls;
+        line.textContent = msg;
+        $('log').appendChild(line);
+        $('log').scrollTop = $('log').scrollHeight;
+    };
+    const showMsg = (obj) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg';
+        const now = new Date().toISOString();
+        const pill = (label, val) => val ? `<span class="pill"><b>${label}</b>: ${val}</span>` : '';
+        wrap.innerHTML = `
+      🕒 <b>${obj.createdAt || now}</b>
+      ${pill('type', obj.type)} ${pill('refType', obj.refType)} ${pill('refId', obj.refId)}
+      <br/>💬 <b>${obj.message || JSON.stringify(obj)}</b>
+      ${obj.link ? `<br/>🔗 <a href="${obj.link}" target="_blank">${obj.link}</a>` : ''}
+    `;
+        $('messages').appendChild(wrap);
+        $('messages').scrollTop = $('messages').scrollHeight;
+    };
+
+    function connect() {
+        const baseUrl = $('wsUrl').value.trim();
+        const stompUserId = $('stompUserId').value.trim();
+        const jwt = $('jwtToken').value.trim();
+
+        if (!baseUrl) return alert('SockJS URL을 입력하세요');
+        if (!stompUserId) return alert('STOMP 헤더 userId(현재 로그인 유저 ID)를 입력하세요');
+
+        if (stompClient && stompClient.connected) {
+            log('이미 연결됨. 중복 연결 방지.', 'err');
+            return;
+        }
+
+        const socket = new SockJS(baseUrl);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = (s) => log(s.replace(/\n/g,' ⏎ ')); // 시끄러우면 주석처리하세요
+
+        const headers = { userId: stompUserId };
+        if (jwt) headers['Authorization'] = 'Bearer ' + jwt; // 백엔드에서 안쓰면 무시됨
+
+        stompClient.connect(headers, (frame) => {
+            log('CONNECTED: ' + frame, 'ok');
+            $('btnConnect').disabled = true;
+            $('btnDisconnect').disabled = false;
+            $('btnSubscribe').disabled = false;
+            $('btnSend').disabled = false;
+        }, (err) => {
+            log('CONNECT ERROR: ' + JSON.stringify(err), 'err');
+            alert('연결 실패. 콘솔/로그 확인');
+        });
+    }
+
+    function disconnect() {
+        try {
+            if (subscription) { subscription.unsubscribe(); subscription = null; }
+            if (stompClient && stompClient.connected) stompClient.disconnect(() => log('DISCONNECTED', 'ok'));
+        } catch (e) { log('disconnect error: ' + e.message, 'err'); }
+        $('btnConnect').disabled = false;
+        $('btnDisconnect').disabled = true;
+        $('btnSubscribe').disabled = true;
+        $('btnUnsubscribe').disabled = true;
+        $('btnSend').disabled = true;
+    }
+
+    function subscribeNow() {
+        if (!stompClient || !stompClient.connected) return alert('먼저 Connect 하세요');
+        if (subscription) { log('이미 구독 중. 먼저 Unsubscribe 하세요.', 'err'); return; }
+
+        const path = $('subPath').value.trim(); // /user/queue/notifications
+        subscription = stompClient.subscribe(path, (message) => {
+            try {
+                const body = JSON.parse(message.body);
+                log('MESSAGE: ' + message.body, 'ok');
+                showMsg(body);
+            } catch (e) {
+                log('MESSAGE(parse-fail) ' + message.body, 'err');
+                showMsg({ message: message.body });
+            }
+        });
+        $('btnUnsubscribe').disabled = true === false; // enable
+        $('btnUnsubscribe').disabled = false;
+        log('SUBSCRIBED: ' + path, 'ok');
+    }
+
+    function unsubscribeNow() {
+        if (subscription) {
+            subscription.unsubscribe();
+            subscription = null;
+            $('btnUnsubscribe').disabled = true;
+            log('UNSUBSCRIBED', 'ok');
+        }
+    }
+
+    function sendNow() {
+        if (!stompClient || !stompClient.connected) return alert('먼저 Connect 하세요');
+
+        const payload = {
+            receiverId: Number($('sendReceiverId').value),
+            type: $('sendType').value.trim(),        // NotificationType.name()
+            message: $('sendMessage').value.trim(),
+            link: $('sendLink').value.trim(),
+            refType: ($('sendRefType').value || '').trim() || null, // NotificationRefType.name() or null
+            refId: $('sendRefId').value ? Number($('sendRefId').value) : null
+        };
+
+        if (!payload.receiverId) return alert('receiverId는 필수입니다.');
+        if (!payload.type) return alert('type은 필수입니다.');
+        if (!payload.message) return alert('message는 필수입니다.');
+
+        stompClient.send('/app/notifications', {}, JSON.stringify(payload));
+        log('SEND /app/notifications: ' + JSON.stringify(payload), 'ok');
+    }
+
+    $('btnConnect').addEventListener('click', connect);
+    $('btnDisconnect').addEventListener('click', disconnect);
+    $('btnSubscribe').addEventListener('click', subscribeNow);
+    $('btnUnsubscribe').addEventListener('click', unsubscribeNow);
+    $('btnSend').addEventListener('click', sendNow);
+</script>
+</body>
+</html>

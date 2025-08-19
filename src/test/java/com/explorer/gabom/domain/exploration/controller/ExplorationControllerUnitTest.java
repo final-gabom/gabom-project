@@ -23,6 +23,7 @@ import com.explorer.gabom.domain.exploration.dto.response.ExplorationExtendTimeR
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationStartResponse;
 import com.explorer.gabom.domain.exploration.service.ExplorationService;
 import com.explorer.gabom.domain.user.entity.User;
+import com.explorer.gabom.domain.user.repository.UserRepository;
 import com.explorer.gabom.domain.user.type.UserRole;
 import com.explorer.gabom.global.dto.ApiResponse;
 import com.explorer.gabom.global.exception.CustomException;
@@ -38,8 +39,10 @@ class ExplorationControllerUnitTest {
 
 	@Mock
 	private ExplorationService explorationService;
+	private UserRepository userRepository;
 
 	private CustomUserDetails userDetails;
+	private User user;
 
 	@BeforeEach
 	void setUp() {
@@ -68,7 +71,10 @@ class ExplorationControllerUnitTest {
 															   .startAt(LocalDateTime.now())
 															   .endAt(LocalDateTime.now().plusHours(3))
 															   .build();
-		given(explorationService.startExploration(userDetails.getUserId(), placeId, req))
+
+		given(userRepository.getReferenceById(userDetails.getUserId())).willReturn(user);
+
+		given(explorationService.startExploration(eq(user), eq(placeId), eq(req)))
 			.willReturn(dto);
 
 		// when
@@ -91,8 +97,9 @@ class ExplorationControllerUnitTest {
 		long placeId = 1L;
 		ExplorationStartRequest req = new ExplorationStartRequest(37.0, 127.0);
 
-		given(explorationService.startExploration(userDetails.getUserId(), placeId, req))
-			.willThrow(new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION));
+		given(userRepository.getReferenceById(userDetails.getUserId())).willReturn(user);
+		willThrow(new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION))
+			.given(explorationService).startExploration(eq(user), eq(placeId), eq(req));
 
 		// when
 		CustomException exception = assertThrows(CustomException.class, () -> {
@@ -110,8 +117,9 @@ class ExplorationControllerUnitTest {
 		long placeId = 1L;
 		ExplorationStartRequest req = new ExplorationStartRequest(37.0, 127.0);
 
-		given(explorationService.startExploration(userDetails.getUserId(), placeId, req))
-			.willThrow(new CustomException(ErrorCode.USER_NOT_FOUND));
+		given(userRepository.getReferenceById(userDetails.getUserId())).willReturn(user);
+		willThrow(new CustomException(ErrorCode.USER_NOT_FOUND))
+			.given(explorationService).startExploration(eq(user), eq(placeId), eq(req));
 
 		// when
 		CustomException exception = assertThrows(CustomException.class, () -> {
@@ -129,8 +137,9 @@ class ExplorationControllerUnitTest {
 		long placeId = 999L; // 존재하지 않는 장소 ID
 		ExplorationStartRequest req = new ExplorationStartRequest(37.0, 127.0);
 
-		given(explorationService.startExploration(userDetails.getUserId(), placeId, req))
-			.willThrow(new CustomException(ErrorCode.PLACE_NOT_FOUND));
+		given(userRepository.getReferenceById(userDetails.getUserId())).willReturn(user);
+		willThrow(new CustomException(ErrorCode.PLACE_NOT_FOUND))
+			.given(explorationService).startExploration(eq(user), eq(placeId), eq(req));
 
 		// when
 		CustomException exception = assertThrows(CustomException.class, () -> {
