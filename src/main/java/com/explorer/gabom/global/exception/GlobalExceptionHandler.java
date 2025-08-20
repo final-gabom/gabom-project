@@ -7,6 +7,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.explorer.gabom.global.dto.ApiResponse;
@@ -38,6 +39,23 @@ public class GlobalExceptionHandler {
 			.status(HttpStatus.BAD_REQUEST)
 			.body(ApiResponse.fail(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage(),
 								   ErrorCode.VALIDATION_ERROR));
+	}
+
+	@ExceptionHandler(HandlerMethodValidationException.class)
+	protected ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(
+		HandlerMethodValidationException e
+	) {
+		log.warn("[VALIDATION_ERROR] 핸들러 메서드 유효성 검증 실패", e);
+
+		// 첫 번째 에러 메시지만 추출 (원한다면 전부 리스트로 보여줄 수도 있음)
+		String message = e.getAllErrors().stream()
+						  .findFirst()
+						  .map(error -> error.getDefaultMessage())
+						  .orElse("요청이 유효하지 않습니다.");
+
+		return ResponseEntity
+			.status(ErrorCode.VALIDATION_ERROR.getHttpStatus())
+			.body(ApiResponse.fail(message, ErrorCode.VALIDATION_ERROR));
 	}
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)

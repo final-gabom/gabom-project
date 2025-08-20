@@ -80,7 +80,8 @@ public class PlaceServiceImpl implements PlaceService {
 	@Transactional
 	@Override
 	public PageResponse<PlaceSummary> getPlaceList(PlaceSearchCond cond) {
-		return placeRepository.findPlaceSummaries(cond);
+		List<Long> placeIdsForSummary = placeRepository.findPlaceIdsForSummary(cond);
+		return placeRepository.fetchPlaceSummariesByIds(placeIdsForSummary, cond);
 	}
 
 	@Transactional
