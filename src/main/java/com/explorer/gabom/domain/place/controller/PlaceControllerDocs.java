@@ -55,22 +55,22 @@ public interface PlaceControllerDocs {
 	})
 	ResponseEntity<?> getPlaceList(
 		@Parameter(description = "현재 위치의 위도", required = true)
-		@RequestParam Double lat,
+		@RequestParam(required = false) Double lat,
 
 		@Parameter(description = "현재 위치의 경도", required = true)
-		@RequestParam Double lng,
+		@RequestParam(required = false) Double lng,
 
 		@Parameter(description = "검색 키워드 (선택)")
 		@RequestParam(required = false) String keyword,
 
 		@Parameter(description = "시도 코드 ex.\"12\"")
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$", message = "sdCd는 2자리 숫자여야 합니다.") String sdCd,
 
 		@Parameter(description = "시군구 코드 ex.\"12140\"")
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$", message = "sggCd는 5자리 숫자여야 합니다.") String sggCd,
 
 		@Parameter(description = "읍면동 코드 ex.\"1214030000\"")
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$", message = "emdCd는 10자리 숫자여야 합니다.") String emdCd,
 
 		@Parameter(description = "페이지 정보 (기본값: 거리 기준 오름차순)", required = false)
 		@PageableDefault(page = 0, size = 10) Pageable pageable

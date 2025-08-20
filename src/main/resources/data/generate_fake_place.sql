@@ -32,19 +32,21 @@ FROM information_schema.COLUMNS c1
 
 INSERT INTO address (
     created_at, updated_at, deleted_at,
-    address_type_cd, detail, emd_cd, lat, lng, target_id
+    address_type_cd, detail, emd_cd, sd_cd, sgg_cd, lat, lng, target_id
 )
 SELECT
     NOW(), NOW(), NULL,
     'PLACE',
     CONCAT('가짜 주소 ', LPAD(CAST(RIGHT(p.title, 7) AS UNSIGNED), 7, '0')),
     e.emd_cd,
+    LEFT(e.emd_cd, 2),         -- 시/도 코드 (앞 2자리)
+    LEFT(e.emd_cd, 5),         -- 시군구 코드 (앞 5자리)
     ROUND(33.000000 + (RAND(CAST(RIGHT(p.title,7) AS UNSIGNED)) * 5.600000), 6),
     ROUND(124.000000 + (RAND(CAST(RIGHT(p.title,7) AS UNSIGNED)) * 7.500000), 6),
     p.id
 FROM place p
-         JOIN tmp_emds e
-              ON e.rn = ((CAST(RIGHT(p.title,7) AS UNSIGNED) - 1) % @TOTAL_EMDS) + 1
+    JOIN tmp_emds e
+ON e.rn = ((CAST(RIGHT(p.title,7) AS UNSIGNED) - 1) % @TOTAL_EMDS) + 1
 WHERE p.title LIKE '[FAKE] %'
   AND CAST(RIGHT(p.title,7) AS UNSIGNED)
     BETWEEN @START_SEQ AND @START_SEQ + 100000 - 1;

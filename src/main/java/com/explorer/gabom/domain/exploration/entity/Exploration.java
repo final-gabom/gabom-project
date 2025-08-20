@@ -74,7 +74,7 @@ public class Exploration extends BaseTimeEntity {
 		this.endAt = endAt;
 	}
 
-	// 시간 운영 기준(3시간)으로 고정
+	// Todo : 시간 운영 기준(3시간)으로 고정
 	public void extendDeadline() {
 		this.endAt = this.endAt.plusMinutes(3);
 	}
