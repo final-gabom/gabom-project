@@ -1,5 +1,9 @@
 package com.explorer.gabom.domain.batch.service;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +32,27 @@ public class PlaceRowImporter {
 	private final PlaceRepository placeRepository;
 	private final AddressRepository addressRepository;
 	private final EupmyeondongRepository eupmyeondongRepository;
+
+	/**
+	 * 처음 한 번만 DB에서 모든 emdCd를 읽어 Set으로 보관.
+	 * (서울 CSV면 중복 emdCd가 매우 많으므로 exists 쿼리 제거 효과 큼)
+	 */
+	private final AtomicReference<Set<String>> emdCdAllCache = new AtomicReference<>();
+
+	private Set<String> getEmdSet() {
+		Set<String> cached = emdCdAllCache.get();
+		if (cached != null) return cached;
+		synchronized (emdCdAllCache) {
+			cached = emdCdAllCache.get();
+			if (cached == null) {
+				cached = eupmyeondongRepository.findAllEmdCd().stream().collect(Collectors.toUnmodifiableSet());
+				emdCdAllCache.set(cached);
+				log.info("[PlaceRowImporter] emdCd preload completed: {} codes", cached.size());
+			}
+		}
+		return cached;
+	}
+
 
 	/**
 	 * CSV의 단일 행을 독립 트랜잭션(REQUIRES_NEW)으로 처리한다.
@@ -82,18 +107,11 @@ public class PlaceRowImporter {
 
 	// EmdCd 형식(10자리 문자), 존재 여부 검증
 	private void validateEmdCd(String emdCd) {
-		System.out.println(emdCd);
-		System.out.println(AddressCodeUtils.sdCd(emdCd));
-		System.out.println(AddressCodeUtils.sggCd(emdCd));
-		boolean isValidFormat = AddressCodeUtils.isValidLawCode(emdCd);
-
-		if (!isValidFormat) {
-			log.warn("잘못된 EMD 코드 형식 감지: {}", emdCd);
-			throw new IllegalArgumentException("잘못된 emdCd 형식: " + emdCd);
+		if (!AddressCodeUtils.isValidLawCode(emdCd)) {
+			log.warn("잘못된 EMD 코드 형식: {}", emdCd);
+			throw new IllegalArgumentException("잘못된 endCd 형식: " + emdCd);
 		}
-
-		boolean exists = eupmyeondongRepository.existsByEmdCd(emdCd);
-		if (!exists) {
+		if (!getEmdSet().contains(emdCd)) {
 			log.warn("존재하지 않는 EMD 코드 감지: {}", emdCd);
 			throw new CustomException(ErrorCode.EMD_CODE_NOT_FOUND);
 		}
