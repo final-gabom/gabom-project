@@ -31,7 +31,7 @@ public class CreateMissionProofRequest {
 
 	private Double lat;
 
-	private Double lon;
+	private Double lng;
 
 	@Getter
 	@Builder

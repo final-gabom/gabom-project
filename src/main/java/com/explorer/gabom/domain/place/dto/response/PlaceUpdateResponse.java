@@ -14,6 +14,7 @@ import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.place.entity.Place;
 import com.explorer.gabom.domain.place.entity.PlaceFile;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
+import com.explorer.gabom.global.dto.TargetIdentifiable;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "장소 상세 조회 응답 정보")
-public class PlaceUpdateResponse {
+public class PlaceUpdateResponse implements TargetIdentifiable {
 
 	@Schema(description = "장소 ID", example = "1")
 	private Long id;
@@ -124,5 +125,10 @@ public class PlaceUpdateResponse {
 					   .sorted(Comparator.comparingInt(AttachmentFile::getOrderIdx))
 					   .map(FileResponseDto::toDto)
 					   .collect(Collectors.toList());
+	}
+
+	@Override
+	public Long getTargetId() {
+		return this.id;
 	}
 }

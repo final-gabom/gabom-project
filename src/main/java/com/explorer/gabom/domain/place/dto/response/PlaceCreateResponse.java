@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.place.dto.response;
 
 import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.place.entity.Place;
+import com.explorer.gabom.global.dto.TargetIdentifiable;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -13,7 +14,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Schema(description = "장소 등록 응답 정보")
-public class PlaceCreateResponse {
+public class PlaceCreateResponse implements TargetIdentifiable {
 
 	@Schema(description = "생성된 장소 ID", example = "1")
 	private final Long id;
@@ -42,6 +43,11 @@ public class PlaceCreateResponse {
 								  .address(address)
 								  .status(place.getStatus().name())
 								  .build();
+	}
+
+	@Override
+	public Long getTargetId() {
+		return this.id;
 	}
 
 }
