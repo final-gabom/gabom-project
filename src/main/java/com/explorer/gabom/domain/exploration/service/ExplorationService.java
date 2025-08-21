@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.exploration.dto.request.ExplorationStartRequest;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationCurrentResponse;
 import com.explorer.gabom.domain.exploration.dto.response.ExplorationDetailResponse;
@@ -45,6 +47,7 @@ public class ExplorationService {
 
 	// 탐험 시작
 	@Transactional
+	@ActivityLoggable(ActivityType.START_EXPLORATION)
 	public ExplorationStartResponse startExploration(User user, Long placeId, ExplorationStartRequest request) {
 		if (explorationRepository.existsByUserIdAndPlaceIdAndEndAtAfter(user.getId(), placeId, LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.ALREADY_STARTED_EXPLORATION);
@@ -97,6 +100,7 @@ public class ExplorationService {
 
 	// 탐험 제한 시간 연장
 	@Transactional
+	@ActivityLoggable(ActivityType.EXTEND_EXPLORATION_TIME)
 	public ExplorationExtendTimeResponse extendExplorationTime(Long userId, Long explorationId) {
 		Exploration exploration = explorationRepository.findById(explorationId)
 													   .orElseThrow(

@@ -51,7 +51,7 @@ public class ActivityLogAspect {
 		String ipAddress = request.getRemoteAddr();
 		String description = activityType.getMessage();
 
-		if (userRole == "ROLE_ADMIN") {
+		if (userRole.equals("ROLE_ADMIN")) {
 			AdminActivityLog adminActivityLog = new AdminActivityLog(userId, targetId, activityType, description,
 																	 ipAddress);
 			adminActivityLogRepository.save(adminActivityLog);

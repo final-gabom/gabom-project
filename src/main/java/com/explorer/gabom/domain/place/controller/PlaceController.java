@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.aop.TargetId;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.place.dto.PlaceDetail;
 import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
@@ -94,7 +97,8 @@ public class PlaceController implements PlaceControllerDocs {
 
 	// 탐험 장소 삭제
 	@DeleteMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable Long placeId,
+	@ActivityLoggable(ActivityType.PLACE_DELETED)
+	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable @TargetId Long placeId,
 														 @AuthenticationPrincipal CustomUserDetails userDetails) {
 		log.info("[DELETE] /api/places/{} - 삭제 요청 by userId={}", placeId, userDetails.getUserId());
 		Long deletePlaceId = placeService.deletePlace(placeId, userDetails.getUserId());

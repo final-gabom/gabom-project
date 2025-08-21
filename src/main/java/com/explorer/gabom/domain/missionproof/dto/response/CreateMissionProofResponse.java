@@ -4,12 +4,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.context.annotation.Configuration;
-
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.missionproof.entity.MissionProof;
 import com.explorer.gabom.domain.missionproof.type.MissionProofType;
 import com.explorer.gabom.domain.user.dto.UserSummaryDto;
+import com.explorer.gabom.global.dto.TargetIdentifiable;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class CreateMissionProofResponse {
+public class CreateMissionProofResponse implements TargetIdentifiable {
 
 	@Schema(description = "장소 ID")
 	private Long id;
@@ -56,5 +55,10 @@ public class CreateMissionProofResponse {
 										 .updatedAt(missionProof.getUpdatedAt())
 										 .profileImages(profileImages)
 										 .build();
+	}
+
+	@Override
+	public Long getTargetId() {
+		return this.id;
 	}
 }
