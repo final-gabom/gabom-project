@@ -74,7 +74,7 @@ public class PlaceSummaryMapper {
 	/**
 	 * proofCountMap을 외부에서 주입받아 사용하는 버전
 	 */
-	public static PlaceSummary fromTuple(Tuple t, Map<Long, Integer> proofCountMap) {
+	public static PlaceSummary fromTuple(Tuple t, Map<Long, Integer> proofCountMap, Map<Long, Double> avgRatingMap) {
 		Long placeId = t.get(place.id);
 
 		// 주소 DTO
@@ -107,10 +107,8 @@ public class PlaceSummaryMapper {
 		return PlaceSummary.builder()
 						   .placeId(placeId)
 						   .title(t.get(place.title))
-						   .missionProofCount(
-							   Optional.ofNullable(proofCountMap.get(placeId)).orElse(0) // 🔹 별도 집계 결과 사용
-						   )
-						   .avgRating(null) // TODO: 별점 필요시 추가
+						   .missionProofCount(Optional.ofNullable(proofCountMap.get(placeId)).orElse(0)) // 🔹 별도 집계 결과 사용
+						   .avgRating(avgRatingMap.getOrDefault(placeId, 0.0))
 						   .viewCount(Optional.ofNullable(t.get(place.viewCount)).orElse(0))
 						   .writer(writerDto)
 						   .thumbnail(thumbnail)

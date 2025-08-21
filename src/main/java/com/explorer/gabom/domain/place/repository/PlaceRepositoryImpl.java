@@ -3,9 +3,9 @@ package com.explorer.gabom.domain.place.repository;
 import static com.explorer.gabom.domain.address.entity.QAddress.*;
 import static com.explorer.gabom.domain.place.entity.QPlace.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,6 +49,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 	public List<Long> findPlaceIdsForSummary(PlaceSearchCond cond) {
 		boolean byDistance = containsSortField(cond, "distance");
 		boolean byPopularity = containsSortField(cond, "popularity"); // viewCount + proofCount
+		boolean byRating = containsSortField(cond, "rating");     // ⭐ 평점 정렬 지원
 
 		BooleanExpression addrFilter = getAddressFilter(cond);
 		boolean needAddressJoin = addrFilter != null || byDistance || keywordTouchesAddress(cond);
@@ -68,15 +69,20 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 				.divide(1000.0);
 		}
 
+		// ⭐ 정렬 모드에 따라 필요한 집계만 붙임
 		NumberExpression<Long> proofCountExpr = null;
-		if (byPopularity) {
+		NumberExpression<Double> avgRatingExpr = null;
+		if (byPopularity || byRating) {
 			QMissionProof mp = QMissionProof.missionProof;
 			q.leftJoin(mp).on(mp.place.eq(place), mp.deletedAt.isNull());
-			proofCountExpr = mp.id.countDistinct();
+			if (byPopularity)
+				proofCountExpr = mp.id.countDistinct();
+			if (byRating)
+				avgRatingExpr = mp.starRating.avg();
 			q.groupBy(place.id);
 		}
 
-		applySortForThreeModes(q, cond.getPageable(), distanceExpr, proofCountExpr);
+		applySortForThreeModes(q, cond.getPageable(), distanceExpr, proofCountExpr, avgRatingExpr);
 
 		return q.offset(cond.getPageable().getOffset())
 				.limit(cond.getPageable().getPageSize())
@@ -90,20 +96,29 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			return PageResponse.toDto(Page.empty(cond.getPageable()));
 		}
 
-		// ---------- A) 미션 수 별도 집계 ----------
+		// ---------- A) 미션수 & 평균 평점 별도 집계 (1쿼리) ⭐ ----------
 		QMissionProof mp = QMissionProof.missionProof;
-		Map<Long, Integer> proofCountMap = queryFactory
-			.select(mp.place.id, mp.id.countDistinct())
+		var cntExpr = mp.id.countDistinct();
+		var avgExpr = mp.starRating.avg();
+
+		List<Tuple> stats = queryFactory
+			.select(mp.place.id, cntExpr, avgExpr)
 			.from(mp)
 			.where(mp.deletedAt.isNull(), mp.place.id.in(placeIds))
 			.groupBy(mp.place.id)
-			.fetch()
-			.stream()
-			.collect(Collectors.toMap(
-				t -> t.get(mp.place.id),
-				t -> Objects.requireNonNull(t.get(mp.id.countDistinct())).intValue()
-			));
-		placeIds.forEach(id -> proofCountMap.putIfAbsent(id, 0));
+			.fetch();
+
+		Map<Long, Integer> proofCountMap = new HashMap<>(placeIds.size() * 2);
+		Map<Long, Double> avgRatingMap = new HashMap<>(placeIds.size() * 2);
+		for (Tuple t : stats) {
+			Long pid = t.get(mp.place.id);
+			proofCountMap.put(pid, Optional.ofNullable(t.get(cntExpr)).map(Long::intValue).orElse(0));
+			avgRatingMap.put(pid, Optional.ofNullable(t.get(avgExpr)).orElse(0.0));
+		}
+		placeIds.forEach(id -> {
+			proofCountMap.putIfAbsent(id, 0);
+			avgRatingMap.putIfAbsent(id, 0.0);
+		});
 
 		// ---------- B) 썸네일: (place_id, MIN(order_idx)) ----------
 		QPlaceFile pf = QPlaceFile.placeFile;
@@ -139,16 +154,12 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.leftJoin(file).on(file.eq(pf.file))
 			.where(place.deletedAt.isNull(), place.id.in(placeIds));
 
-		// ---------- D) 정렬 (최신 / 거리 / 인기 + placeIds 순서 유지) ----------
-		applySortForThreeModes(query, cond.getPageable(), distanceExpr, null);
-
-		// placeIds 순서 강제 (MySQL FIELD)
+		// ---------- D) 정렬 ----------
+		applySortForThreeModes(query, cond.getPageable(), distanceExpr, null, null);
+		// placeIds 순서 유지 (MySQL FIELD)
 		String fieldOrder = placeIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-		NumberExpression<Integer> orderByIds = Expressions.numberTemplate(
-			Integer.class,
-			"FIELD({0}, " + fieldOrder + ")",
-			place.id
-		);
+		var orderByIds = Expressions.numberTemplate(Integer.class, "FIELD({0}, " + fieldOrder + ")", place.id);
+		query.orderBy(new OrderSpecifier<>(Order.ASC, orderByIds));
 
 		query.orderBy(new OrderSpecifier<>(Order.ASC, orderByIds));
 
@@ -165,7 +176,8 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 											 .fetchOne()).orElse(0L);
 
 		// ---------- F) DTO 매핑 ----------
-		List<PlaceSummary> content = tuples.stream().map(t -> PlaceSummaryMapper.fromTuple(t, proofCountMap)).toList();
+		List<PlaceSummary> content = tuples.stream().map(
+			t -> PlaceSummaryMapper.fromTuple(t, proofCountMap, avgRatingMap)).toList();
 
 		return PageResponse.toDto(new PageImpl<>(content, cond.getPageable(), total));
 	}
@@ -187,7 +199,8 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 	/** 정렬 3종 적용 */
 	private <T> void applySortForThreeModes(JPAQuery<T> query, Pageable pageable,
 											NumberExpression<Double> distanceExpr,
-											NumberExpression<Long> proofCountExpr) {
+											NumberExpression<Long> proofCountExpr,
+											NumberExpression<Double> avgRatingExpr) {
 
 		for (Sort.Order o : pageable.getSort()) {
 			String prop = o.getProperty();
@@ -210,11 +223,15 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 					NumberExpression<Long> popularity = vc.add(pc);
 					query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
 				}
+				case "rating" -> {
+					if (avgRatingExpr != null) {
+						query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRatingExpr));
+					}
+				}
 				default -> { /* no-op */ }
 			}
 		}
 		// tie-breaker
-		query.orderBy(place.id.desc());
 	}
 
 	private boolean keywordTouchesAddress(PlaceSearchCond cond) {
