@@ -11,6 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,7 +24,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Builder
-@Table(name = "address")
+@Table(name = "address", indexes = {
+	@Index(name="ix_addr_sd",    columnList="sd_cd"),
+	@Index(name="ix_addr_sgg",   columnList="sgg_cd"),
+	@Index(name="ix_addr_emd",   columnList="emd_cd"),
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Address extends BaseTimeEntity {

@@ -61,7 +61,7 @@ public class PlaceController implements PlaceControllerDocs {
 		@RequestParam(required = false) String emdCd,
 		@PageableDefault(
 			page = 0, size = 10,
-			sort = {"viewCount", "proofCount"},
+			sort = {"popularity"},
 			direction = Sort.Direction.DESC) Pageable pageable) {
 		log.info("[GET] 탐험 장소 리스트 조회 /api/places lat={}, lng={}, keyword={}, sdCd={}, sggCd={}, emdCd={}, page={}",
 				 lat, lng, keyword, sdCd, sggCd, emdCd, pageable.getPageNumber());
