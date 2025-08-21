@@ -48,7 +48,14 @@ public interface PlaceControllerDocs {
 		summary = "장소 목록 조회",
 		description = "지정된 좌표(위도, 경도)를 기준으로 탐험 가능한 장소 목록을 조회합니다.  \n"
 			+ "- 키워드를 포함한 검색이 가능합니다.  \n"
-			+ "- 거리순 정렬 및 페이지네이션이 적용됩니다."
+			+ "- 정렬 조건을 지정할 수 있습니다.  \n"
+			+ "- 기본값: 거리순 오름차순 (가까운 순).  \n\n"
+			+ "정렬 예시:  \n"
+			+ "- `?sort=distance,asc` → 가까운 순  \n"
+			+ "- `?sort=distance,desc` → 먼 순  \n"
+			+ "- `?sort=viewCount,desc` → 인기순 (조회수 많은 순)  \n"
+			+ "- `?sort=rating,desc` → 평점 높은 순  \n"
+			+ "- `?sort=createdAt,desc` → 최신 등록 순"
 	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "장소 목록 조회 성공")
@@ -72,7 +79,15 @@ public interface PlaceControllerDocs {
 		@Parameter(description = "읍면동 코드 ex.\"1214030000\"")
 		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$", message = "emdCd는 10자리 숫자여야 합니다.") String emdCd,
 
-		@Parameter(description = "페이지 정보 (기본값: 거리 기준 오름차순)", required = false)
+		@Parameter(
+			description = "페이지 및 정렬 정보 (예: `?page=0&size=10&sort=distance,asc`)  \n\n"
+				+ "지원되는 정렬 필드:  \n"
+				+ "- distance (거리)  \n"
+				+ "- viewCount (조회수)  \n"
+				+ "- avgRating (평점)  \n"
+				+ "- createdAt (등록일)  \n\n"
+				+ "정렬 방향: asc (오름차순), desc (내림차순)"
+		)
 		@PageableDefault(page = 0, size = 10) Pageable pageable
 	);
 
