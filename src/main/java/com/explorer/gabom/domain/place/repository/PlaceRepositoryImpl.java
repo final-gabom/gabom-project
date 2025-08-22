@@ -52,48 +52,64 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 		boolean byRating = containsSortField(cond, "rating");
 
 		BooleanExpression addrFilter = getAddressFilter(cond);
-		// 주소 조인이 필요한 경우: 필터/거리정렬/키워드
-		boolean needAddressJoin = (addrFilter != null) || cond.hasLatLng() || keywordTouchesAddress(cond);
+		BooleanExpression keywordFilter = getKeywordFilter(cond.getKeyword());
+
+		// 주소 조인이 필요한 경우: 행정코드 필터 or 위치(boundingBox) or 키워드(주소 검색)
+		boolean needAddressJoin = (addrFilter != null) || cond.hasLatLng() || (keywordFilter != null);
 
 		JPAQuery<Long> q = queryFactory
 			.select(place.id)
 			.from(place)
-			.where(place.deletedAt.isNull(), getKeywordFilter(cond.getKeyword()));
+			.where(place.deletedAt.isNull());
 
 		if (needAddressJoin) {
 			q.join(address).on(place.addressId.eq(address.id));
-			if (addrFilter != null)
+			if (addrFilter != null) {
 				q.where(addrFilter);
-		}
-
-		// lat/lng 있으면 무조건 반경 필터 적용
-		NumberExpression<Double> distanceExpr = null;
-		if (cond.hasLatLng()) {
-			double radiusKm = Optional.ofNullable(cond.getRadiusKm()).orElse(40.0);
-			q.where(boundingBox(cond.getLat(), cond.getLng(), radiusKm, address.lat, address.lng));
-
-			// distance 정렬 모드일 때만 거리 계산식 준비
-			if (byDistance) {
-				distanceExpr = getDistanceExpression(cond.getLat(), cond.getLng(),
-													 address.lat, address.lng).divide(1000.0);
 			}
 		}
 
-		// 인기/평점 집계 필요할 때만 join/groupBy
-		NumberExpression<Long> proofCountExpr = null;
-		NumberExpression<Double> avgRatingExpr = null;
-		if (byPopularity || byRating) {
-			QMissionProof mp = QMissionProof.missionProof;
-			q.leftJoin(mp).on(mp.place.eq(place), mp.deletedAt.isNull());
-			if (byPopularity)
-				proofCountExpr = mp.id.countDistinct();
-			if (byRating)
-				avgRatingExpr = mp.starRating.avg();
-			q.groupBy(place.id, place.viewCount);
+		// 키워드 필터는 address.detail을 참조하므로, 주소 조인 이후에 적용
+		if (keywordFilter != null) {
+			q.where(keywordFilter);
 		}
 
-		applySortSafe(q, cond.getPageable(), distanceExpr, proofCountExpr, avgRatingExpr);
+		// 위치가 있으면 BBOX 적용 (where는 BooleanExpression만)
+		NumberExpression<Double> distanceExpr = null;
+		if (cond.hasLatLng()) {
+			double radiusKm = (cond.getRadiusKm() != null) ? cond.getRadiusKm() : 10.0;
+			q.where(boundingBox(cond.getLat(), cond.getLng(), radiusKm, address.lat, address.lng));
 
+			// distance 정렬일 때만 실제 거리식(숫자식) 준비 (정렬에서만 사용)
+			if (byDistance) {
+				distanceExpr = getDistanceExpression(cond.getLat(), cond.getLng(), address.lat, address.lng)
+					.divide(1000.0);
+			}
+		}
+
+		QMissionProof mp = QMissionProof.missionProof;
+
+		if (byPopularity || byRating) {
+			q.leftJoin(mp).on(mp.place.eq(place), mp.deletedAt.isNull());
+			q.groupBy(place.id);
+
+			NumberExpression<Double> avgRating   = mp.starRating.avg().coalesce(0.0);
+			NumberExpression<Long>   proofCount  = mp.id.count().coalesce(0L);
+			NumberExpression<Long>   viewCount   = place.viewCount.coalesce(0).castToNum(Long.class);
+			NumberExpression<Long>   popularity  = viewCount.add(proofCount);
+
+			for (Sort.Order o : cond.getPageable().getSort()) {
+				boolean asc = o.isAscending();
+				switch (o.getProperty()) {
+					case "rating"     -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRating));
+					case "popularity" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
+					case "createdAt"  -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, place.createdAt));
+					case "distance" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, distanceExpr));
+				}
+			}
+		}
+
+		// 페이징
 		return q.offset(cond.getPageable().getOffset())
 				.limit(cond.getPageable().getPageSize())
 				.fetch();
@@ -108,7 +124,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 		// ---------- A) 미션수 & 평균 평점 집계 ----------
 		QMissionProof mp = QMissionProof.missionProof;
-		var cntExpr = mp.id.countDistinct();
+		var cntExpr = mp.id.count();
 		var avgExpr = mp.starRating.avg();
 
 		List<Tuple> stats = queryFactory
@@ -252,11 +268,6 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 				default -> { /* no-op */ }
 			}
 		}
-	}
-
-	private boolean keywordTouchesAddress(PlaceSearchCond cond) {
-		String kw = cond.getKeyword();
-		return kw != null && !kw.isBlank();
 	}
 
 	private BooleanExpression getAddressFilter(PlaceSearchCond cond) {
