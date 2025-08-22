@@ -48,11 +48,12 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 	@Override
 	public List<Long> findPlaceIdsForSummary(PlaceSearchCond cond) {
 		boolean byDistance = containsSortField(cond, "distance");
-		boolean byPopularity = containsSortField(cond, "popularity"); // viewCount + proofCount
-		boolean byRating = containsSortField(cond, "rating");     // ⭐ 평점 정렬 지원
+		boolean byPopularity = containsSortField(cond, "popularity");
+		boolean byRating = containsSortField(cond, "rating");
 
 		BooleanExpression addrFilter = getAddressFilter(cond);
-		boolean needAddressJoin = addrFilter != null || byDistance || keywordTouchesAddress(cond);
+		// 주소 조인이 필요한 경우: 필터/거리정렬/키워드
+		boolean needAddressJoin = (addrFilter != null) || cond.hasLatLng() || keywordTouchesAddress(cond);
 
 		JPAQuery<Long> q = queryFactory
 			.select(place.id)
@@ -60,16 +61,25 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.where(place.deletedAt.isNull(), getKeywordFilter(cond.getKeyword()));
 
 		if (needAddressJoin) {
-			q.join(address).on(place.addressId.eq(address.id)).where(addrFilter);
+			q.join(address).on(place.addressId.eq(address.id));
+			if (addrFilter != null)
+				q.where(addrFilter);
 		}
 
+		// lat/lng 있으면 무조건 반경 필터 적용
 		NumberExpression<Double> distanceExpr = null;
-		if (byDistance && cond.getLat() != null && cond.getLng() != null) {
-			distanceExpr = getDistanceExpression(cond.getLat(), cond.getLng(), address.lat, address.lng)
-				.divide(1000.0);
+		if (cond.hasLatLng()) {
+			double radiusKm = Optional.ofNullable(cond.getRadiusKm()).orElse(40.0);
+			q.where(boundingBox(cond.getLat(), cond.getLng(), radiusKm, address.lat, address.lng));
+
+			// distance 정렬 모드일 때만 거리 계산식 준비
+			if (byDistance) {
+				distanceExpr = getDistanceExpression(cond.getLat(), cond.getLng(),
+													 address.lat, address.lng).divide(1000.0);
+			}
 		}
 
-		// ⭐ 정렬 모드에 따라 필요한 집계만 붙임
+		// 인기/평점 집계 필요할 때만 join/groupBy
 		NumberExpression<Long> proofCountExpr = null;
 		NumberExpression<Double> avgRatingExpr = null;
 		if (byPopularity || byRating) {
@@ -79,10 +89,10 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 				proofCountExpr = mp.id.countDistinct();
 			if (byRating)
 				avgRatingExpr = mp.starRating.avg();
-			q.groupBy(place.id);
+			q.groupBy(place.id, place.viewCount);
 		}
 
-		applySortForThreeModes(q, cond.getPageable(), distanceExpr, proofCountExpr, avgRatingExpr);
+		applySortSafe(q, cond.getPageable(), distanceExpr, proofCountExpr, avgRatingExpr);
 
 		return q.offset(cond.getPageable().getOffset())
 				.limit(cond.getPageable().getPageSize())
@@ -109,7 +119,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.fetch();
 
 		Map<Long, Integer> proofCountMap = new HashMap<>(placeIds.size() * 2);
-		Map<Long, Double>  avgRatingMap  = new HashMap<>(placeIds.size() * 2);
+		Map<Long, Double> avgRatingMap = new HashMap<>(placeIds.size() * 2);
 		for (Tuple t : stats) {
 			Long pid = t.get(mp.place.id);
 			proofCountMap.put(pid, Optional.ofNullable(t.get(cntExpr)).map(Long::intValue).orElse(0));
@@ -193,7 +203,8 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 						   .fetch();
 	}
 
-	private BooleanExpression boundingBox(double lat, double lng, double km, NumberPath<Double> tLat, NumberPath<Double> tLng) {
+	private BooleanExpression boundingBox(double lat, double lng, double km, NumberPath<Double> tLat,
+										  NumberPath<Double> tLng) {
 		// 대략적 변환(위도 1도 ≈ 111km, 경도는 위도에 따라 변동)
 		double latDelta = km / 111.0;
 		double lngDelta = km / (111.0 * Math.cos(Math.toRadians(lat)));
@@ -202,42 +213,45 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 		return tLat.between(minLat, maxLat).and(tLng.between(minLng, maxLng));
 	}
 
-	/** 정렬 3종 적용 */
-	private <T> void applySortForThreeModes(JPAQuery<T> query, Pageable pageable,
-											NumberExpression<Double> distanceExpr,
-											NumberExpression<Long> proofCountExpr,
-											NumberExpression<Double> avgRatingExpr) {
+	private <T> void applySortSafe(JPAQuery<T> q,
+								   Pageable pageable,
+								   NumberExpression<Double> distanceExpr,
+								   NumberExpression<Long> proofCountExpr,
+								   NumberExpression<Double> avgRatingExpr) {
 
 		for (Sort.Order o : pageable.getSort()) {
-			String prop = o.getProperty();
 			boolean asc = o.isAscending();
+			String prop = o.getProperty();
 
 			switch (prop) {
-				case "createdAt" -> query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, place.createdAt));
+				case "createdAt" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, place.createdAt));
+
 				case "distance" -> {
 					if (distanceExpr != null) {
-						query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, distanceExpr));
+						// 그룹바이 문맥에서도 안전하게: ANY_VALUE(distance)
+						var safe = Expressions.numberTemplate(Double.class, "ANY_VALUE({0})", distanceExpr);
+						q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, safe));
 					}
 				}
+
 				case "popularity" -> {
 					// popularity = viewCount + proofCount
 					NumberExpression<Long> vc = place.viewCount.coalesce(0).castToNum(Long.class);
-					NumberExpression<Long> pc =
-						(proofCountExpr != null)
-						? proofCountExpr.coalesce(0L)
-						: Expressions.numberTemplate(Long.class, "0");
+					NumberExpression<Long> pc = (proofCountExpr != null) ? proofCountExpr.coalesce(0L)
+																		 : Expressions.numberTemplate(Long.class, "0");
 					NumberExpression<Long> popularity = vc.add(pc);
-					query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
+					q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
 				}
+
 				case "rating" -> {
 					if (avgRatingExpr != null) {
-						query.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRatingExpr));
+						q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRatingExpr.coalesce(0.0)));
 					}
 				}
+
 				default -> { /* no-op */ }
 			}
 		}
-		// tie-breaker
 	}
 
 	private boolean keywordTouchesAddress(PlaceSearchCond cond) {
