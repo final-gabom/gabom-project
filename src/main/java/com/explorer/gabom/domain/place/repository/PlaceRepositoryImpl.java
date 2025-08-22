@@ -96,7 +96,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			return PageResponse.toDto(Page.empty(cond.getPageable()));
 		}
 
-		// ---------- A) 미션수 & 평균 평점 별도 집계 (1쿼리) ⭐ ----------
+		// ---------- A) 미션수 & 평균 평점 집계 ----------
 		QMissionProof mp = QMissionProof.missionProof;
 		var cntExpr = mp.id.countDistinct();
 		var avgExpr = mp.starRating.avg();
@@ -109,7 +109,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.fetch();
 
 		Map<Long, Integer> proofCountMap = new HashMap<>(placeIds.size() * 2);
-		Map<Long, Double> avgRatingMap = new HashMap<>(placeIds.size() * 2);
+		Map<Long, Double>  avgRatingMap  = new HashMap<>(placeIds.size() * 2);
 		for (Tuple t : stats) {
 			Long pid = t.get(mp.place.id);
 			proofCountMap.put(pid, Optional.ofNullable(t.get(cntExpr)).map(Long::intValue).orElse(0));
@@ -120,20 +120,20 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			avgRatingMap.putIfAbsent(id, 0.0);
 		});
 
-		// ---------- B) 썸네일: (place_id, MIN(order_idx)) ----------
+		// ---------- B) 썸네일 서브쿼리 ----------
 		QPlaceFile pf = QPlaceFile.placeFile;
 		QAttachmentFile file = QAttachmentFile.attachmentFile;
-
 		var minOrderSub = JPAExpressions
 			.select(pf.orderIdx.min())
 			.from(pf)
 			.where(pf.place.id.eq(place.id));
 
-		// ---------- C) 본문 SELECT ----------
+		// ---------- C) 본문 SELECT (정렬 제거) ----------
 		QUser writer = QUser.user;
 		QTitle title = QTitle.title;
-
 		QAddress address = QAddress.address;
+
+		// 거리 표현식은 그대로(표시용) 유지하되, 정렬에는 사용하지 않음
 		NumberExpression<Double> distanceExpr = getOptionalDistanceExpr(cond, address);
 
 		JPAQuery<Tuple> query = queryFactory
@@ -144,7 +144,6 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 				writer.id, writer.nickname, writer.level, title.name,
 				file.fileId, file.filePath,
 				distanceExpr == null ? Expressions.constant(0.0) : distanceExpr.as("distance")
-
 			)
 			.from(place)
 			.join(place.user, writer)
@@ -154,13 +153,9 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.leftJoin(file).on(file.eq(pf.file))
 			.where(place.deletedAt.isNull(), place.id.in(placeIds));
 
-		// ---------- D) 정렬 ----------
-		applySortForThreeModes(query, cond.getPageable(), distanceExpr, null, null);
-		// placeIds 순서 유지 (MySQL FIELD)
+		// ---------- D) 순서 유지: FIELD 한 번만 ----------
 		String fieldOrder = placeIds.stream().map(String::valueOf).collect(Collectors.joining(","));
 		var orderByIds = Expressions.numberTemplate(Integer.class, "FIELD({0}, " + fieldOrder + ")", place.id);
-		query.orderBy(new OrderSpecifier<>(Order.ASC, orderByIds));
-
 		query.orderBy(new OrderSpecifier<>(Order.ASC, orderByIds));
 
 		// ---------- E) 실행 ----------
@@ -169,15 +164,17 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 			.limit(cond.getPageable().getPageSize())
 			.fetch();
 
-		Long total = Optional.ofNullable(queryFactory
-											 .select(place.count())
-											 .from(place)
-											 .where(place.deletedAt.isNull(), place.id.in(placeIds))
-											 .fetchOne()).orElse(0L);
+		Long total = Optional.ofNullable(
+			queryFactory.select(place.count())
+						.from(place)
+						.where(place.deletedAt.isNull(), place.id.in(placeIds))
+						.fetchOne()
+		).orElse(0L);
 
 		// ---------- F) DTO 매핑 ----------
-		List<PlaceSummary> content = tuples.stream().map(
-			t -> PlaceSummaryMapper.fromTuple(t, proofCountMap, avgRatingMap)).toList();
+		List<PlaceSummary> content = tuples.stream()
+										   .map(t -> PlaceSummaryMapper.fromTuple(t, proofCountMap, avgRatingMap))
+										   .toList();
 
 		return PageResponse.toDto(new PageImpl<>(content, cond.getPageable(), total));
 	}
@@ -194,6 +191,15 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 							   address.lng.isNotNull(),
 							   distMeter.between(minKm * 1000, maxKm * 1000))
 						   .fetch();
+	}
+
+	private BooleanExpression boundingBox(double lat, double lng, double km, NumberPath<Double> tLat, NumberPath<Double> tLng) {
+		// 대략적 변환(위도 1도 ≈ 111km, 경도는 위도에 따라 변동)
+		double latDelta = km / 111.0;
+		double lngDelta = km / (111.0 * Math.cos(Math.toRadians(lat)));
+		double minLat = lat - latDelta, maxLat = lat + latDelta;
+		double minLng = lng - lngDelta, maxLng = lng + lngDelta;
+		return tLat.between(minLat, maxLat).and(tLng.between(minLng, maxLng));
 	}
 
 	/** 정렬 3종 적용 */
