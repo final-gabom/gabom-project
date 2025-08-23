@@ -1,0 +1,70 @@
+name: Test Deploy to EKS (cd/TEST)
+
+on:
+  push:
+    branches:
+      - cd/TEST
+
+jobs:
+  test-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:6.2
+        ports: [ "6379:6379" ]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports: [ "5672:5672", "15672:15672" ]
+        options: >-
+          --health-cmd="rabbitmqctl status"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Print Redis Status
+        run: |
+          echo "✅ Redis 기동 완료 확인"
+
+      - name: Print RabbitMQ Status
+        run: |
+          echo "✅ RabbitMQ 기동 완료 확인"
+
+      - name: Check RDS MySQL connection
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql -h ${{ secrets.RDS_HOST }} -u${{ secrets.RDS_USER }} -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
+        env:
+          MYSQL_PWD: ${{ secrets.RDS_PASSWORD }}
+
+      # TODO: Elasticsearch 연결 확인 추가 예정
+
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.29.0
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region ap-northeast-2 --name gabom-dev
+
+      - name: Deploy to EKS using Docker Compose YAML (converted to K8s)
+        run: |
+          kubectl apply -f k8s/dev/gabom-app.yml
