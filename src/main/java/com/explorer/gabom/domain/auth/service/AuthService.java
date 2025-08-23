@@ -65,7 +65,6 @@ public class AuthService {
 	@Transactional
 	public UserSummaryDto testSignup(SignupRequest request) {
 		userService.validateEmailNotExists(request.getEmail());
-		validateEmailVerified(request.getEmail());
 		userService.validateNicknameNotExists(request.getNickname());
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 		// 유저 생성

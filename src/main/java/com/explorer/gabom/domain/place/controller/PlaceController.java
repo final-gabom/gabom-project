@@ -32,7 +32,6 @@ import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,12 +59,12 @@ public class PlaceController implements PlaceControllerDocs {
 		@RequestParam(required = false) Double lat,
 		@RequestParam(required = false) Double lng,
 		@RequestParam(required = false) String keyword,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+		@RequestParam(required = false) String sdCd,
+		@RequestParam(required = false) String sggCd,
+		@RequestParam(required = false) String emdCd,
 		@PageableDefault(
 			page = 0, size = 10,
-			sort = {"viewCount", "proofCount"},
+			sort = {"popularity"},
 			direction = Sort.Direction.DESC) Pageable pageable) {
 		log.info("[GET] 탐험 장소 리스트 조회 /api/places lat={}, lng={}, keyword={}, sdCd={}, sggCd={}, emdCd={}, page={}",
 				 lat, lng, keyword, sdCd, sggCd, emdCd, pageable.getPageNumber());
