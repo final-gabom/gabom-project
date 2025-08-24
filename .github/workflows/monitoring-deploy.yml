@@ -12,12 +12,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
       - name: Set up Helm
         uses: azure/setup-helm@v3
 
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name <YOUR_CLUSTER_NAME> --region ap-northeast-2
+
       - name: Helm Upgrade Monitoring
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
