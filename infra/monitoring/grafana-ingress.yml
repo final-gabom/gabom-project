@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: gabom-monitoring
+  annotations:
+    kubernetes.io/ingress.class: alb                           # ALB Ingress Controller 사용
+    alb.ingress.kubernetes.io/scheme: internet-facing          # 퍼블릭 ALB 생성
+    alb.ingress.kubernetes.io/target-type: ip                  # Pod IP로 직접 연결
+    alb.ingress.kubernetes.io/group.name: gabom                # Ingress 그룹핑
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'   # 80포트 노출
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-grafana
+                port:
+                  name: http-web

@@ -1,0 +1,22 @@
+grafana:
+  enabled: true
+  adminPassword: "gabom2025!"   # 로그인 비밀번호 설정
+  service:
+    type: ClusterIP             # 내부 IP만 할당
+    port: 3000
+
+  # 기본 Kubernetes 대시보드 활성화
+  defaultDashboardsEnabled: true
+
+# Prometheus 메트릭 데이터 30일간 유지
+prometheus:
+  prometheusSpec:
+    retention: "30d"
+
+# kube-controller-manager 메트릭 수집 비활성화
+kubeControllerManager:
+  enabled: false
+
+# kube-scheduler 메트릭 수집 비활성화
+kubeScheduler:
+  enabled: false
