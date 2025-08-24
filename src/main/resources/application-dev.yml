@@ -24,7 +24,7 @@ spring:
     password: admin
 
   elasticsearch:
-    url: http://localhost:9200
+    url: ${elasticsearch.url}
     username: elastic
     password: ${ES_PASSWORD}
 

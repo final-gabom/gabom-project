@@ -13,11 +13,13 @@ services:
     restart: unless-stopped
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
+    build:
+      context: ./docker/elasticsearch
+      dockerfile: Dockerfile
     container_name: es
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=true
+      - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - ES_JAVA_OPTS=-Xms256m -Xmx256m
     ports:
@@ -25,8 +27,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     healthcheck:
-      # HTTP
-      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      test: [ "CMD-SHELL", "curl -sf http://localhost:9200 >/dev/null || exit 1" ]
       interval: 20s
       timeout: 7s
       retries: 15
@@ -37,7 +38,6 @@ services:
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SA_TOKEN}
     ports:
       - "5601:5601"
     depends_on:

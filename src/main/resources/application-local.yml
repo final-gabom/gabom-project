@@ -28,6 +28,11 @@ spring:
     username: admin
     password: admin
 
+  elasticsearch:
+    url: ${elasticsearch.url}
+    username: elastic
+    password: ${ES_PASSWORD}
+
   # 이메일 인증 시 필요
   mail:
     host: smtp.gmail.com

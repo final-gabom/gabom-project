@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.elasticsearch.service.PlaceSearchFacade;
 import com.explorer.gabom.domain.place.dto.PlaceDetail;
 import com.explorer.gabom.domain.place.dto.PlaceSummary;
 import com.explorer.gabom.domain.place.dto.request.PlaceCreateRequest;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PlaceController implements PlaceControllerDocs {
 
 	private final PlaceService placeService;
+	private final PlaceSearchFacade placeSearchFacade;
 
 	// 탐험 장소 생성
 	@PostMapping
@@ -100,4 +102,21 @@ public class PlaceController implements PlaceControllerDocs {
 		Long deletePlaceId = placeService.deletePlace(placeId, userDetails.getUserId());
 		return ResponseEntity.ok(ApiResponse.success("장소가 삭제되었습니다.", deletePlaceId));
 	}
+
+	// ES + DB 혼합 검색 (키워드 있으면 ES, 없으면 DB 경로)
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<PageResponse<PlaceSummary>>> searchPlaces(
+		@RequestParam(required = false) String keyword,
+		@RequestParam(required = false) String emdCd,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false, name = "lng") Double lng,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		PageResponse<PlaceSummary> result =
+			placeSearchFacade.search(keyword, emdCd, lat, lng, page, size);
+
+		return ResponseEntity.ok(ApiResponse.success("장소 검색 성공", result));
+	}
+
 }
