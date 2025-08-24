@@ -16,6 +16,8 @@ jobs:
         uses: azure/setup-helm@v3
 
       - name: Helm Upgrade Monitoring
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
