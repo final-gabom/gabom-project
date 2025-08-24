@@ -26,6 +26,7 @@ import com.explorer.gabom.domain.place.mapper.PlaceSummaryMapper;
 import com.explorer.gabom.domain.title.entity.QTitle;
 import com.explorer.gabom.domain.user.entity.QUser;
 import com.explorer.gabom.global.dto.PageResponse;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
