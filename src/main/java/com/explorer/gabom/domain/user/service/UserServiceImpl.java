@@ -6,6 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
 import com.explorer.gabom.domain.address.service.AddressService;
@@ -86,7 +88,8 @@ public class UserServiceImpl implements UserService {
 
 			AddressRequest addrReq = AddressRequest.builder()
 												   .emdCd(updateRequest.getEmdCd())
-												   .addressDetail(updateRequest.getAddressDetail()) // 필드명이 address라면 .addressDetail(updateRequest.getAddress())
+												   .addressDetail(
+													   updateRequest.getAddressDetail()) // 필드명이 address라면 .addressDetail(updateRequest.getAddress())
 												   .lat(updateRequest.getLat())
 												   .lng(updateRequest.getLng())
 												   .build();
@@ -131,6 +134,7 @@ public class UserServiceImpl implements UserService {
 	// 내 칭호변경
 	@Transactional
 	@Override
+	@ActivityLoggable(ActivityType.TITLE_UPDATED)
 	public UpdateMainTitleResponse updateMainTitle(User user, Long titleId) {
 		Title title = titleRepository.findById(titleId).orElseThrow(
 			() -> new CustomException(ErrorCode.TITLE_NOT_FOUND));

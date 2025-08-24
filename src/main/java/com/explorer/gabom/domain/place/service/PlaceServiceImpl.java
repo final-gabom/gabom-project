@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.address.dto.AddressDto;
 import com.explorer.gabom.domain.address.dto.request.AddressRequest;
 import com.explorer.gabom.domain.address.service.AddressService;
@@ -37,6 +39,7 @@ public class PlaceServiceImpl implements PlaceService {
 
 	@Override
 	@Transactional
+	@ActivityLoggable(ActivityType.PLACE_SHARED)
 	public PlaceCreateResponse createPlace(PlaceCreateRequest request, User user) {
 		// 1. Place 먼저 저장 → placeId 확보
 		Place place = new Place(request, user);
@@ -80,11 +83,13 @@ public class PlaceServiceImpl implements PlaceService {
 	@Transactional
 	@Override
 	public PageResponse<PlaceSummary> getPlaceList(PlaceSearchCond cond) {
-		return placeRepository.findPlaceSummaries(cond);
+		List<Long> placeIdsForSummary = placeRepository.findPlaceIdsForSummary(cond);
+		return placeRepository.fetchPlaceSummariesByIds(placeIdsForSummary, cond);
 	}
 
 	@Transactional
 	@Override
+	@ActivityLoggable(ActivityType.PLACE_UPDATED)
 	public PlaceUpdateResponse updatePlace(Long placeId, Long userId, PlaceUpdateRequest request) {
 		Place place = placeRepository.findById(placeId)
 									 .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_FOUND));

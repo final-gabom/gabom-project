@@ -34,7 +34,7 @@ public class ExplorationController implements ExplorationControllerDocs {
 	private final UserRepository userRepository;
 
 	// 탐험 시작
-	@PostMapping("/{placeId}/start")
+	@PostMapping("/start/place/{placeId}")
 	public ResponseEntity<ApiResponse<ExplorationStartResponse>> startExploration(
 		@PathVariable Long placeId,
 		@RequestBody ExplorationStartRequest request,

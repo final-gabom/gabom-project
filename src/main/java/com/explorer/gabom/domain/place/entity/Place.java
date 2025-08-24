@@ -23,6 +23,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -40,7 +41,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "place")
+@Table(name = "place",
+	indexes = {
+		@Index(name="ix_place_created_id", columnList="created_at,id"),           // 최신순 정렬
+		@Index(name="ix_place_viewcount_id", columnList="view_count,id"),         // 인기순 정렬
+		@Index(name="ix_place_address_id", columnList="address_id,id")            // 주소조인
+	})
 @SQLDelete(sql = "UPDATE place SET deleted_at = NOW() WHERE id = ?")
 public class Place extends BaseTimeEntity {
 

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.aop.TargetId;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.missionproof.dto.request.CreateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.request.UpdateMissionProofRequest;
 import com.explorer.gabom.domain.missionproof.dto.response.CreateMissionProofResponse;
@@ -60,8 +63,9 @@ public class MissionProofController implements MissionProofControllerDocs {
 	}
 
 	@DeleteMapping("/{id}")
+	@ActivityLoggable(ActivityType.MISSION_PROOF_DELETED)
 	public ResponseEntity<ApiResponse<Void>> deleteMissionProof(
-		@PathVariable Long id,
+		@PathVariable @TargetId Long id,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 		missionProofService.deleteMissionProof(id, userDetails.getUserId());
@@ -82,7 +86,7 @@ public class MissionProofController implements MissionProofControllerDocs {
 		@RequestParam(value = "id", required = false) Long targetId,
 		@RequestParam(value = "userId", required = false) Long userId,
 		@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
-		) {
+	) {
 		MissionProofSearchCondition condition = new MissionProofSearchCondition(type, targetId, userId);
 		PageResponse<MissionProofSummary> response = missionProofService.getMissionProofs(condition, pageable);
 		return ResponseEntity.ok(ApiResponse.success("조회 성공", response));

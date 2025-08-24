@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
@@ -60,6 +62,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	// 생성
 	@Override
 	@Transactional
+	@ActivityLoggable(ActivityType.MISSION_PROOF_CREATED)
 	public CreateMissionProofResponse createMissionProof(CreateMissionProofRequest request, User loginUser) {
 
 		// PLACE 타입이면 Place 유효성 검증
@@ -93,6 +96,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 		// 저장
 		MissionProof savedMissionProof = missionProofRepository.save(missionProof);
 
+		// 퀘스트 진행도 업데이트
 		userQuestService.updateProgress(loginUser, QuestConditionType.MISSION_PROOF_WRITE, 1);
 
 		// 알림: 장소 주인에게 “인증글 등록됨”
@@ -128,6 +132,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	// 미션 인증글 수정
 	@Override
 	@Transactional
+	@ActivityLoggable(ActivityType.MISSION_PROOF_UPDATED)
 	public CreateMissionProofResponse updateMissionProof(Long id, UpdateMissionProofRequest request, Long userId) {
 		// 1. 기존 인증글 조회
 		MissionProof existing = missionProofRepository.findById(id)
@@ -228,7 +233,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	 */
 	private void validateProofLocation(CreateMissionProofRequest request, Place place) {
 		// 1) 요청 좌표 필수
-		if (request.getLat() == null || request.getLon() == null) {
+		if (request.getLat() == null || request.getLng() == null) {
 			throw new CustomException(LAT_LON_REQUIRED);
 		}
 
@@ -241,7 +246,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 
 		// 3) 거리 계산
 		double userLat = request.getLat();
-		double userLng = request.getLon();
+		double userLng = request.getLng();
 		double placeLat = place.getAddress().getLat();
 		double placeLng = place.getAddress().getLng();
 

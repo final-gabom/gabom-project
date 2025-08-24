@@ -53,4 +53,33 @@ public class PlaceSummary {
 						   .distance(distance)
 						   .build();
 	}
+
+	public static PlaceSummary toDto(
+		Place place,
+		Integer missionProofCount,    // null 허용 → 0으로 처리
+		Double avgRating,             // null 허용 → 0.0으로 처리 (원하면 null 유지도 가능)
+		Double distanceKm,            // null 허용
+		ThumbnailDto thumbnail        // null 허용
+	) {
+		if (place == null) return null;
+
+		// 주소/작성자/썸네일 null-safe 매핑
+		final AddressDto addressDto = AddressDto.toDto(place.getAddress());
+		final UserSummaryDto writerDto = UserSummaryDto.toDto(place.getUser());
+
+		final int proof = missionProofCount != null ? missionProofCount : 0;
+		final double avg = avgRating != null ? avgRating : 0.0;
+
+		return PlaceSummary.builder()
+						   .placeId(place.getId())
+						   .title(place.getTitle())
+						   .address(addressDto)
+						   .missionProofCount(proof)
+						   .avgRating(avg)
+						   .viewCount(place.getViewCount() != null ? place.getViewCount() : 0)
+						   .writer(writerDto)
+						   .thumbnail(thumbnail)      // 이미 주입된 썸네일(없으면 null)
+						   .distance(distanceKm)      // 없으면 null
+						   .build();
+	}
 }

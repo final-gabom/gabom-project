@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.aop.TargetId;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.quest.dto.UserQuestDto;
 import com.explorer.gabom.domain.quest.dto.response.QuestRewardResponse;
 import com.explorer.gabom.domain.quest.service.UserQuestService;
@@ -31,9 +34,10 @@ public class UserQuestController implements UserQuestControllerDocs {
 	private final UserQuestService userQuestService;
 
 	@PostMapping("/{userQuestId}/reward")
+	@ActivityLoggable(ActivityType.QUEST_REWARD_CLAIMED)
 	public ResponseEntity<ApiResponse<QuestRewardResponse>> claimReward(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable Long userQuestId
+		@PathVariable @TargetId Long userQuestId
 	) {
 		QuestRewardResponse response = userQuestService.claimReward(userDetails.getUserId(), userQuestId);
 		return ResponseEntity.status(HttpStatus.OK)

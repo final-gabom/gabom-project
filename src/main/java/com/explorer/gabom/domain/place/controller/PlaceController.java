@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
+import com.explorer.gabom.domain.activity.aop.TargetId;
+import com.explorer.gabom.domain.activity.type.ActivityType;
 import com.explorer.gabom.domain.elasticsearch.service.PlaceSearchFacade;
 import com.explorer.gabom.domain.place.dto.PlaceDetail;
 import com.explorer.gabom.domain.place.dto.PlaceSummary;
@@ -30,7 +33,6 @@ import com.explorer.gabom.global.dto.PageResponse;
 import com.explorer.gabom.global.security.userdetails.CustomUserDetails;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,12 +61,12 @@ public class PlaceController implements PlaceControllerDocs {
 		@RequestParam(required = false) Double lat,
 		@RequestParam(required = false) Double lng,
 		@RequestParam(required = false) String keyword,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{2}$") String sdCd,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{5}$") String sggCd,
-		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+		@RequestParam(required = false) String sdCd,
+		@RequestParam(required = false) String sggCd,
+		@RequestParam(required = false) String emdCd,
 		@PageableDefault(
 			page = 0, size = 10,
-			sort = {"viewCount", "proofCount"},
+			sort = {"popularity"},
 			direction = Sort.Direction.DESC) Pageable pageable) {
 		log.info("[GET] 탐험 장소 리스트 조회 /api/places lat={}, lng={}, keyword={}, sdCd={}, sggCd={}, emdCd={}, page={}",
 				 lat, lng, keyword, sdCd, sggCd, emdCd, pageable.getPageNumber());
@@ -96,7 +98,8 @@ public class PlaceController implements PlaceControllerDocs {
 
 	// 탐험 장소 삭제
 	@DeleteMapping("/{placeId}")
-	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable Long placeId,
+	@ActivityLoggable(ActivityType.PLACE_DELETED)
+	public ResponseEntity<ApiResponse<Long>> deletePlace(@PathVariable @TargetId Long placeId,
 														 @AuthenticationPrincipal CustomUserDetails userDetails) {
 		log.info("[DELETE] /api/places/{} - 삭제 요청 by userId={}", placeId, userDetails.getUserId());
 		Long deletePlaceId = placeService.deletePlace(placeId, userDetails.getUserId());

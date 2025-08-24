@@ -2,6 +2,8 @@ package com.explorer.gabom.domain.place.repository;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.data.domain.Pageable;
 
 import com.explorer.gabom.domain.place.dto.PlaceSummary;
@@ -11,7 +13,8 @@ import com.querydsl.core.Tuple;
 
 public interface PlaceRepositoryCustom {
 
-	PageResponse<PlaceSummary> findPlaceSummaries(PlaceSearchCond cond);
+	@Transactional(readOnly = true)
+	List<Long> findPlaceIdsForSummary(PlaceSearchCond cond);
 
 	/** ES에서 받은 ids로 얇은 요약 상세 조회 */
 	List<PlaceSummary> findSummariesByIds(List<Long> ids);
@@ -27,4 +30,7 @@ public interface PlaceRepositoryCustom {
 	 * minKm ≤ 거리(km) < maxKm 인 모든 장소의 (id, distanceKm) 튜플을 반환한다.
 	 */
 	List<Tuple> findWithinRadius(double lat, double lon, double minKm, double maxKm);
+
+	@Transactional(readOnly = true)
+	PageResponse<PlaceSummary> fetchPlaceSummariesByIds(List<Long> placeIds, PlaceSearchCond cond);
 }

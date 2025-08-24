@@ -2,6 +2,8 @@ package com.explorer.gabom.domain.exploration.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.explorer.gabom.global.dto.TargetIdentifiable;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +11,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @Schema(description = "탐험 시작 응답 정보")
-public class ExplorationStartResponse {
+public class ExplorationStartResponse implements TargetIdentifiable {
 
 	@Schema(description = "탐험 ID", example = "1")
 	private Long explorationId;
@@ -25,4 +27,9 @@ public class ExplorationStartResponse {
 
 	@Schema(description = "탐험 종료 시각", example = "2025-08-05T18:00:00")
 	private LocalDateTime endAt;
+
+	@Override
+	public Long getTargetId() {
+		return this.explorationId;
+	}
 }
