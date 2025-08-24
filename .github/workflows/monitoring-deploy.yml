@@ -27,7 +27,7 @@ jobs:
 
       - name: Update kubeconfig
         run: |
-          aws eks update-kubeconfig --name <YOUR_CLUSTER_NAME> --region ap-northeast-2
+          aws eks update-kubeconfig --name gabom-dev --region ap-northeast-2
 
       - name: Helm Upgrade Monitoring
         run: |
