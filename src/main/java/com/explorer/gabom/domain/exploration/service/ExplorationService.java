@@ -2,6 +2,7 @@ package com.explorer.gabom.domain.exploration.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -149,6 +150,37 @@ public class ExplorationService {
 														   () -> new CustomException(ErrorCode.EXPLORATION_NOT_FOUND));
 
 		return ExplorationDetailResponse.toDto(exploration);
+	}
+
+	@Transactional
+	public void completeOrCreateCompleted(Long userId, Long placeId) {
+		// 최신 1건 비관 잠금
+		Optional<Exploration> opt = explorationRepository.findByUserIdAndPlaceIdAndStatus(userId, placeId, Exploration.Status.IN_PROGRESS);
+		LocalDateTime now = LocalDateTime.now();
+
+		if (opt.isPresent()) {
+			Exploration e = opt.get();
+			e.setStatus(Exploration.Status.COMPLETED);
+			e.setEndAt(now);
+			if (e.getStartAt() == null) e.setStartAt(now); // 안전장치
+			return;
+		}
+
+		// 없으면 생성 → 즉시 완료
+		Place place = placeRepository.findById(placeId)
+									 .orElseThrow(() -> new IllegalArgumentException("Place not found: " + placeId));
+
+		Exploration created = Exploration.builder()
+										 .user(User.builder().id(userId).build()) // 이미 영속 User가 있다면 그대로 넘겨 사용 가능
+										 .place(place)
+										 .startAt(now)
+										 .endAt(now)
+										 .status(Exploration.Status.COMPLETED)
+										 .rewardPoint(50)
+										 .rewardExp(50)
+										 .build();
+
+		explorationRepository.save(created);
 	}
 }
 

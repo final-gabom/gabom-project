@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.activity.aop.ActivityLoggable;
 import com.explorer.gabom.domain.activity.type.ActivityType;
+import com.explorer.gabom.domain.exploration.service.ExplorationService;
 import com.explorer.gabom.domain.file.dto.FileResponseDto;
 import com.explorer.gabom.domain.file.entity.AttachmentFile;
 import com.explorer.gabom.domain.file.repository.AttachmentFileRepository;
@@ -58,6 +59,7 @@ public class MissionProofServiceImpl implements MissionProofService {
 	private final UserQuestService userQuestService;
 	private final NotificationService notificationService;
 	private final ApplicationEventPublisher eventPublisher;
+	private final ExplorationService explorationService;
 
 	// 생성
 	@Override
@@ -73,6 +75,9 @@ public class MissionProofServiceImpl implements MissionProofService {
 
 			// 2. PLACE 타입인 경우 200m 근처에서 인증글을 올렸는지 확인
 			validateProofLocation(request, place);
+
+			// 탐험 완료 처리
+			explorationService.completeOrCreateCompleted(loginUser.getId(), place.getId());
 		}
 
 		// 이미지 파일 조회

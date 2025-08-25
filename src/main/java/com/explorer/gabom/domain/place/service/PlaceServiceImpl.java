@@ -62,6 +62,9 @@ public class PlaceServiceImpl implements PlaceService {
 		place.setAddressId(savedAddr.getId());
 		Place saved = placeRepository.save(place);
 
+		// 4. 탐험 완료 처리
+
+
 		return PlaceCreateResponse.toDto(saved, savedAddr);
 	}
 

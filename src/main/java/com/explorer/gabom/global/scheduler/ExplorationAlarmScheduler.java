@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.explorer.gabom.domain.exploration.entity.Exploration;
 import com.explorer.gabom.domain.exploration.repository.ExplorationRepository;
+import com.explorer.gabom.domain.exploration.service.ExplorationService;
 import com.explorer.gabom.domain.notification.service.NotificationService;
 import com.explorer.gabom.domain.notification.type.NotificationRefType;
 import com.explorer.gabom.domain.notification.type.NotificationType;
@@ -30,6 +31,8 @@ public class ExplorationAlarmScheduler {
 	private final NotificationService notificationService;
 	private final ExplorationRepository explorationRepository;
 	private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
+	private final ExplorationService explorationService;
+
 	//  운영 기본: 30분 전
 	@Value("${spring.exploration.alarm.almost-minutes:30}")
 	private long almostMinutes;
@@ -66,7 +69,8 @@ public class ExplorationAlarmScheduler {
 						);
 						cur.markAlmostNotified();
 						explorationRepository.save(cur);
-						log.info("[ALMOST] pushed user={}, exp={}, at={}", cur.getUser().getId(), cur.getId(), LocalDateTime.now());
+						log.info("[ALMOST] pushed user={}, exp={}, at={}", cur.getUser().getId(), cur.getId(),
+								 LocalDateTime.now());
 					}
 				});
 			}, almostDelay, TimeUnit.MILLISECONDS);
