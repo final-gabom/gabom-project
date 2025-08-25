@@ -101,9 +101,18 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 			NumberExpression<Double> avgRating   = mp.starRating.avg().coalesce(0.0);
 			NumberExpression<Long>   proofCount  = mp.id.count().coalesce(0L);
+			NumberExpression<Long>   viewCount   = place.viewCount.coalesce(0).castToNum(Long.class);
+			NumberExpression<Long>   popularity  = viewCount.add(proofCount);
 
-			// 여기서 통일된 정렬 적용
-			applySortSafe(q, cond.getPageable(), distanceExpr, proofCount, avgRating);
+			for (Sort.Order o : cond.getPageable().getSort()) {
+				boolean asc = o.isAscending();
+				switch (o.getProperty()) {
+					case "rating"     -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRating));
+					case "popularity" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
+					case "createdAt"  -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, place.createdAt));
+					case "distance"   -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, distanceExpr));
+				}
+			}
 		}
 
 		// 페이징
