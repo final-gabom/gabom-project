@@ -4,6 +4,7 @@ import static com.explorer.gabom.domain.address.entity.QAddress.*;
 import static com.explorer.gabom.domain.place.entity.QPlace.*;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.explorer.gabom.domain.address.entity.QAddress;
@@ -25,7 +27,10 @@ import com.explorer.gabom.domain.place.mapper.PlaceSummaryMapper;
 import com.explorer.gabom.domain.title.entity.QTitle;
 import com.explorer.gabom.domain.user.entity.QUser;
 import com.explorer.gabom.global.dto.PageResponse;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -38,6 +43,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
+@Repository
 @RequiredArgsConstructor
 @Transactional
 public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
@@ -104,7 +110,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 					case "rating"     -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, avgRating));
 					case "popularity" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, popularity));
 					case "createdAt"  -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, place.createdAt));
-					case "distance" -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, distanceExpr));
+					case "distance"   -> q.orderBy(new OrderSpecifier<>(asc ? Order.ASC : Order.DESC, distanceExpr));
 				}
 			}
 		}
@@ -204,6 +210,126 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
 		return PageResponse.toDto(new PageImpl<>(content, cond.getPageable(), total));
 	}
+
+	// 2-1) ES → DB 상세: ids로 얇게 조회
+	@Override
+	@Transactional(readOnly = true)
+	public List<PlaceSummary> findSummariesByIds(List<Long> ids) {
+		if (ids == null || ids.isEmpty()) return List.of();
+
+		QPlaceFile placeFile = QPlaceFile.placeFile;
+		QAttachmentFile file = QAttachmentFile.attachmentFile;
+		QUser writer = QUser.user;
+		QAttachmentFile subFile = new QAttachmentFile("sf");
+		QTitle title = new QTitle("title");
+
+		Expression<Double> distanceSel =
+			ExpressionUtils.as(Expressions.nullExpression(Double.class), "distance");
+
+		Expression<Long> proofCountSel =
+			ExpressionUtils.as(Expressions.nullExpression(Long.class), "proofCount");
+
+		List<Tuple> tuples = queryFactory
+			.select(
+				place.id,
+				place.title,
+				address,
+				address.lat,
+				address.lng,
+				place.viewCount,
+				writer.id,
+				writer.nickname,
+				writer.level,
+				writer.title.name,
+				file.fileId,
+				file.filePath,
+				distanceSel,
+				proofCountSel
+			)
+			.from(place)
+			.join(place.user, writer)
+			.leftJoin(writer.title, title)
+			.leftJoin(address).on(place.addressId.eq(address.id))
+			.leftJoin(placeFile).on(placeFile.place.eq(place))
+			.leftJoin(file).on(
+				file.eq(placeFile.file),
+				file.fileId.eq(JPAExpressions
+								   .select(subFile.fileId)
+								   .from(subFile)
+								   .join(placeFile).on(placeFile.file.eq(subFile))
+								   .where(placeFile.place.eq(place), subFile.deleted.isFalse())
+								   .orderBy(subFile.orderIdx.asc())
+								   .limit(1))
+			)
+			.where(
+				place.deletedAt.isNull(),
+				place.id.in(ids)
+			)
+			.fetch();
+
+		return tuples.stream().map(PlaceSummaryMapper::fromTuple).toList();
+	}
+
+	// 2-2) 키워드 없음: ID만 페이지로 (필요 시 정렬 정책 보강)
+	@Override
+	@Transactional(readOnly = true)
+	public List<Long> findPlaceIdsForSummaryWithoutKeyword(String emdCd, Pageable pageable) {
+		BooleanBuilder where = new BooleanBuilder()
+			.and(place.deletedAt.isNull());
+
+		if (emdCd != null && !emdCd.isBlank()) {
+			where.and(address.emdCd.eq(emdCd));
+		}
+
+		// 정렬: pageable이 주는 정렬을 해석 (기본 viewCount desc, createdAt desc)
+		List<OrderSpecifier<?>> orders = new ArrayList<>();
+		if (pageable.getSort().isSorted()) {
+			for (Sort.Order o : pageable.getSort()) {
+				boolean asc = o.isAscending();
+				switch (o.getProperty()) {
+					case "viewCount" -> orders.add(asc ? place.viewCount.asc() : place.viewCount.desc());
+					case "createdAt" -> orders.add(asc ? place.createdAt.asc() : place.createdAt.desc());
+					default -> {} // 무시
+				}
+			}
+		}
+		if (orders.isEmpty()) {
+			orders.add(place.viewCount.desc());
+			orders.add(place.createdAt.desc());
+		}
+
+		return queryFactory
+			.select(place.id)
+			.from(place)
+			.leftJoin(address).on(place.addressId.eq(address.id))
+			.where(where)
+			.orderBy(orders.toArray(new OrderSpecifier<?>[0]))
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+	}
+
+	// 2-3) 키워드 없음: total 카운트
+	@Override
+	@Transactional(readOnly = true)
+	public long countForSummaryWithoutKeyword(String emdCd) {
+		BooleanBuilder where = new BooleanBuilder()
+			.and(place.deletedAt.isNull());
+
+		if (emdCd != null && !emdCd.isBlank()) {
+			where.and(address.emdCd.eq(emdCd));
+		}
+
+		Long total = queryFactory
+			.select(place.count())
+			.from(place)
+			.leftJoin(address).on(place.addressId.eq(address.id))
+			.where(where)
+			.fetchOne();
+
+		return total == null ? 0L : total;
+	}
+
 
 	@Override
 	public List<Tuple> findWithinRadius(double lat, double lon, double minKm, double maxKm) {

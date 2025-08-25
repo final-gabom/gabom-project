@@ -69,6 +69,11 @@ dependencies {
 
     // RabbitMQ
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    // Elasticsearch
+    implementation 'co.elastic.clients:elasticsearch-java:9.1.2'
+    implementation 'org.apache.httpcomponents.client5:httpclient5'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-client:9.1.2'
 }
 
 tasks.named('test') {

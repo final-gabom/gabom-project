@@ -145,4 +145,41 @@ public interface PlaceControllerDocs {
 		@Parameter(hidden = true)
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	);
+
+	@Operation(
+		summary = "장소 검색 (ES + DB)",
+		description = """
+        검색어가 있으면 Elasticsearch에서 ID만 검색 후 DB에서 상세를 조회하고, 
+        검색어가 없으면 DB에서 바로 조회합니다.
+        - 파라미터: keyword(선택), emdCd(선택), lat/lon(선택), page, size
+        - 정렬은 ES가 수행(키워드 있을 때), DB 경로는 기본 정렬(viewCount desc, createdAt desc)
+        예)
+          /api/places/search?keyword=카페&emdCd=11110101&page=0&size=20
+          /api/places/search?emdCd=11110101&page=0&size=20
+          /api/places/search?keyword=분식&lat=37.57&lon=126.98&page=0&size=10
+        """
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "장소 검색 성공")
+	})
+	ResponseEntity<?> searchPlaces(
+		@Parameter(description = "검색 키워드 (선택)")
+		@RequestParam(required = false) String keyword,
+
+		@Parameter(description = "읍면동 코드 (10자리, 선택) ex.\"1214030000\"")
+		@RequestParam(required = false) @Pattern(regexp = "^\\d{10}$") String emdCd,
+
+		@Parameter(description = "현재 위치의 위도 (선택)")
+		@RequestParam(required = false) Double lat,
+
+		@Parameter(description = "현재 위치의 경도 (선택). Facade 시그니처에 맞춰 이름은 'lon'")
+		@RequestParam(required = false, name = "lon") Double lon,
+
+		@Parameter(description = "페이지 번호 (기본 0)")
+		@RequestParam(defaultValue = "0") int page,
+
+		@Parameter(description = "페이지 크기 (기본 10)")
+		@RequestParam(defaultValue = "10") int size
+	);
+
 }

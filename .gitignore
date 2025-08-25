@@ -1,5 +1,7 @@
 .env
 
+http_ca.crt
+
 HELP.md
 .gradle
 build/
