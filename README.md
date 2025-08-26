@@ -627,14 +627,14 @@ CONSTRAINT `FK...` FOREIGN KEY (`place_id`) REFERENCES `place` (`id`))
 </details>
 
 ## 
-|                         [**천세경**](https://github.com/GyeongSe99)                          |                 [**이다인**](https://github.com/dain391)                  |                 [**김원준**](https://github.com/kimwonjun1)                 |
-|:-----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|
-|         <img src="resized_image.jpg" width="300" height="400"/>         | <img src="KakaoTalk_20250731_010527282.jpg" width="300" height="400"/> | <img src="10-10-1-397.png" width="300" height="400"/> |
-|                                          **팀장**                                           |                                  **부팀장**                                  |                                  **팀원**                                   |
-|              전체 아키텍처 설계 및 테스트장소 리스트 조회 성능 개선 auth/ user/ place/ file api 구현               |          place/ exploration api 구현 아키텍처 및 인프라 배포 관련 개선(오토스케일링 등) 모니터링                  |                 활동로그 aop로 저장 기능 구현 quest/ ranking api 구현 ranking 조회 성능 개선 user - quest 수정&삭제 성능 개선                  |
+|                         [**천세경**](https://github.com/GyeongSe99)                          |            [**이다인**](https://github.com/dain391)             |                       [**김원준**](https://github.com/kimwonjun1)                       |
+|:-----------------------------------------------------------------------------------------:|:------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
+|         <img src="img_13.png" width="300" height="400"/>         |       <img src="img_15.png" width="300" height="400"/>       |                   <img src="img_17.png" width="300" height="400"/>                    |
+|                                          **팀장**                                           |                           **부팀장**                            |                                        **팀원**                                        |
+|              전체 아키텍처 설계 및 테스트장소 리스트 조회 성능 개선 auth/ user/ place/ file api 구현               | place/ exploration api 구현 아키텍처 및 인프라 배포 관련 개선(오토스케일링 등) 모니터링 |  활동로그 aop로 저장 기능 구현 quest/ ranking api 구현 ranking 조회 성능 개선 user - quest 수정&삭제 성능 개선  |
 
-|                 [**김지은**](https://github.com/zzzzdong)                  |                         [**김현수**](https://github.com/kinhyunsu)                          |              [**남궁교**](https://github.com/gyogyo0212)              |
-|:-----------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:------------------------------------------------------------------:|
-| <img src="0D127D33-916C-44E9-99E7-7C8EC373886A_1_105_c.jpeg" width="300" height="400"/> |             <img src="KakaoTalk_20250825_225529415 (1).jpg" width="300" height="400"/>             |                                  <img src="IMG_0875.JPG.jpg" width="300" height="400"/>                                  |
-|                                 **팀원**                                  |                                          **팀원**                                          |                               **팀원**                               |
-|         title/ activitylog api 구현 데이터 bulk 성능 개선 Swagger 주소 정제 및 대용량 장소 등록 자동화          |                   실시간 알림 - websocket exploration/ mission proof api 구현                   |              소셜 로그인 auth/ user api 구현              |
+|                 [**김지은**](https://github.com/zzzzdong)                  |                         [**김현수**](https://github.com/kinhyunsu)                          |    [**남궁교**](https://github.com/gyogyo0212)     |
+|:-----------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------:|
+| <img src="img_12.png" width="300" height="400"/> |             <img src="img_11.png" width="300" height="400"/>             | <img src="img_9.png" width="300" height="400"/> |
+|                                 **팀원**                                  |                                          **팀원**                                          |                     **팀원**                      |
+|         title/ activitylog api 구현 데이터 bulk 성능 개선 Swagger 주소 정제 및 대용량 장소 등록 자동화          |                   실시간 알림 - websocket exploration/ mission proof api 구현                   |            소셜 로그인 auth/ user api 구현             |
