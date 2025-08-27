@@ -31,7 +31,6 @@ public class ExplorationAlarmScheduler {
 	private final NotificationService notificationService;
 	private final ExplorationRepository explorationRepository;
 	private final Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
-	private final ExplorationService explorationService;
 
 	//  운영 기본: 30분 전
 	@Value("${spring.exploration.alarm.almost-minutes:30}")

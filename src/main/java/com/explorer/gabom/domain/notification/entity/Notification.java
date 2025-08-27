@@ -42,8 +42,9 @@ public class Notification {
 	private String link;    // 알림 클릭 시 이동할 URL or 경로
 
 	// 어떤 리소스에 대한 알림인지(폴리모픽 레퍼런스)
-	@Enumerated(EnumType.STRING)
+	@Builder.Default
 	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
 	private NotificationRefType refType = NotificationRefType.SYSTEM; // 예: EXPLORATION / AUTH_POST ...
 
 	@Column(nullable = true)

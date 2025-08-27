@@ -18,6 +18,8 @@ public class PlaceSearchCond {
 	private String emdCd;
 	private Pageable pageable;
 	private String keyword;
+
+	@Builder.Default
 	private Double radiusKm = 40.0;  // null이면 기본값 사용
 
 	public PlaceSearchCond(Double lat, Double lng, String sdCd, String sggCd, String emdCd, Pageable pageable,
