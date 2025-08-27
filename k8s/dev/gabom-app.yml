@@ -22,6 +22,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: gabom-env
           resources:
             requests: { cpu: "100m", memory: "256Mi" }
             limits:   { cpu: "500m", memory: "512Mi" }
@@ -32,8 +35,9 @@ metadata:
   name: gabom-svc
   namespace: gabom
 spec:
-  type: NodePort
-  selector: { app: gabom-api }
+  type: ClusterIP
+  selector:
+    app: gabom-api
   ports:
     - name: http
       port: 80

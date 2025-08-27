@@ -56,6 +56,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
+      - name: Create .env file
+        run: |
+          echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> .env
+          echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> .env
+          echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> .env
+
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -63,7 +69,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      # Docker Build & Push 단계 추가
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ap-northeast-2 \
@@ -71,7 +76,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build --no-cache -t 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com/gabom-server:dev .
+          docker build -t 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com/gabom-server:dev .
           docker push 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com/gabom-server:dev
 
       - name: Setup kubectl
