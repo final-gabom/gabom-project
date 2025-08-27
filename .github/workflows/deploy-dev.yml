@@ -51,6 +51,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
+      # Docker Build & Push 단계 추가
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 \
+            | docker login --username AWS --password-stdin 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com
+
+      - name: Build and Push Docker image
+        run: |
+          docker build --no-cache -t 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com/gabom-server:dev .
+          docker push 675769453974.dkr.ecr.ap-northeast-2.amazonaws.com/gabom-server:dev
+
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
