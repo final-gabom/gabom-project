@@ -3,7 +3,7 @@ name: Deploy to EKS (develop)
 on:
   push:
     branches:
-      - develop
+      - es/TEST
 
 jobs:
   deploy:
