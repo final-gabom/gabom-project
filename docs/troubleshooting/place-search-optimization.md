@@ -26,7 +26,7 @@
 | C | 인덱스 보강 | `region_code`, `deleted_at`, 정렬 컬럼 기반 **복합 인덱스 추가** | 후보군 축소 속도 개선 |
 | D | 불필요한 JOIN 제거 | 정렬 조건별로 필요한 JOIN만 수행 (최신순/인기순/거리순 분리) | 최신순 32ms인기순 2.31s인기+검색 4.93ms거리순 2.54ms |
 | E | Bounding Box 적용 | 후보군을 Bounding Box로 필터링 후 소수 후보에만 정밀 거리 계산 | 거리 계산 비용 절감, 전체 응답 단축 |
-| F | Elasticsearch 도입 | 텍스트 검색을 RDB LIKE → **ES 역색인 검색**으로 분리 | 검색 수백 ms → 수십 ms복합 쿼리도 안정적 ms 응답 |
+| F | Elasticsearch 도입 | 텍스트 검색을 RDB LIKE → **ES 역색인 검색**으로 분리 | 검색 2s → 32~340ms 복합 쿼리도 안정적 ms 응답 |
 
 ---
 
