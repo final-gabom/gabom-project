@@ -1,7 +1,7 @@
 # 일상을 탐험하는 공간 기록 플랫폼: Gabom?
 - - - -
 ‘가봄?’은 거창한 여행이 아닌, 일상 속 작은 발견을 기록하고 나누는 위치 기반 플랫폼입니다.
-![img.png](img.png)
+![img.png](images/img.png)
 
 
 ## 목차
@@ -82,7 +82,7 @@
 
 ----
 ### 💡유저 플로우
-![img_5.png](img_5.png)
+![img_5.png](images/img_5.png)
 ### 사용자 이용 흐름
 🙆 **탐험 성공** 
 - 장소 선택 → 탐험 시작 → 탐험 시간 연장 → 도착 → 보상 흐름
@@ -99,18 +99,18 @@
 ----
 ### ERD
 - v1
-![img_1.png](img_1.png)
+![img_1.png](images/img_1.png)
 - v2
-![img_2.png](img_2.png)
+![img_2.png](images/img_2.png)
 ### API 명세서
 [API Documentation](https://www.notion.so/teamsparta/2372dc3ef514817b8c26c6c58d9dca74?v=2372dc3ef5148125af94000c7b0d96b6&source=copy_link)
 ### 시스템 아키텍쳐
-![img_6.png](img_6.png)
+![img_6.png](images/img_6.png)
 
 ## ⚙️ 우리가 사용한 기술들
 
 ----
-![img_7.png](img_7.png)
+![img_7.png](images/img_7.png)
 
 ## 🤔 우리가 고민한 기술 선택들
 
