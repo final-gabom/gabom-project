@@ -98,9 +98,6 @@
 
 ----
 ### ERD
-- v1
-![img_1.png](images/img_1.png)
-- v2
 ![img_2.png](images/img_2.png)
 ### API 명세서
 [API Documentation](https://www.notion.so/teamsparta/2372dc3ef514817b8c26c6c58d9dca74?v=2372dc3ef5148125af94000c7b0d96b6&source=copy_link)
@@ -627,14 +624,14 @@ CONSTRAINT `FK...` FOREIGN KEY (`place_id`) REFERENCES `place` (`id`))
 </details>
 
 ## 
-|                         [**천세경**](https://github.com/GyeongSe99)                          |            [**이다인**](https://github.com/dain391)             |                      [**김원준**](https://github.com/kimwonjun1)                      |
-|:-----------------------------------------------------------------------------------------:|:------------------------------------------------------------:|:----------------------------------------------------------------------------------:|
-|         <img src="img_13.png" width="300" height="400"/>         |       <img src="img_15.png" width="300" height="400"/>       |             <img src="img_18.png" width="300" height="400"/>             |
-|                                          **팀장**                                           |                           **부팀장**                            |                                       **팀원**                                       |
-|              전체 아키텍처 설계 및 테스트장소 리스트 조회 성능 개선 auth/ user/ place/ file api 구현               | place/ exploration api 구현 아키텍처 및 인프라 배포 관련 개선(오토스케일링 등) 모니터링 | 활동로그 aop로 저장 기능 구현 quest/ ranking api 구현 ranking 조회 성능 개선 user - quest 수정&삭제 성능 개선 |
+|            [**천세경**](https://github.com/GyeongSe99)            |            [**이다인**](https://github.com/dain391)             |                      [**김원준**](https://github.com/kimwonjun1)                      |
+|:--------------------------------------------------------------:|:------------------------------------------------------------:|:----------------------------------------------------------------------------------:|
+|    <img src="images/img_13.png" width="300" height="400"/>     |       <img src="images/img_15.png" width="300" height="400"/>       |             <img src="images/img_18.png" width="300" height="400"/>             |
+|                             **팀장**                             |                           **부팀장**                            |                                       **팀원**                                       |
+| 전체 아키텍처 설계 및 테스트장소 리스트 조회 성능 개선 auth/ user/ place/ file api 구현 | place/ exploration api 구현 아키텍처 및 인프라 배포 관련 개선(오토스케일링 등) 모니터링 | 활동로그 aop로 저장 기능 구현 quest/ ranking api 구현 ranking 조회 성능 개선 user - quest 수정&삭제 성능 개선 |
 
 |                 [**김지은**](https://github.com/zzzzdong)                  |                         [**김현수**](https://github.com/kinhyunsu)                          |    [**남궁교**](https://github.com/gyogyo0212)     |
 |:-----------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------:|
-| <img src="img_12.png" width="300" height="400"/> |             <img src="img_11.png" width="300" height="400"/>             | <img src="img_9.png" width="300" height="400"/> |
+| <img src="images/img_12.png" width="300" height="400"/> |             <img src="images/img_11.png" width="300" height="400"/>             | <img src="images/img_9.png" width="300" height="400"/> |
 |                                 **팀원**                                  |                                          **팀원**                                          |                     **팀원**                      |
 |         title/ activitylog api 구현 데이터 bulk 성능 개선 Swagger 주소 정제 및 대용량 장소 등록 자동화          |                   실시간 알림 - websocket exploration/ mission proof api 구현                   |            소셜 로그인 auth/ user api 구현             |
