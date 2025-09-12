@@ -184,7 +184,127 @@
 
 ----
 <details> 
-  <summary>잘못된 JWT 토큰 처리 누락 이슈</summary>
+  <summary>트러블슈팅 #1 – 탐험 장소 조회 성능 문제</summary>
+  <div>
+
+## ⚡ 문제 상황
+
+- 존재하지 않는 엔드포인트(404)·잘못된 메서드(405) 요청이 `401 Unauthorized`로 잘못 반환
+- 프론트가 “로그인 필요”로 오인 → UX 혼선 발생
+
+## 🔍 원인 요약
+
+- MVC 예외(404/405)가 **응답으로 확정되지 않음** → Security 필터로 **역전파**
+- `ExceptionTranslationFilter`가 인증 실패로 **오인**하여 `AuthenticationEntryPoint` 실행 → **401 반환**
+- `DefaultHandlerExceptionResolver`는 상태만 설정하고 **빈 View** 반환 → 컨테이너가 `/error`로 **내부 디스패치**
+- `/error` 요청은 Authorization 헤더/컨텍스트 없이 **ERROR 디스패치**로 재진입 → 보안 필터가 **미인증**으로 판단
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant JF as JwtAuthFilter
+    participant FI as FilterSecurityInterceptor
+    participant DS as DispatcherServlet
+    participant HM as HandlerMapping
+    participant DR as DefaultHandlerExceptionResolver
+    participant ET as ExceptionTranslationFilter
+    participant EP as AuthenticationEntryPoint
+
+    C->>JF: 요청 (Bearer ...)
+    JF-->>C: ✅ 인증 OK
+    JF->>FI: 요청 전달
+    FI-->>C: ✅ 인가 OK
+    FI->>DS: MVC로 위임
+    DS->>HM: 라우팅 시도
+    HM-->>DS: ❌ 매핑 없음 (405/404)
+    DS->>DR: 예외 위임
+    DR-->>DS: sendError(405), 빈 ModelAndView
+    DS->>ET: 예외 역전파
+    ET->>EP: 인증 실패로 번역
+    EP-->>C: 401 Unauthorized
+
+```
+
+---
+
+## 🛠 해결 코드
+
+### 1) 전역 예외를 **컨트롤러 계층에서 확정** (404/405를 즉시 응답)
+
+```java
+// RestControllerAdvice: 404/405를 상태코드 + 공통 바디로 확정
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.fail(ErrorCode.NOT_FOUND));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.fail(ErrorCode.METHOD_NOT_ALLOWED));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnhandled(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.fail(ErrorCode.INTERNAL_SERVER_ERROR));
+    }
+}
+
+```
+
+---
+
+### 2) **에러 디스패치 요청**에서 보안 필터 **비개입**
+
+```java
+// JwtAuthenticationFilter
+@Override
+protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws ServletException, IOException {
+
+    if (request.getDispatcherType() == DispatcherType.ERROR) {
+        chain.doFilter(request, response); // /error 재요청에서는 인증 로직 스킵
+        return;
+    }
+
+    // ...
+    chain.doFilter(request, response);
+}
+
+```
+
+```java
+// SecurityFilterChain 설정 일부
+http
+  .authorizeHttpRequests(auth -> auth
+      .requestMatchers("/error").permitAll()
+      // ...
+  );
+
+```
+
+---
+
+## 🎯 결과
+
+- 상태코드가 **정상 분리**: 401(인증실패) / 403(권한부족) / 404(경로없음) / 405(메서드불일치) / 500(서버오류)
+- 공통 에러 바디(`ApiResponse`)로 **일관된 응답 포맷**
+- 프론트는 **401(로그인 필요)** vs **404/405(경로/메서드 오류)** 를 명확히 구분
+
+> 📄 관련 문서: [Troubleshooting 상세](docs/troubleshooting/01-place-search-optimization.md)
+
+---
+
+  </div>
+</details>
+
+<details> 
+  <summary>트러블슈팅 #2 – SecurityFilter 예외 분기 처리 - 잘못된 토큰입력 시 401이 아닌 403 상태 반환</summary>
   <div>
 
 ### 🔍 문제 요약
@@ -247,11 +367,16 @@ private String getJwtFromRequest(HttpServletRequest request) {
 - 인증이 필요한 요청에 대해 **이상한 토큰을 들고 접근하는 경우 명확히 차단**
 - 클라이언트 측에서도 응답 코드를 보고 **정확하게 인증 상태 판단 가능**
 - 토큰 처리 흐름의 **명확성 및 보안성 향상**
+
+> 📄 관련 문서: [Troubleshooting 상세](docs/troubleshooting/02-invalid-token-403-to-401.md)
+
+---
+
   </div>
 </details>
 
-<details>
-  <summary>없는 페이지 요청 시 404가 아닌 401 에러가 발생</summary>
+<details> 
+  <summary>트러블슈팅 #3 – Spring Security 예외 처리 개선 - 404/405 오류가 401로 반환되는 문제</summary>
   <div>
 
 ### 🧩 문제 상황
@@ -361,6 +486,11 @@ protected ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundExcepti
 - **문제**: 컨트롤러가 없어서 발생한 예외가 404가 아닌 401로 리턴됨
 - **이유**: DispatcherServlet이 예외를 처리하지 못하고 `ExceptionTranslationFilter`가 대신 처리했기 때문
 - **해결**: 모든 예외를 `@RestControllerAdvice`에서 직접 처리하여, Security 필터 체인까지 예외가 도달하지 않도록 막음
+
+> 📄 관련 문서: [Troubleshooting 상세](docs/troubleshooting/03-404-405-to-401.md)
+
+---
+
   </div>
 </details>
 
